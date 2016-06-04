@@ -1,0 +1,215 @@
+/*
+ * Skin: Blue
+ * ----------
+ */
+.skin-blue .box.box-solid {
+	border-top-color: #3c8dbc;
+	border: 1px solid #3c8dbc;
+}
+.skin-blue .box.box-solid>.box-header {
+	color: #ffffff;
+	background: #3c8dbc;
+	background-color: #3c8dbc;
+}
+.skin-blue .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Blue Light
+ * ----------
+ */
+.skin-blue-light .box.box-solid {
+	border-top-color: #3c8dbc;
+	border: 1px solid #3c8dbc;
+}
+.skin-blue-light .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: ##ffffff;
+}
+.skin-blue-light .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Purple
+ * ----------
+ */
+.skin-purple .box.box-solid {
+	border-top-color: #605ca8;
+	border: 1px solid #605ca8;
+}
+.skin-purple .box.box-solid>.box-header {
+	color: #ffffff;
+	background: #605ca8;
+	background-color: #605ca8;
+}
+.skin-purple .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Black
+ * ----------
+ */
+.skin-black .box.box-solid {
+	border-top-color: #000000;
+	border: 1px solid #000000;
+}
+.skin-black .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: #ffffff;
+}
+.skin-black .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Green
+ * ----------
+ */
+.skin-green .box.box-solid {
+	border-top-color: #00a65a;
+	border: 1px solid #00a65a;
+}
+.skin-green .box.box-solid>.box-header {
+	color: #ffffff;
+	background: #00a65a;
+	background-color: #00a65a;
+}
+.skin-green .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Red
+ * ----------
+ */
+.skin-red .box.box-solid {
+	border-top-color: #dd4b39;
+	border: 1px solid #dd4b39;
+}
+.skin-red .box.box-solid>.box-header {
+	color: #ffffff;
+	background: #dd4b39;
+	background-color: #dd4b39;
+}
+.skin-red .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Yellow
+ * ----------
+ */
+.skin-yellow .box.box-solid {
+	border-top-color: #f39c12;
+	border: 1px solid #f39c12;
+}
+.skin-yellow .box.box-solid>.box-header {
+	color: #ffffff;
+	background: #f39c12;
+	background-color: #f39c12;
+}
+.skin-yellow .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Black Light
+ * ----------
+ */
+.skin-black-light .box.box-solid {
+	border-top-color: #ffffff;
+	border: 1px solid #ffffff;
+}
+.skin-black-light .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: #ffffff;
+}
+.skin-black-light .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Purple Light
+ * ----------
+ */
+.skin-purple-light .box.box-solid {
+	border-top-color: #605ca8;
+	border: 1px solid #605ca8;
+}
+.skin-purple-light .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: #ffffff;
+}
+.skin-purple-light .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Green Light
+ * ----------
+ */
+.skin-green-light .box.box-solid {
+	border-top-color: #00a65a;
+	border: 1px solid #00a65a;
+}
+.skin-green-light .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: #ffffff;
+}
+.skin-green-light .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Red Light
+ * ----------
+ */
+.skin-red-light .box.box-solid {
+	border-top-color: #dd4b39;
+	border: 1px solid #dd4b39;
+}
+.skin-red-light .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: #ffffff;
+}
+.skin-red-light .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
+
+/*
+ * Skin: Yellow Light
+ * ----------
+ */
+.skin-yellow-light .box.box-solid {
+	border-top-color: #f39c12;
+	border: 1px solid #f39c12;
+}
+.skin-yellow-light .box.box-solid>.box-header {
+	color: #000000;
+	background: #ffffff;
+	background-color: #ffffff;
+}
+.skin-yellow-light .box.box-solid>.box-header a, .skin-blue .box.box-solid>.box-header .btn
+	{
+	color: #ffffff;
+}
