@@ -34,6 +34,12 @@ Usage
 - Access the web interface on port 80
 - A weather report summary is generated and sent by email every day
 
-Known Issues
+Known Issues/Limitations
 -----------------
 - Temperatures are in Celsius only
+- Accessing from a different timezone may result in inconsistent results
+
+ChangeLog
+-----------------
+- v1.0.0
+	- Weather module completed
