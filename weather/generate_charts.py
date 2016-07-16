@@ -3,6 +3,7 @@ import time
 import json
 import requests
 import os
+import sys
 
 # read global settings
 config = {}
