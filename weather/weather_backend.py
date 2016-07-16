@@ -45,7 +45,7 @@ def measure():
 		for entry in output:
 			# set the timestamp
 			timestamp = int(time.time())
-			if ("timestamp" in entry): timestamp = entry["timestamp"]
+#			if ("timestamp" in entry): timestamp = entry["timestamp"]
 			for key in entry:
 				# for each measure
 				if (key == "timestamp"): continue
@@ -94,7 +94,7 @@ def summarize(timeframe,timestamp_end):
                                 value = str(timestamp_start)+":"+str(min_value)+":"+str(max_value)
                                 if write: db.zadd(db_key,score,value)
                                 if debug: print "key: "+db_key+", score: "+str(score)+", value: "+value
-								# store to the database (avg)
+				# store to the database (avg)
                                 db_key = root
                                 score = timestamp_start
                                 value = str(timestamp_start)+":"+str(avg_value)

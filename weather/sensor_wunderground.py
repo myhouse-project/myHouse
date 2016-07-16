@@ -8,7 +8,7 @@ import sys
 import os
 
 # configuration settings
-debug = 0
+debug = 1
 module = 1
 
 # read global settings
