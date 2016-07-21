@@ -2,17 +2,18 @@
 import sys
 import os
 import logging
+import requests
 import time
 
 # constants
 hour = 60*60
 day = 24*hour
 milliseconds = 1
+sensors_expire = 60
 
 # load the configuration
 config = {}
 execfile(os.path.abspath(os.path.dirname(__file__))+"/../conf/myHouse.py", config)
-
 
 logger = logging.getLogger("myHouse")
 logger.setLevel(logging.DEBUG)
@@ -42,3 +43,9 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+def normalize(value):
+	return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
+
+def get_json(url):
+	return requests.get(url).json()
