@@ -12,8 +12,6 @@ config = config.get_config()
 # define the database schema
 schema = {}
 schema["root"] = "myHouse"
-schema["sensors"] = schema["root"]+":sensors"
-schema["sensors_cache"] = schema["sensors"]+":cache"
 
 timestamp_multiplier = 1
 
