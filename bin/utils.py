@@ -76,3 +76,7 @@ def avg(data):
 		if is_number(data[0]): return numpy.mean(data)
 		else: return max(set(data), key=data.count)
 	else: return None
+
+def get_path():
+	return os.path.abspath(os.path.dirname(__file__))
+
