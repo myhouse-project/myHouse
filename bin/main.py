@@ -1,5 +1,8 @@
 import sys
 from time import sleep
+import signal
+import sys
+from multiprocessing import Process
 
 import utils
 import logger
@@ -9,6 +12,7 @@ config = config.get_config()
 import sensors
 import scheduler
 scheduler = scheduler.get_scheduler()
+import web
 
 modules_with_sensors = ['weather']
 
@@ -23,13 +27,17 @@ def schedule_sensors():
 					scheduler.add_job(sensors.run,'cron',hour="*",args=[module,sensor_id,measure,'summarize_hour'])
 					scheduler.add_job(sensors.run,'cron',day="*",args=[module,sensor_id,measure,'summarize_day'])
 
+def shutdown(signal, frame):
+	if scheduler.running: scheduler.shutdown()
+	utils.get("http://localhost:8080/shutdown")
+	logger.info("Exiting...")
+        sys.exit(0)
+
 def run():
+#	signal.signal(signal.SIGINT,shutdown)
 	schedule_sensors()
 	scheduler.start()
-	while True:
-		sleep(1)
-#    job = sched.add_job(my_job,'cron', second="*/5", args=['text1'])
-#    job = sched.add_job(my_job,'cron', second="*/2", args=['text2'])
+	web.run()
  
 # allow running it both as a module and when called directly
 if __name__ == "__main__":
