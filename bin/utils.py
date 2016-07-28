@@ -6,6 +6,10 @@ import time
 import datetime
 import numpy
 import __builtin__
+import logger
+import config
+logger = logger.get_logger(__name__)
+config = config.get_config()
 
 # constants
 hour = 60*60
@@ -51,6 +55,7 @@ def normalize(value):
 	return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
 
 def get(url):
+	logger.debug("Requesting web page "+url)
 	return requests.get(url).text
 
 
