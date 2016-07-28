@@ -9,7 +9,7 @@ logger = logger.get_logger(__name__)
 # read the measure
 def read(sensor,measure):
 	if measure == "temperature":
-		sensor_id = sensor["args"]
+		sensor_id = sensor["args"][0]
 		logger.debug("Reading "+'/sys/bus/w1/devices/'+sensor_id+'/w1_slave')
 	        with open('/sys/bus/w1/devices/'+sensor_id+'/w1_slave', 'r') as content_file:
 			return content_file.read()

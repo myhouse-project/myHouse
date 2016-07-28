@@ -37,7 +37,7 @@ def summarize(sensor,read_from,write_to,start,end):
 	if avg is not None: db.set(sensor["db_schema"]+":"+write_to+":avg",min,end)
 
 # read or save the measure of a given sensor
-def main(module,sensor_id,measure,task):
+def run(module,sensor_id,measure,task):
 	sensor = config['modules'][module]['sensors'][sensor_id]['series'][measure]
 	sensor['id'] = sensor_id
 	sensor['measure'] = measure
@@ -48,12 +48,13 @@ def main(module,sensor_id,measure,task):
 	elif sensor["plugin"] == "weatherchannel": plugin = sensor_weatherchannel
 	else: logger.error("Plugin "+sensor["plugin"]+" not supported")
         sensor['db_schema'] = db.schema["root"]+":"+module+":sensors:"+sensor["id"]+":"+sensor["measure"]
-	sensor['db_schema_measure'] = sensor["db_schema"]+":measure"
-        sensor['db_schema_cache'] = db.schema["root"]+":"+module+":sensors:"+sensor["id"]+":"+plugin.schema(measure)
+	sensor['db_schema_measure'] = sensor["db_schema"]+":data"
+        sensor['db_schema_cache'] = db.schema["root"]+":"+module+":cache:"+sensor["id"]+":"+sensor["plugin"]+"_"+plugin.schema(measure)
 
 	logger.info("["+module+"] requested "+sensor["id"]+" "+measure+" "+task)
 	# execute the task
 	if task == "read": 
+		db.delete(sensor['db_schema_cache'])
 		read(plugin,sensor,measure)
 	elif task == "parse":
 		logger.info("Parsed: "+str(utils.normalize(parse(plugin,sensor,measure))))
@@ -68,6 +69,8 @@ def main(module,sensor_id,measure,task):
 			read(plugin,sensor,measure)
 		# save the parsed data
 		value = utils.normalize(parse(plugin,sensor,measure))
+		# delete previous values if no history has to be kept
+		if not sensor["keep_history"]: db.delete(sensor['db_schema_measure'])
 		logger.info("Read "+str(sensor["id"])+" "+measure+" ("+sensor["plugin"]+"): "+str(value))
 		db.set(sensor["db_schema_measure"],value,utils.now())
 	elif task == "summarize_hour": 
@@ -79,4 +82,4 @@ def main(module,sensor_id,measure,task):
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
 	# module,sensor_id,measure,action
-        main(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
+        run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])

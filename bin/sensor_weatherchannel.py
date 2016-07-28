@@ -15,7 +15,7 @@ url_suffix = '/wwir.json?apiKey='+config['modules']['weather']['weatherchannel_a
 
 # read the measure
 def read(sensor,measure):
-	location = sensor["args"].replace(',','/')
+	location = sensor["args"][0].replace(',','/')
 	return utils.get(url+location+'/'+schema(measure)+url_suffix)
 
 # parse the measure
