@@ -6,13 +6,10 @@ import redis
 import utils
 import logger
 import config
-logger = logger.get_logger(__name__)
-config = config.get_config()
+log = logger.get_logger(__name__)
+conf = config.get_config()
 
-# define the database schema
-schema = {}
-schema["root"] = "myHouse"
-
+# multiply the timestamp when normalizing the result
 timestamp_multiplier = 1
 
 # initialize the connection
@@ -22,8 +19,9 @@ db = None
 def connect():
 	global db
 	if db is None: 
-		db = redis.StrictRedis(host=config['db']['hostname'], port=config['db']['port'], db=config['db']['database'])
-		logger.debug("connected to DB: "+str(db))
+		log.debug("connecting to DB: "+str(db))
+		db = redis.StrictRedis(host=conf['db']['hostname'], port=conf['db']['port'], db=conf['db']['database'])
+	if not conf['db']['enable']: log.warning("Database writing disabled")
 	return db
 
 # normalize the output
@@ -32,64 +30,64 @@ def normalize(data,withscores):
 	for entry in data:
 		# get the timestamp 
 		timestamp = int(entry[1])*timestamp_multiplier
-		# get the value
+		# get the value (entry is timetime:value)
 		value_string = entry[0].split(":",1)[1];
+		# cut the float if a number of make it string
 		value = utils.normalize(value_string)
 		# prepare the output
 		if (withscores): output.append([timestamp,value])
 		else: output.append(value)
 	return output
 
-# show the avaialble keys applying the given filter
+# show the available keys applying the given filter
 def keys(key):
 	db = connect()
-	logger.debug("keys "+key)
+	log.debug("keys "+key)
 	return db.keys(key)
 
 
-# save a value to the db
+# save a value to the db (both with and without timestamp)
 def set(key,value,timestamp):
 	db = connect()
 	# simple set query
 	if timestamp is None: 
-		logger.debug("set "+key+" "+str(value))
-		if not config['db']['enable']: return 0
+		log.debug("set "+key+" "+str(value))
+		if not conf['db']['enable']: return 0
 		return db.set(key,value)
 	# zadd with the score	
 	else: 
 		value = str(timestamp)+":"+str(value)
-		logger.debug("zadd "+key+" "+str(timestamp)+" "+str(value))
-		if not config['db']['enable']: return 0
+		log.debug("zadd "+key+" "+str(timestamp)+" "+str(value))
+		if not conf['db']['enable']: return 0
 		return db.zadd(key,timestamp,value)
 
 # get a single value from the db
 def get(key):
         db = connect()
-	logger.debug("get "+key)
+	log.debug("get "+key)
 	return db.get(key)
 
-# get a range of values from the db based on the score
+# get a range of values from the db based on the timestamp
 def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True):
 	db = connect()
-	logger.debug("zrangebyscore "+key+" "+str(start)+" "+str(end))
+	log.debug("zrangebyscore "+key+" "+str(start)+" "+str(end))
 	return normalize(db.zrangebyscore(key,start,end,withscores=True),withscores)
 	
-
 # get a range of values from the db
 def range(key,start=-1,end=-1,withscores=True):
         db = connect()
-        logger.debug("zrange "+key+" "+str(start)+" "+str(end))
+        log.debug("zrange "+key+" "+str(start)+" "+str(end))
         return normalize(db.zrange(key,start,end,withscores=True),withscores)
 
 # delete a key
 def delete(key):
 	db = connect()
-        logger.debug("del "+key)
+        log.debug("del "+key)
         return db.delete(key)
 
 # check if a key exists
 def exists(key):
         db = connect()
-        logger.debug("exists "+key)
+        log.debug("exists "+key)
         return db.exists(key)
 

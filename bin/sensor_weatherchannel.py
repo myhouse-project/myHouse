@@ -1,4 +1,9 @@
 #!/usr/bin/python
+##
+# Sensor for: Weather Channel
+# args: [<latitude>,<longitude>]
+# measures: alerts
+
 import sys
 import os
 import requests
@@ -7,27 +12,32 @@ import json
 import utils
 import logger
 import config
-logger = logger.get_logger(__name__)
-config = config.get_config()
+log = logger.get_logger(__name__)
+conf = config.get_config()
 
+# define constants
 url = 'https://api.weather.com/v1/geocode/'
-url_suffix = '/wwir.json?apiKey='+config['modules']['weather']['weatherchannel_api_key']+'&units=m&language=en'
+url_suffix = '/wwir.json?apiKey='+conf['modules']['weather']['weatherchannel_api_key']+'&units=m&language=en'
 
 # read the measure
-def read(sensor,measure):
+def poll(sensor):
+	# covert from lat,lon into lat/lon
 	location = sensor["args"][0].replace(',','/')
-	return utils.get(url+location+'/'+schema(measure)+url_suffix)
+	# request the web page
+	return utils.get(url+location+'/'+schema(sensor["measure"])+url_suffix)
 
 # parse the measure
-def parse(sensor,measure,data):
+def parse(sensor,data):
+	# parse the json 
 	parsed_json = json.loads(data)
-	if measure == "alerts": 
+	if sensor["measure"] == "alerts": 
+		# return the alert
 		if isinstance(parsed_json["forecast"]["precip_time_24hr"],basestring): return parsed_json["forecast"]["phrase"]
 		else: return ""
-	else: logger.error(measure+" not supported by "+__name__)
+	else: log.error(sensor["measure"]+" not supported by "+__name__)
 
 
 # return the cache schema
-def schema(measure):
+def cache_schema(measure):
 	if measure == "alerts": return "forecast"
-	else: logger.error(measure+" not supported by "+__name__)
+	else: log.error(measure+" not supported by "+__name__)

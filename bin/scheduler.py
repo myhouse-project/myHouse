@@ -1,15 +1,24 @@
 #!/usr/bin/python
 from apscheduler.schedulers.background import BackgroundScheduler
+import logging
 
 import utils
+import constants
 import sensors
 import logger
 import config
-logger = logger.get_logger(__name__)
-config = config.get_config()
+log = logger.get_logger(__name__)
+conf = config.get_config()
 
+# configure a single background scheduler
 scheduler = BackgroundScheduler()
+# configure logging
+scheduler_logger = logging.getLogger('apscheduler.executors.default')
+scheduler_logger.setLevel(conf["logging"]["level"])
+scheduler_logger.addHandler(logger.get_console_logger(conf["logging"]["level"]))
+scheduler_logger.addHandler(logger.get_file_logger(conf["logging"]["level"],constants.log_file))
 
+# return the scheduler object
 def get_scheduler():
 	return scheduler
 

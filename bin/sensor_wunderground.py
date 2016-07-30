@@ -1,4 +1,9 @@
 #!/usr/bin/python
+##
+# Sensor for: Weatherunderground
+# args: [<latitude>/<longitude>]
+# measures: temperature,condition,record:min,record:max,normal:min,normal:max,forecast
+
 import sys
 import os
 import requests
@@ -7,22 +12,26 @@ import json
 import utils
 import logger
 import config
-logger = logger.get_logger(__name__)
-config = config.get_config()
+log = logger.get_logger(__name__)
+conf = config.get_config()
 
-url = 'http://api.wunderground.com/api/'+config['modules']['weather']['wunderground_api_key']+'/'
+# define the url constants
+url = 'http://api.wunderground.com/api/'+conf['modules']['weather']['wunderground_api_key']+'/'
 
 # read the measure
-def read(sensor,measure):
+def poll(sensor):
+	# request the web page with lat,lon as parameter
 	location = sensor["args"][0]
-	return utils.get(url+schema(measure)+"/q/"+location+".json")
+	return utils.get(url+schema(sensor["measure"])+"/q/"+location+".json")
 
 # parse the measure
-def parse(sensor,measure,data):
+def parse(sensor,data):
+	# parse the json
 	parsed_json = json.loads(data)
-	if measure == "temperature": return parsed_json['current_observation']['temp_c']
-	elif  measure == "condition": return parsed_json['current_observation']['icon']
-	elif  measure == "forecast": 
+	if sensor["measure"] == "temperature": return parsed_json['current_observation']['temp_c']
+	elif sensor["measure"] == "condition": return parsed_json['current_observation']['icon']
+	elif sensor["measure"] == "forecast": 
+		# return a json array with the forecast for each day
 		forecast = []
 		for entry in parsed_json['forecast']['simpleforecast']['forecastday']:
 			forecast_entry = {}
@@ -36,16 +45,17 @@ def parse(sensor,measure,data):
 			if (entry["snow_allday"]["cm"] > 0): forecast_entry["forecast"] = forecast_entry["forecast"] + 'Snow '+str(entry["snow_allday"]["cm"])+' cm. '
 			forecast.append(forecast_entry)
 		return json.dumps(forecast)
-	elif  measure == "record:min": return parsed_json['almanac']['temp_low']['record']['C']
-	elif  measure == "record:max": return parsed_json['almanac']['temp_high']['record']['C']
-        elif  measure == "normal:min": return parsed_json['almanac']['temp_low']['normal']['C']
-	elif  measure == "normal:max": return parsed_json['almanac']['temp_high']['normal']['C']
-	else: logger.error(measure+" not supported by "+__name__)
+	elif sensor["measure"] == "record:min": return parsed_json['almanac']['temp_low']['record']['C']
+	elif sensor["measure"] == "record:max": return parsed_json['almanac']['temp_high']['record']['C']
+        elif sensor["measure"] == "normal:min": return parsed_json['almanac']['temp_low']['normal']['C']
+	elif sensor["measure"] == "normal:max": return parsed_json['almanac']['temp_high']['normal']['C']
+	else: log.error(sensor["measure"]+" not supported by "+__name__)
 
 
 # return the cache schema
-def schema(measure):
+def cache_schema(measure):
+	# return the API to call
 	if measure == "temperature" or measure == "condition": return "conditions"
 	elif measure == "forecast": return "forecast10day"
 	elif measure == "record:min" or measure == "record:max" or measure == "normal:min" or measure == "normal:max": return "almanac"
-	else: logger.error(measure+" not supported by "+__name__)
+	else: log.error(measure+" not supported by "+__name__)
