@@ -26,6 +26,6 @@ def get_file_logger(level,file):
 
 # inizialize the logger
 logger = logging.getLogger("myHouse")
-logger.setLevel(conf["logging"]["level"])
-logger.addHandler(get_console_logger(conf["logging"]["level"]))
-logger.addHandler(get_file_logger(conf["logging"]["level"],constants.log_file))
+logger.setLevel(conf["logging"]["level"]["myHouse"])
+logger.addHandler(get_console_logger(conf["logging"]["level"]["myHouse"]))
+logger.addHandler(get_file_logger(conf["logging"]["level"]["myHouse"],constants.log_file))

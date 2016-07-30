@@ -69,8 +69,8 @@ def run(module,sensor_id,measure,task):
 	else: log.error("Plugin "+sensor["plugin"]+" not supported")
 	# define the database schema
         sensor['db_schema'] = constants.db_schema["root"]+":"+sensor["module"]+":sensors:"+sensor["id"]+":"+sensor["measure"]
-	sensor['db_schema_measure'] = sensor["db_schema"]+":data"
-        sensor['db_schema_cache'] = constants.db_schema["root"]+":"+sensor["module"]+":cache:"+sensor["id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor["measure"])
+	sensor['db_schema_measure'] = sensor["db_schema"]
+        sensor['db_schema_cache'] = constants.db_schema["root"]+":"+sensor["module"]+":__cache__:"+sensor["id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor["measure"])
 	# execute the task
 	log.info("["+sensor["module"]+"] requested "+sensor["id"]+" "+sensor["measure"]+" "+task)
 	if task == "poll":

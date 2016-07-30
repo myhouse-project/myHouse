@@ -7,19 +7,20 @@ import traceback
 import datetime
 import numpy
 import __builtin__
+
+import constants
 import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-# constants
-hour = 60*60
-day = 24*hour
-milliseconds = 1
+# remove all occurences of value from array
+def remove_all(array,value):
+        return [x for x in array if x != value]
 
 # return the now timestamp
 def now():
-	return int(time.time())*milliseconds
+	return int(time.time())*constants.milliseconds
 
 # return last day start timestamp
 def last_day_start():
@@ -47,7 +48,11 @@ def last_hour_end():
 
 # return the recent timestamp (default: last 24 hours)
 def recent():
-	return now()-24*hour*milliseconds
+	return now()-24*constants.hour*constants.milliseconds
+
+# return the history timestamp (default: last 1 year)
+def history():
+	return now()-365*constants.day*constants.milliseconds
 
 # return true if the input is a number
 def is_number(s):
@@ -68,6 +73,7 @@ def get(url):
 
 # calculate the min of a given array of data
 def min(data):
+	data = remove_all(data,constants.db_null)
 	if len(data) > 0: 
 		if is_number(data[0]): return __builtin__.min(data)
 		else: return None
@@ -75,6 +81,7 @@ def min(data):
 
 # calculate the max of a given array of data
 def max(data):
+	data = remove_all(data,constants.db_null)
 	if len(data) > 0: 
 		if is_number(data[0]): return __builtin__.max(data)
 		else: return None
@@ -82,9 +89,10 @@ def max(data):
 
 # calculate the avg of a given array of data
 def avg(data):
+	data = remove_all(data,constants.db_null)
 	if len(data) > 0:
 		if is_number(data[0]): return numpy.mean(data)
-		else: return max(set(data), key=data.count)
+		else: return __builtin__.max(set(data), key=data.count)
 	else: return None
 
 # return the exception as a string
