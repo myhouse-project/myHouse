@@ -8,6 +8,7 @@ milliseconds = 1
 
 db_schema = {}
 db_schema["root"] = "myHouse"
+db_null = "None"
 
 modules_with_sensors = ['weather']
 
@@ -32,19 +33,19 @@ sensor_measures = {
                 'avg': True,
                 'min_max': False,
 	},
-	'temperature_record_min': {
+	'temperature_record:min': {
                 'avg': False,
                 'min_max': False,
 	},
-	'temperature_record_max': {
+	'temperature_record:max': {
                 'avg': False,
                 'min_max': False,
         },
-	'temperature_normal_min': {
+	'temperature_normal:min': {
 		'avg': False,
                 'min_max': False,
 	},
-        'temperature_normal_max': {
+        'temperature_normal:max': {
                 'avg': False,
                 'min_max': False,
         },

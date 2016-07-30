@@ -21,16 +21,18 @@ url_suffix = '/wwir.json?apiKey='+conf['modules']['weather']['weatherchannel_api
 
 # read the measure
 def poll(sensor):
-	# covert from lat,lon into lat/lon
-	location = sensor["args"][0].replace(',','/')
-	# request the web page
-	return utils.get(url+location+'/'+schema(sensor["measure"])+url_suffix)
+	if sensor["measure"] == "weather_alerts":
+		# covert from lat,lon into lat/lon
+		location = sensor["args"][0].replace(',','/')
+		# request the web page
+		return utils.get(url+location+'/'+cache_schema(sensor["measure"])+url_suffix)
+	else: log.error(sensor["measure"]+" not supported by "+__name__)
 
 # parse the measure
 def parse(sensor,data):
 	# parse the json 
 	parsed_json = json.loads(data)
-	if sensor["measure"] == "alerts": 
+	if sensor["measure"] == "weather_alerts": 
 		# return the alert
 		if isinstance(parsed_json["forecast"]["precip_time_24hr"],basestring): return parsed_json["forecast"]["phrase"]
 		else: return ""
@@ -39,5 +41,5 @@ def parse(sensor,data):
 
 # return the cache schema
 def cache_schema(measure):
-	if measure == "alerts": return "forecast"
+	if measure == "weather_alerts": return "forecast"
 	else: log.error(measure+" not supported by "+__name__)
