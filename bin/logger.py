@@ -2,28 +2,30 @@
 import logging
 import os
 
+import constants
+import utils
 import config
-config = config.get_config()
+conf = config.get_config()
 
-formatter = logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S")
-
+# return the logger object
 def get_logger(name):
 	return logger
 
-def get_log_path():
-	return os.path.abspath(os.path.dirname(__file__))+"/../logs/"
+def get_console_logger(level):
+	console = logging.StreamHandler()
+	console.setLevel(level)
+	console.setFormatter(constants.log_formatter)
+	return console
 
+def get_file_logger(level,file):
+	file = logging.FileHandler(file)
+	file.setLevel(level)
+	file.setFormatter(constants.log_formatter)
+	return file
+
+
+# inizialize the logger
 logger = logging.getLogger("myHouse")
-logger.setLevel(logging.DEBUG)
-
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-console.setFormatter(formatter)
-logger.addHandler(console)
-
-file = logging.FileHandler(get_log_path()+"myHouse.log")
-file.setLevel(logging.DEBUG)
-file.setFormatter(formatter)
-logger.addHandler(file)
-
-
+logger.setLevel(conf["logging"]["level"])
+logger.addHandler(get_console_logger(conf["logging"]["level"]))
+logger.addHandler(get_file_logger(conf["logging"]["level"],constants.log_file))
