@@ -45,17 +45,19 @@ def sensor_range(module,sensor_id,measure,timeframe):
 	key = constants.db_schema["root"]+":"+module+":sensors:"+sensor_id+":"+measure
 	min = max = None
 	if timeframe == "today":
+		# for today min and max need to be calculated on the fly
 		data = db.rangebyscore(key+":hour:avg",utils.last_day_end(),utils.now(),withscores=False)
 		min = utils.min(data)
 		max = utils.max(data)
 	elif timeframe == "yesterday":
-		min_data = db.range(key+":day:min",withscores=False)
-		max_data = db.range(key+":day:max",withscores=False)
+		# for yesterday min and max have already been calculated
+		min_data = db.rangebyscore(key+":day:min",utils.last_day_start(),utils.last_day_end(),withscores=False)
+		max_data = db.rangebyscore(key+":day:max",utils.last_day_start(),utils.last_day_end(),withscores=False)
 		if len(min_data) > 0: min = min_data[0]
 		if len(max_data) > 0: max = max_data[0]
 	else: 
-		min_data = db.range(key+":min",withscores=False)
-		max_data = db.range(key+":max",withscores=False)
+		min_data = db.rangebyscore(key+":min",utils.last_day_start(),utils.last_day_end(),withscores=False)
+		max_data = db.rangebyscore(key+":max",utils.last_day_start(),utils.last_day_end(),withscores=False)
                 if len(min_data) > 0: min = min_data[0]
                 if len(max_data) > 0: max = max_data[0]
 	return json.dumps([min,max])
@@ -66,19 +68,19 @@ def sensor_current(module,sensor_id,measure):
 	# return the latest measure
 	return json.dumps(db.range(key))
 
-@app.route('/<module>/sensors/<sensor_id>/<measure>/data/<timeframe>/<what>')
-def sensor_data(module,sensor_id,measure,timeframe,what):
+@app.route('/<module>/sensors/<sensor_id>/<measure>/data/<timeframe>/<stat>')
+def sensor_data(module,sensor_id,measure,timeframe,stat):
 	key = constants.db_schema["root"]+":"+module+":sensors:"+sensor_id+":"+measure
 	if timeframe == "recent": 
 		# start from the recent timestamp
 		start = utils.recent()
 		# retrieve the hourly measures
-		key = key+":hour:"+what
+		key = key+":hour:"+stat
 	elif timeframe == "history": 
 		# start from the history timestamp
 		start = utils.history()
 		# retrieve the daily measures
-		key = key+":day:"+what
+		key = key+":day:"+stat
 	else: start = utils.recent()
 	end = utils.now()
 	return json.dumps(db.rangebyscore(key,start,end))

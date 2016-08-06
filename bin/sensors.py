@@ -85,7 +85,7 @@ def run(module,sensor_id,measure,task):
 	elif task == "parse":
 		# just parse the output
 		parse(plugin,sensor)
-	elif task == "read":
+	elif task == "save":
 		timestamp = 0
 		# get the data out of the cache
 		if db.exists(sensor["db_schema_cache"]):
