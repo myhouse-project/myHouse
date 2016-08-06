@@ -20,6 +20,7 @@ $(document).ready(function(){
 
 	
 	function get_widget_template(size,title,body) {
+		// define the widget HTML
 		var widget_html = '\
 					<div class="col-md-#size#">\
 							<div class="box box-solid box-primary">\
@@ -39,6 +40,7 @@ $(document).ready(function(){
 							</div>\
 					</div>\
 				';		
+		// replace the placeholders with the provided input
 		widget_html = widget_html.replaceAll("#size#",size);
 		widget_html = widget_html.replaceAll("#title#",title);
 		widget_html = widget_html.replaceAll("#body#",body);
@@ -46,16 +48,24 @@ $(document).ready(function(){
 	}
 	
 	function get_summary_widget(sensor_id) {
+		// define the widget HTML
 		widget_html = '\
 								          <div class="box-profile">\
 												<img class="profile-user-img img-responsive img-circle" id="#id#_icon" src="web/weather-icons/unknown.png" >\
 													<h3 class="profile-username text-center" id="#id#_current">Loading...</h3>\
 													<p class="text-muted text-center" id="#id#_timestamp">...</p>\
-													<ul class="list-group list-group-unbordered">\
-														<li class="list-group-item" id="#id#_summary">\
-														</li>\
-													</ul>\
+													 <table id="#id#_status" class="table table-condensed">\
+														<tbody>\
+														<tr>\
+															<th>Measure</th>\
+															<th>Current</th>\
+															<th>Today</th>\
+															<th>Yesterday</th>\
+														</tr>\
+														</tbody>\
+													</table>\
 											</div>';
+		// replace the placeholders with the provided input
 		widget_html = widget_html.replaceAll("#id#",sensor_id);
 		return widget_html;
 	}
@@ -64,9 +74,10 @@ $(document).ready(function(){
 		$("#sensors").append('<div id="sensor_1"></div>')
 		$("#sensor_1").html('test1')
 		
+		// request the configuration		
 		$.getJSON("get_config",function(data) {
 			conf = data
-			//console.log(conf)
+			// for each sensor
 			for (var sensor_id in conf["modules"]["weather"]["sensors"]) {
 				if (sensor_id == "__builtin__") continue;
 				var sensor = conf["modules"]["weather"]["sensors"][sensor_id];
@@ -74,6 +85,18 @@ $(document).ready(function(){
 				sensor_html = sensor_html + get_widget_template(3,sensor["name"]+" Summary",get_summary_widget(sensor_id));
 				sensor_html = sensor_html + '</div>';
 				$("#sensors").append(sensor_html);
+				
+				for (var measure in conf["modules"]["weather"]["sensors"][sensor_id]["measures"]) {
+					var table_html = "<tr>";
+					table_html = table_html+"<td>"+measure+"</td>";
+					table_html = table_html+"<td><b>32°C</b></td>";
+					table_html = table_html+"<td></td>";
+					table_html = table_html+"<td></td>";
+					table_html = table_html+"</tr>";					
+					$("#"+sensor_id+"_status tbody").append(table_html);
+				}
+				
+				
 				var x = ['today','yesterday']
 				
 				var chart_options = $.extend(true,{}, conf["charts"]["default"]);
@@ -84,7 +107,6 @@ $(document).ready(function(){
 				$("#"+sensor_id+"_summary").highcharts(chart_options);
 				
 				var summary_chart = $("#"+sensor_id+"_summary").highcharts();
-				console.log(summary_chart)
 
 			}
 			
