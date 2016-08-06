@@ -27,7 +27,7 @@ def schedule_sensors():
 				sensor = conf["modules"][module]["sensors"][sensor_id]["measures"][measure]
 				log.info("["+module+"] Scheduling "+sensor_id+" "+measure+" polling every "+str(sensor["refresh_interval_min"])+" minutes")
 				# schedule it
-				scheduler.add_job(sensors.run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),args=[module,sensor_id,measure,'read'])
+				scheduler.add_job(sensors.run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,sensor_id,measure,'read'])
 				if constants.sensor_measures[measure]["avg"]:
 					# if keep history, schedule a summarize job every hour and every day
 					log.info("["+module+"] Scheduling "+sensor_id+" "+measure+" summary every hour and day")

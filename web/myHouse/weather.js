@@ -13,6 +13,85 @@ $(document).ready(function(){
 	Highcharts.setOptions({global: {timezoneOffset: -timezone_offset * 60}});
 	Highcharts.getOptions().colors[1] = Highcharts.getOptions().colors[6];
 	
+	String.prototype.replaceAll = function (find, replace) {
+		var str = this;
+		return str.replace(new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), replace);
+	};
+
+	
+	function get_widget_template(size,title,body) {
+		var widget_html = '\
+					<div class="col-md-#size#">\
+							<div class="box box-solid box-primary">\
+								<div class="box-header">\
+									<h3 class="box-title">#title#</h3>\
+									<div class="box-tools pull-right">\
+										<button class="btn btn-box-tool" data-widget="collapse">\
+											<i class="fa fa-minus"></i>\
+										</button>\
+									</div>\
+								</div>\
+								<div class="box-body no-padding box-primary">\
+								    <div class="box-body">\
+									#body#\
+									</div>\
+								</div>\
+							</div>\
+					</div>\
+				';		
+		widget_html = widget_html.replaceAll("#size#",size);
+		widget_html = widget_html.replaceAll("#title#",title);
+		widget_html = widget_html.replaceAll("#body#",body);
+		return widget_html;
+	}
+	
+	function get_summary_widget(sensor_id) {
+		widget_html = '\
+								          <div class="box-profile">\
+												<img class="profile-user-img img-responsive img-circle" id="#id#_icon" src="web/weather-icons/unknown.png" >\
+													<h3 class="profile-username text-center" id="#id#_current">Loading...</h3>\
+													<p class="text-muted text-center" id="#id#_timestamp">...</p>\
+													<ul class="list-group list-group-unbordered">\
+														<li class="list-group-item" id="#id#_summary">\
+														</li>\
+													</ul>\
+											</div>';
+		widget_html = widget_html.replaceAll("#id#",sensor_id);
+		return widget_html;
+	}
+
+	function load_test() {
+		$("#sensors").append('<div id="sensor_1"></div>')
+		$("#sensor_1").html('test1')
+		
+		$.getJSON("get_config",function(data) {
+			conf = data
+			//console.log(conf)
+			for (var sensor_id in conf["modules"]["weather"]["sensors"]) {
+				if (sensor_id == "__builtin__") continue;
+				var sensor = conf["modules"]["weather"]["sensors"][sensor_id];
+				var sensor_html = '<div class="row">';
+				sensor_html = sensor_html + get_widget_template(3,sensor["name"]+" Summary",get_summary_widget(sensor_id));
+				sensor_html = sensor_html + '</div>';
+				$("#sensors").append(sensor_html);
+				var x = ['today','yesterday']
+				
+				var chart_options = $.extend(true,{}, conf["charts"]["default"]);
+				chart_options['tooltip']['enabled'] = false;
+				chart_options['chart']['height'] = 200;
+				chart_options['chart']['inverted'] = true;
+				chart_options['xAxis']['categories'] = x;
+				$("#"+sensor_id+"_summary").highcharts(chart_options);
+				
+				var summary_chart = $("#"+sensor_id+"_summary").highcharts();
+				console.log(summary_chart)
+
+			}
+			
+        });
+	}
+
+	
 	// default chart options
 	var default_chart_options = {
         'chart': {},
@@ -353,12 +432,13 @@ $(document).ready(function(){
 	}
 	
 	// load the page
-	load();
+//	load();
+	load_test();
 	
 	// refresh the page
-	setInterval(function(){
-		load();
-	}, refresh_seconds*1000);
+	//setInterval(function(){
+	//	load();
+	//}, refresh_seconds*1000);
 
 	
 	

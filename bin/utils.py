@@ -6,6 +6,7 @@ import time
 import traceback
 import datetime
 import numpy
+import random
 import __builtin__
 
 import constants
@@ -73,7 +74,7 @@ def get(url):
 
 # calculate the min of a given array of data
 def min(data):
-	data = remove_all(data,constants.db_null)
+	data = remove_all(data,None)
 	if len(data) > 0: 
 		if is_number(data[0]): return __builtin__.min(data)
 		else: return None
@@ -81,7 +82,7 @@ def min(data):
 
 # calculate the max of a given array of data
 def max(data):
-	data = remove_all(data,constants.db_null)
+	data = remove_all(data,None)
 	if len(data) > 0: 
 		if is_number(data[0]): return __builtin__.max(data)
 		else: return None
@@ -89,9 +90,9 @@ def max(data):
 
 # calculate the avg of a given array of data
 def avg(data):
-	data = remove_all(data,constants.db_null)
+	data = remove_all(data,None)
 	if len(data) > 0:
-		if is_number(data[0]): return numpy.mean(data)
+		if is_number(data[0]): return normalize(numpy.mean(data))
 		else: return __builtin__.max(set(data), key=data.count)
 	else: return None
 
@@ -99,3 +100,6 @@ def avg(data):
 def get_exception(e):
 	return traceback.format_exc(e)
 
+# return a random int between min and max
+def randint(min,max):
+	return random.randint(min,max)

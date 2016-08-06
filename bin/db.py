@@ -4,6 +4,7 @@ import os
 import redis
 
 import utils
+import constants
 import logger
 import config
 log = logger.get_logger(__name__)
@@ -34,6 +35,8 @@ def normalize(data,withscores):
 		value_string = entry[0].split(":",1)[1];
 		# cut the float if a number of make it string
 		value = utils.normalize(value_string)
+		# normalize "None" in null
+		if value == constants.db_null: value = None
 		# prepare the output
 		if (withscores): output.append([timestamp,value])
 		else: output.append(value)

@@ -33,19 +33,19 @@ sensor_measures = {
                 'avg': True,
                 'min_max': False,
 	},
-	'temperature_record:min': {
+	'temperature_record:day:min': {
                 'avg': False,
                 'min_max': False,
 	},
-	'temperature_record:max': {
+	'temperature_record:day:max': {
                 'avg': False,
                 'min_max': False,
         },
-	'temperature_normal:min': {
+	'temperature_normal:day:min': {
 		'avg': False,
                 'min_max': False,
 	},
-        'temperature_normal:max': {
+        'temperature_normal:day:max': {
                 'avg': False,
                 'min_max': False,
         },

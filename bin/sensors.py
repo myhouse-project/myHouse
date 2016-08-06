@@ -41,22 +41,26 @@ def parse(plugin,sensor):
 # calculate min, max and avg value
 def summarize(sensor,read_from,write_to,start,end):
 	# retrieve from the database the data based on the given timeframe
-	data = db.rangebyscore(sensor["db_schema"]+":"+read_from,start,end,withscores=False)
+	data = db.rangebyscore(sensor["db_schema"]+read_from,start,end,withscores=False)
 	# calculate min,max,avg
 	if constants.sensor_measures[sensor["measure"]]["avg"]:
 		avg = utils.avg(data)
                 log.info("["+sensor["module"]+"] summarizing "+sensor["id"]+" "+sensor["measure"]+" "+read_from+"->"+write_to+":avg: "+str(avg))
-       		db.set(sensor["db_schema"]+":"+write_to+":avg",avg,end)
+       		db.set(sensor["db_schema"]+write_to+":avg",avg,end)
 	if constants.sensor_measures[sensor["measure"]]["min_max"]:
 		min = utils.min(data)
                 log.info("["+sensor["module"]+"] summarizing "+sensor["id"]+" "+sensor["measure"]+" "+read_from+"->"+write_to+":min: "+str(min))
-                db.set(sensor["db_schema"]+":"+write_to+":min",min,end)
+                db.set(sensor["db_schema"]+write_to+":min",min,end)
 		max = utils.max(data)
                 log.info("["+sensor["module"]+"] summarizing "+sensor["id"]+" "+sensor["measure"]+" "+read_from+"->"+write_to+":max: "+str(max))
-                db.set(sensor["db_schema"]+":"+write_to+":max",max,end)
+                db.set(sensor["db_schema"]+write_to+":max",max,end)
 
 # read or save the measure of a given sensor
 def run(module,sensor_id,measure,task):
+	# ensure the sensor and measure exist
+	if module not in conf['modules']: log.error("Module "+module+" not configured")
+	if sensor_id not in conf['modules'][module]['sensors']: log.error(module+" sensor "+sensor_id+" not configured")
+	if measure not in conf['modules'][module]['sensors'][sensor_id]['measures']: log.error(module+" measure "+measure+" of "+sensor_id+" not configured")
 	# add to the sensor object all the required info
 	sensor = conf['modules'][module]['sensors'][sensor_id]['measures'][measure]
 	sensor['module'] = module
@@ -98,10 +102,10 @@ def run(module,sensor_id,measure,task):
 		db.set(sensor["db_schema_measure"],value,utils.now())
 	elif task == "summarize_hour": 
 		# every hour calculate and save min,max,avg of the previous hour
-		summarize(sensor,"measure","hour",utils.last_hour_start(),utils.now())
+		summarize(sensor,'',":hour",utils.last_hour_start(),utils.now())
         elif task == "summarize_day":
 		# every day calculate and save min,max,avg of the previous day (using hourly averages)
-                summarize(sensor,"hour:avg","day",utils.last_day_start(),utils.now())
+                summarize(sensor,":hour:avg",":day",utils.last_day_start(),utils.now())
 	else: log.error("Unknown task "+task)
 
 # allow running it both as a module and when called directly

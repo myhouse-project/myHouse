@@ -2,7 +2,7 @@
 ##
 # Sensor for: Weatherunderground
 # args: [<latitude>/<longitude>]
-# measures: temperature,condition,record:min,record:max,normal:min,normal:max,forecast
+# measures: temperature,weather_condition,temperature_record:day:min,temperature_record:day:max,temperature_normal:day:min,temperature_normal:day:max,forecast
 
 import sys
 import os
@@ -21,7 +21,6 @@ url = 'http://api.wunderground.com/api/'+conf['modules']['weather']['wundergroun
 # read the measure
 def poll(sensor):
 	# request the web page with lat,lon as parameter
-	print sensor
 	location = sensor["args"][0]
 	return utils.get(url+cache_schema(sensor["measure"])+"/q/"+location+".json")
 
@@ -46,10 +45,10 @@ def parse(sensor,data):
 			if (entry["snow_allday"]["cm"] > 0): forecast_entry["forecast"] = forecast_entry["forecast"] + 'Snow '+str(entry["snow_allday"]["cm"])+' cm. '
 			forecast.append(forecast_entry)
 		return json.dumps(forecast)
-	elif sensor["measure"] == "temperature_record:min": return parsed_json['almanac']['temp_low']['record']['C']
-	elif sensor["measure"] == "temperature_record:max": return parsed_json['almanac']['temp_high']['record']['C']
-        elif sensor["measure"] == "temperature_normal:min": return parsed_json['almanac']['temp_low']['normal']['C']
-	elif sensor["measure"] == "temperature_normal:max": return parsed_json['almanac']['temp_high']['normal']['C']
+	elif sensor["measure"] == "temperature_record:day:min": return parsed_json['almanac']['temp_low']['record']['C']
+	elif sensor["measure"] == "temperature_record:day:max": return parsed_json['almanac']['temp_high']['record']['C']
+        elif sensor["measure"] == "temperature_normal:day:min": return parsed_json['almanac']['temp_low']['normal']['C']
+	elif sensor["measure"] == "temperature_normal:day:max": return parsed_json['almanac']['temp_high']['normal']['C']
 	else: log.error(sensor["measure"]+" not supported by "+__name__)
 
 
@@ -58,5 +57,5 @@ def cache_schema(measure):
 	# return the API to call
 	if measure == "temperature" or measure == "weather_condition": return "conditions"
 	elif measure == "weather_forecast": return "forecast10day"
-	elif measure == "temperature_record:min" or measure == "temperature_record:max" or measure == "temperature_normal:min" or measure == "temperature_normal:max": return "almanac"
+	elif measure == "temperature_record:day:min" or measure == "temperature_record:day:max" or measure == "temperature_normal:day:min" or measure == "temperature_normal:day:max": return "almanac"
 	else: log.error(measure+" not supported by "+__name__)
