@@ -26,8 +26,10 @@ def connect():
 	return db
 
 # normalize the output
-def normalize(data,withscores):
+def normalize(data,withscores,milliseconds):
 	output = []
+	timestamp_multiplier = 1
+	if milliseconds: timestamp_multiplier = 1000
 	for entry in data:
 		# get the timestamp 
 		timestamp = int(entry[1])*timestamp_multiplier
@@ -71,16 +73,16 @@ def get(key):
 	return db.get(key)
 
 # get a range of values from the db based on the timestamp
-def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True):
+def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,milliseconds=False):
 	db = connect()
 	log.debug("zrangebyscore "+key+" "+str(start)+" "+str(end))
-	return normalize(db.zrangebyscore(key,start,end,withscores=True),withscores)
+	return normalize(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds)
 	
 # get a range of values from the db
-def range(key,start=-1,end=-1,withscores=True):
+def range(key,start=-1,end=-1,withscores=True,milliseconds=False):
         db = connect()
         log.debug("zrange "+key+" "+str(start)+" "+str(end))
-        return normalize(db.zrange(key,start,end,withscores=True),withscores)
+        return normalize(db.zrange(key,start,end,withscores=True),withscores,milliseconds)
 
 # delete a key
 def delete(key):

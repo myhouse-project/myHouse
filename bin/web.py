@@ -40,37 +40,37 @@ def shutdown():
 def get_config():
 	return config.get_json_config()
 
-@app.route('/<module>/sensors/<sensor_id>/<measure>/range/<timeframe>')
-def sensor_range(module,sensor_id,measure,timeframe):
-	key = constants.db_schema["root"]+":"+module+":sensors:"+sensor_id+":"+measure
+@app.route('/sensors/<module>/<group_id>/<sensor_id>/range/<timeframe>')
+def sensor_range(module,group_id,sensor_id,timeframe):
+	key = constants.db_schema["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
 	min = max = None
 	if timeframe == "today":
 		# for today min and max need to be calculated on the fly
-		data = db.rangebyscore(key+":hour:avg",utils.day_start(utils.now()),utils.now(),withscores=False)
+		data = db.rangebyscore(key+":hour:avg",utils.day_start(utils.now()),utils.now(),withscores=False,milliseconds=True)
 		min = utils.min(data)
 		max = utils.max(data)
 	elif timeframe == "yesterday":
 		# for yesterday min and max have already been calculated
-		min_data = db.rangebyscore(key+":day:min",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
-		max_data = db.rangebyscore(key+":day:max",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
+		min_data = db.rangebyscore(key+":day:min",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False,milliseconds=True)
+		max_data = db.rangebyscore(key+":day:max",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False,milliseconds=True)
 		if len(min_data) > 0: min = min_data[0]
 		if len(max_data) > 0: max = max_data[0]
 	else: 
-		min_data = db.rangebyscore(key+":min",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
-		max_data = db.rangebyscore(key+":max",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
+		min_data = db.rangebyscore(key+":min",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False,milliseconds=True)
+		max_data = db.rangebyscore(key+":max",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False,milliseconds=True)
                 if len(min_data) > 0: min = min_data[0]
                 if len(max_data) > 0: max = max_data[0]
 	return json.dumps([min,max])
 
-@app.route('/<module>/sensors/<sensor_id>/<measure>/current')
-def sensor_current(module,sensor_id,measure):
-	key = constants.db_schema["root"]+":"+module+":sensors:"+sensor_id+":"+measure
+@app.route('/sensors/<module>/<group_id>/<sensor_id>/current')
+def sensor_current(module,group_id,sensor_id):
+	key = constants.db_schema["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
 	# return the latest measure
-	return json.dumps(db.range(key))
+	return json.dumps(db.range(key,milliseconds=True))
 
-@app.route('/<module>/sensors/<sensor_id>/<measure>/data/<timeframe>/<stat>')
-def sensor_data(module,sensor_id,measure,timeframe,stat):
-	key = constants.db_schema["root"]+":"+module+":sensors:"+sensor_id+":"+measure
+@app.route('/sensors/<module>/<group_id>/<sensor_id>/data/<timeframe>/<stat>')
+def sensor_data(module,group_id,sensor_id,timeframe,stat):
+	key = constants.db_schema["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
 	if timeframe == "recent": 
 		# start from the recent timestamp
 		start = utils.recent()
@@ -81,9 +81,9 @@ def sensor_data(module,sensor_id,measure,timeframe,stat):
 		start = utils.history()
 		# retrieve the daily measures
 		key = key+":day:"+stat
-	else: start = utils.recent()
+	else: return json.dumps([])
 	end = utils.now()
-	return json.dumps(db.rangebyscore(key,start,end))
+	return json.dumps(db.rangebyscore(key,start,end,milliseconds=True))
 
 
 # run the web server
