@@ -24,7 +24,7 @@ def poll(sensor):
 def parse(sensor,data):
 	measures = []
 	measure = {}
-	measure["type"] = sensor["type"]
+	measure["key"] = sensor["sensor_id"]
 	if sensor["type"] == "temperature":
 		# retrieve and convert the temperature
 		start = data.find("t=")

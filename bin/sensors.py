@@ -59,7 +59,7 @@ def save(plugin,sensor):
 	        # set the timestamp to now if not already set
 	        if "timestamp" not in measure:  measure["timestamp"] = utils.now()
 		# define the key to store the value
-		key = sensor["db_group"]+":"+measure["type"]
+		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if no history has to be kept (e.g. single value)
 		if not constants.sensor_types[sensor["type"]]["avg"]: db.delete(key)
 		# check if the same value is already stored
@@ -68,13 +68,12 @@ def save(plugin,sensor):
 			log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["type"]+": "+str(measure["value"]))
 			return
 		# store the value into the database
-		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["type"]+": "+str(measure["value"]))
+		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+str(measure["value"]))
 		db.set(key,measure["value"],measure["timestamp"])
-		# if the timestamp if not belonging to the current hour/day, re-calculate the avg/min/max
-		if measure["timestamp"] < utils.hour_start(utils.now()):
+		# re-calculate the avg/min/max of the hour/day
+		if constants.sensor_types[sensor["type"]]["avg"]:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
-                if measure["timestamp"] < utils.day_start(utils.now()):
-                        summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
+	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
 # calculate min, max and avg value
 def summarize(sensor,timeframe,start,end):
@@ -88,23 +87,22 @@ def summarize(sensor,timeframe,start,end):
 	# retrieve from the database the data based on the given timeframe
 	data = db.rangebyscore(key_to_read,start,end,withscores=False)
 	timestamp = start
+	min = avg = max = "-"
 	if constants.sensor_types[sensor["type"]]["avg"]:
 		# calculate avg
 		avg = utils.avg(data)
-                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+timeframe+" (avg): "+str(avg))
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
 	if constants.sensor_types[sensor["type"]]["min_max"]:
 		# calculate min
 		min = utils.min(data)
-                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+timeframe+" (min): "+str(min))
-		db.deletebyscore(key_to_write+":avg",start,end)
+		db.deletebyscore(key_to_write+":min",start,end)
                 db.set(key_to_write+":min",min,timestamp)
 		# calculate max
 		max = utils.max(data)
-                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+timeframe+" (max): "+str(max))
-		db.deletebyscore(key_to_write+":avg",start,end)
+		db.deletebyscore(key_to_write+":max",start,end)
                 db.set(key_to_write+":max",max,timestamp)
+	log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
 
 # read or save the measure of a given sensor
 def run(module,group_id,sensor_id,action):
@@ -170,3 +168,4 @@ def schedule_all():
 if __name__ == '__main__':
 	if (len(sys.argv) != 5): print "Usage: sensors.py <module> <group_id> <sensor_id> <action>"
 	else: run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
+

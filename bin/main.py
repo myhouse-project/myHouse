@@ -29,4 +29,5 @@ def run():
  
 # allow running it both as a module and when called directly
 if __name__ == "__main__":
+	conf["web"]["use_reloader"] = False
 	run()
