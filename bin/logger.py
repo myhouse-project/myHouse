@@ -3,7 +3,6 @@ import logging
 import os
 
 import constants
-import utils
 import config
 conf = config.get_config()
 
