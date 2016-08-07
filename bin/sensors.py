@@ -21,8 +21,7 @@ def poll(plugin,sensor):
 	# poll the data
 	data = None
 	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
-        try: 
-		data = plugin.poll(sensor)
+        try: data = plugin.poll(sensor)
 	except Exception,e: 
 		log.warning("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to poll: "+utils.get_exception(e))
         # store it in the cache
@@ -61,29 +60,51 @@ def save(plugin,sensor):
 	        if "timestamp" not in measure:  measure["timestamp"] = utils.now()
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["type"]
-		# delete previous values if no history has to be kept
+		# delete previous values if no history has to be kept (e.g. single value)
 		if not constants.sensor_types[sensor["type"]]["avg"]: db.delete(key)
+		# check if the same value is already stored
+		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
+		if len(old) > 0:
+			log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["type"]+": "+str(measure["value"]))
+			return
 		# store the value into the database
 		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["type"]+": "+str(measure["value"]))
 		db.set(key,measure["value"],measure["timestamp"])
+		# if the timestamp if not belonging to the current hour/day, re-calculate the avg/min/max
+		if measure["timestamp"] < utils.hour_start(utils.now()):
+			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
+                if measure["timestamp"] < utils.day_start(utils.now()):
+                        summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
 # calculate min, max and avg value
-def summarize(sensor,read_from,write_to,start,end):
+def summarize(sensor,timeframe,start,end):
+	# prepare the database schema to use
+	if timeframe == "hour": 
+		key_to_read = sensor["db_sensor"]
+		key_to_write = sensor["db_sensor"]+":hour"
+	elif timeframe == "day":
+                key_to_read = sensor["db_sensor"]+":hour:avg"
+                key_to_write = sensor["db_sensor"]+":day"
 	# retrieve from the database the data based on the given timeframe
-	data = db.rangebyscore(sensor["db_sensor"]+read_from,start,end,withscores=False)
-	timestamp = end
-	# calculate min,max,avg
+	data = db.rangebyscore(key_to_read,start,end,withscores=False)
+	timestamp = start
 	if constants.sensor_types[sensor["type"]]["avg"]:
+		# calculate avg
 		avg = utils.avg(data)
-                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+read_from+"->"+write_to+":avg: "+str(avg))
-       		db.set(sensor["db_sensor"]+write_to+":avg",avg,timestamp)
+                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+timeframe+" (avg): "+str(avg))
+		db.deletebyscore(key_to_write+":avg",start,end)
+       		db.set(key_to_write+":avg",avg,timestamp)
 	if constants.sensor_types[sensor["type"]]["min_max"]:
+		# calculate min
 		min = utils.min(data)
-                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+read_from+"->"+write_to+":min: "+str(min))
-                db.set(sensor["db_sensor"]+write_to+":min",min,timestamp)
+                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+timeframe+" (min): "+str(min))
+		db.deletebyscore(key_to_write+":avg",start,end)
+                db.set(key_to_write+":min",min,timestamp)
+		# calculate max
 		max = utils.max(data)
-                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+read_from+"->"+write_to+":max: "+str(max))
-                db.set(sensor["db_sensor"]+write_to+":max",max,timestamp)
+                log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") summarized "+timeframe+" (max): "+str(max))
+		db.deletebyscore(key_to_write+":avg",start,end)
+                db.set(key_to_write+":max",max,timestamp)
 
 # read or save the measure of a given sensor
 def run(module,group_id,sensor_id,action):
@@ -120,10 +141,10 @@ def run(module,group_id,sensor_id,action):
 		save(plugin,sensor)
 	elif action == "summarize_hour": 
 		# every hour calculate and save min,max,avg of the previous hour
-		summarize(sensor,'',":hour",utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
+		summarize(sensor,'hour',utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
         elif action == "summarize_day":
 		# every day calculate and save min,max,avg of the previous day (using hourly averages)
-                summarize(sensor,":hour:avg",":day",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
+                summarize(sensor,'day',utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
 	else: log.error("Unknown action "+action)
 
 # schedule each sensor
@@ -147,5 +168,5 @@ def schedule_all():
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
-	if (len(sys.argv) != 5): print "sensors.py <module> <group_id> <sensor_id> <action>"
+	if (len(sys.argv) != 5): print "Usage: sensors.py <module> <group_id> <sensor_id> <action>"
 	else: run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])

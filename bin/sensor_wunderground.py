@@ -31,8 +31,12 @@ def parse(sensor,data):
 	measure["type"] = sensor["type"]
 	# parse the json
 	parsed_json = json.loads(data)
-	if sensor["type"] == "temperature": measure["value"] = parsed_json['current_observation']['temp_c']
-	elif sensor["type"] == "weather_condition": measure["value"] = parsed_json['current_observation']['icon']
+	if sensor["type"] == "temperature": 
+		measure["value"] = parsed_json['current_observation']['temp_c']
+		measure["timestamp"] = int(parsed_json['current_observation']['observation_epoch'])
+	elif sensor["type"] == "weather_condition": 
+		measure["value"] = parsed_json['current_observation']['icon']
+		measure["timestamp"] = int(parsed_json['current_observation']['observation_epoch'])
 	elif sensor["type"] == "weather_forecast": 
 		# return a json array with the forecast for each day
 		forecast = []
@@ -52,16 +56,20 @@ def parse(sensor,data):
 		measure_min = {}
 		measure_min["type"] = sensor["type"]+":day:min"
 		measure_min["value"] =  parsed_json['almanac']['temp_low']['record']['C']
+		measure_min["timestamp"] = utils.day_start(utils.now())
 		measures.append(measure_min)
 		measure["type"] = sensor["type"]+":day:max"
 		measure["value"] =  parsed_json['almanac']['temp_high']['record']['C']
+		measure["timestamp"] = utils.day_start(utils.now())
 	elif sensor["type"] == "temperature_normal":
 		measure_min = {}
                 measure_min["type"] = sensor["type"]+":day:min"
                 measure_min["value"] =  parsed_json['almanac']['temp_low']['normal']['C']
+		measure_min["timestamp"] = utils.day_start(utils.now())
                 measures.append(measure_min)
                 measure["type"] = sensor["type"]+":day:max"
                 measure["value"] =  parsed_json['almanac']['temp_high']['normal']['C']
+		measure["timestamp"] = utils.day_start(utils.now())
 	# append the measure and return it
 	measures.append(measure)
 	return measures

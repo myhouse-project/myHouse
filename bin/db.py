@@ -88,9 +88,16 @@ def delete(key):
         log.debug("del "+key)
         return db.delete(key)
 
+# delete all elements between a given score
+def deletebyscore(key,start,end):
+	db = connect()
+	log.debug("zremrangebyscore "+key+" "+str(start)+" "+str(end))
+	return db.zremrangebyscore(key,start,end)
+
 # check if a key exists
 def exists(key):
         db = connect()
         log.debug("exists "+key)
         return db.exists(key)
+
 
