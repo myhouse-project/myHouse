@@ -4,7 +4,6 @@ import logging
 
 import utils
 import constants
-import sensors
 import logger
 import config
 log = logger.get_logger(__name__)

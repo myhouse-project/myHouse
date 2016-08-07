@@ -16,7 +16,7 @@ log_formatter = logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(fu
 log_path = os.path.abspath(os.path.dirname(__file__))+"/../logs/"
 log_file = log_path+"myHouse.log"
 
-sensor_measures = {
+sensor_types = {
 	'weather_forecast': {
 		'avg': False,
 		'min_max': False,
@@ -33,20 +33,13 @@ sensor_measures = {
                 'avg': True,
                 'min_max': False,
 	},
-	'temperature_record:day:min': {
+	'temperature_record': {
                 'avg': False,
                 'min_max': False,
 	},
-	'temperature_record:day:max': {
-                'avg': False,
-                'min_max': False,
-        },
-	'temperature_normal:day:min': {
+	'temperature_normal': {
 		'avg': False,
                 'min_max': False,
 	},
-        'temperature_normal:day:max': {
-                'avg': False,
-                'min_max': False,
-        },
 }
+
