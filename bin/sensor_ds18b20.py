@@ -11,25 +11,29 @@ import utils
 import logger
 log = logger.get_logger(__name__)
 
-# read the measure
+# poll the sensor
 def poll(sensor):
-	if sensor["measure"] == "temperature":
+	if sensor["type"] == "temperature":
 		sensor_id = sensor["args"][0]
 		log.debug("Reading "+'/sys/bus/w1/devices/'+sensor_id+'/w1_slave')
 		# read and return the value from the sensor
 	        with open('/sys/bus/w1/devices/'+sensor_id+'/w1_slave', 'r') as content_file:
 			return content_file.read()
-	else: log.error(sensor["measure"]+" not supported by "+__name__)
 
-# parse the measure
+# parse the data
 def parse(sensor,data):
-	if sensor["measure"] == "temperature":
+	measures = []
+	measure = {}
+	measure["type"] = sensor["type"]
+	if sensor["type"] == "temperature":
 		# retrieve and convert the temperature
 		start = data.find("t=")
-	        return float(data[start+2:start+7])/1000
-	else: log.error(sensor["measure"]+" not supported by "+__name__)
+	        measure["value"] = float(data[start+2:start+7])/1000
+	# append the measure and return it
+	measures.append(measure)
+        return measures
 
 # return the cache schema
-def cache_schema(measure):
-	return measure
+def cache_schema(type):
+	return type
 

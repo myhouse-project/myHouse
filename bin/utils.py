@@ -103,3 +103,12 @@ def get_exception(e):
 # return a random int between min and max
 def randint(min,max):
 	return random.randint(min,max)
+
+# return a sensor output template object
+def get_sensor_output_template():
+	sensor_output_template = {
+		'timestamp': None,
+		'measures': {},
+	}
+	return sensor_output_template
+	

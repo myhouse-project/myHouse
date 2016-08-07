@@ -19,27 +19,30 @@ conf = config.get_config()
 url = 'https://api.weather.com/v1/geocode/'
 url_suffix = '/wwir.json?apiKey='+conf['modules']['weather']['weatherchannel_api_key']+'&units=m&language=en'
 
-# read the measure
+# poll the sensor
 def poll(sensor):
-	if sensor["measure"] == "weather_alerts":
+	if sensor["type"] == "weather_alerts":
 		# covert from lat,lon into lat/lon
 		location = sensor["args"][0].replace(',','/')
 		# request the web page
-		return utils.get(url+location+'/'+cache_schema(sensor["measure"])+url_suffix)
-	else: log.error(sensor["measure"]+" not supported by "+__name__)
+		return utils.get(url+location+'/'+cache_schema(sensor["type"])+url_suffix)
 
-# parse the measure
+# parse the data
 def parse(sensor,data):
+	measures = []
+        measure = {}
+        measure["type"] = sensor["type"]
 	# parse the json 
 	parsed_json = json.loads(data)
-	if sensor["measure"] == "weather_alerts": 
+	if sensor["type"] == "weather_alerts": 
 		# return the alert
-		if isinstance(parsed_json["forecast"]["precip_time_24hr"],basestring): return parsed_json["forecast"]["phrase"]
-		else: return ""
-	else: log.error(sensor["measure"]+" not supported by "+__name__)
-
+		alert = ""
+		if isinstance(parsed_json["forecast"]["precip_time_24hr"],basestring): alert = parsed_json["forecast"]["phrase"]
+		measure["value"] = alert
+	# append the measure and return it
+	measures.append(measure)
+        return measures
 
 # return the cache schema
-def cache_schema(measure):
-	if measure == "weather_alerts": return "forecast"
-	else: log.error(measure+" not supported by "+__name__)
+def cache_schema(type):
+	if type == "weather_alerts": return "forecast"
