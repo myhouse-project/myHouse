@@ -31,7 +31,7 @@ def poll(sensor):
 def parse(sensor,data):
 	measures = []
         measure = {}
-        measure["type"] = sensor["type"]
+        measure["key"] = sensor["sensor_id"]
 	# parse the json 
 	parsed_json = json.loads(data)
 	if sensor["type"] == "weather_alerts": 
