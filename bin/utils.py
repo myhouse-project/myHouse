@@ -21,15 +21,15 @@ def remove_all(array,value):
 
 # return the timestamp with a the timezone offset applied
 def timezone(timestamp):
-	return timestamp+conf["general"]["timezone_offset_hours"]*constants.hour
+	return int(timestamp+conf["general"]["timezone_offset_hours"]*constants.hour)
 
 # return an UTC timestamp from a local timezone timestamp
 def utc(timestamp):
-	return timestamp-conf["general"]["timezone_offset_hours"]*constants.hour
+	return int(timestamp-conf["general"]["timezone_offset_hours"]*constants.hour)
 
 # return the now timestamp
 def now():
-	return timezone(time.time())
+	return timezone(int(time.time()))
 
 # return yesterday's timestamp
 def yesterday():
@@ -42,7 +42,7 @@ def last_hour():
 # generate a given timestamp based on the input
 def get_timestamp(years,months,days,hours,minutes,seconds):
 	timestamp = datetime.datetime(years,months,days,hours,minutes,seconds,0)
-	return timezone(time.mktime(timestamp.timetuple()))
+	return timezone(int(time.mktime(timestamp.timetuple())))
 
 # return day start timestamp
 def day_start(timestamp):
