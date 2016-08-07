@@ -6,3 +6,4 @@ logs/*
 conf/myHouse.py
 weather/charts/*.png
 *config.py
+*.save
