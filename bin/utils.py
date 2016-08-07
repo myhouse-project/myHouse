@@ -19,41 +19,58 @@ conf = config.get_config()
 def remove_all(array,value):
         return [x for x in array if x != value]
 
+# return the timestamp with a the timezone offset applied
+def timezone(timestamp):
+	return timestamp+conf["general"]["timezone_offset_hours"]*constants.hour
+
+# return an UTC timestamp from a local timezone timestamp
+def utc(timestamp):
+	return timestamp-conf["general"]["timezone_offset_hours"]*constants.hour
+
 # return the now timestamp
 def now():
-	return int(time.time())*constants.milliseconds
+	return timezone(time.time())
 
-# return last day start timestamp
-def last_day_start():
-	last = datetime.datetime.now() - datetime.timedelta(days = 1)
-	last_beginning = datetime.datetime(last.year, last.month, last.day,0,0,0,0)
-	return int(time.mktime(last_beginning.timetuple()))
+# return yesterday's timestamp
+def yesterday():
+	return now()-24*constants.hour
 
-# return last day end timestamp
-def last_day_end():
-	last = datetime.datetime.now() - datetime.timedelta(days = 1)
-	last_end = datetime.datetime(last.year, last.month, last.day,23,59,59,999)
-	return int(time.mktime(last_end.timetuple()))
+# return the last hour timestamp
+def last_hour():
+	return now()-60*constants.minute
 
-# return last hour start timestamp
-def last_hour_start():
-        last = datetime.datetime.now() - datetime.timedelta(hours = 1)
-        last_beginning = datetime.datetime(last.year, last.month, last.day,last.hour,0,0,0)
-        return int(time.mktime(last_beginning.timetuple()))
+# generate a given timestamp based on the input
+def get_timestamp(years,months,days,hours,minutes,seconds):
+	timestamp = datetime.datetime(years,months,days,hours,minutes,seconds,0)
+	return timezone(time.mktime(timestamp.timetuple()))
 
-# return last hour end timestamp
-def last_hour_end():
-        last = datetime.datetime.now() - datetime.timedelta(hours = 1)
-        last_end = datetime.datetime(last.year, last.month, last.day,last.hour,59,59,999)
-        return int(time.mktime(last_end.timetuple()))
+# return day start timestamp
+def day_start(timestamp):
+	date = datetime.datetime.fromtimestamp(utc(timestamp))
+	return get_timestamp(date.year,date.month,date.day,0,0,0)
+
+# return day end timestamp
+def day_end(timestamp):
+        date = datetime.datetime.fromtimestamp(utc(timestamp))
+        return get_timestamp(date.year,date.month,date.day,23,59,59)
+
+# return hour start timestamp
+def hour_start(timestamp):
+        date = datetime.datetime.fromtimestamp(utc(timestamp))
+        return get_timestamp(date.year,date.month,date.day,date.hour,0,0)
+
+# return hour end timestamp
+def hour_end(timestamp):
+        date = datetime.datetime.fromtimestamp(utc(timestamp))
+        return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
 # return the recent timestamp (default: last 24 hours)
 def recent():
-	return now()-24*constants.hour*constants.milliseconds
+	return now()-24*constants.hour
 
 # return the history timestamp (default: last 1 year)
 def history():
-	return now()-365*constants.day*constants.milliseconds
+	return now()-365*constants.day
 
 # return true if the input is a number
 def is_number(s):
@@ -104,11 +121,7 @@ def get_exception(e):
 def randint(min,max):
 	return random.randint(min,max)
 
-# return a sensor output template object
-def get_sensor_output_template():
-	sensor_output_template = {
-		'timestamp': None,
-		'measures': {},
-	}
-	return sensor_output_template
-	
+# return a timestamp as a human readable format
+def timestamp2date(timestamp):
+	return datetime.datetime.fromtimestamp(utc(int(timestamp))).strftime('%Y-%m-%d %H:%M:%S')
+

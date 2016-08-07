@@ -46,18 +46,18 @@ def sensor_range(module,sensor_id,measure,timeframe):
 	min = max = None
 	if timeframe == "today":
 		# for today min and max need to be calculated on the fly
-		data = db.rangebyscore(key+":hour:avg",utils.last_day_end(),utils.now(),withscores=False)
+		data = db.rangebyscore(key+":hour:avg",utils.day_start(utils.now()),utils.now(),withscores=False)
 		min = utils.min(data)
 		max = utils.max(data)
 	elif timeframe == "yesterday":
 		# for yesterday min and max have already been calculated
-		min_data = db.rangebyscore(key+":day:min",utils.last_day_start(),utils.last_day_end(),withscores=False)
-		max_data = db.rangebyscore(key+":day:max",utils.last_day_start(),utils.last_day_end(),withscores=False)
+		min_data = db.rangebyscore(key+":day:min",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
+		max_data = db.rangebyscore(key+":day:max",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
 		if len(min_data) > 0: min = min_data[0]
 		if len(max_data) > 0: max = max_data[0]
 	else: 
-		min_data = db.rangebyscore(key+":min",utils.last_day_start(),utils.last_day_end(),withscores=False)
-		max_data = db.rangebyscore(key+":max",utils.last_day_start(),utils.last_day_end(),withscores=False)
+		min_data = db.rangebyscore(key+":min",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
+		max_data = db.rangebyscore(key+":max",utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()),withscores=False)
                 if len(min_data) > 0: min = min_data[0]
                 if len(max_data) > 0: max = max_data[0]
 	return json.dumps([min,max])

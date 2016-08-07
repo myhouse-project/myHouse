@@ -2,9 +2,9 @@
 import logging
 import os
 
-hour = 60*60
+minute = 60
+hour = 60*minute
 day = 24*hour
-milliseconds = 1
 
 db_schema = {}
 db_schema["root"] = "myHouse"

@@ -49,15 +49,17 @@ def parse(sensor,data):
 			forecast.append(forecast_entry)
 		measure["value"] = json.dumps(forecast)
 	elif sensor["type"] == "temperature_record": 
-		measure["type"] = sensor["type"]+":day:min"
-		measure["value"] =  parsed_json['almanac']['temp_low']['record']['C']
-		measures.append(measure)
+		measure_min = {}
+		measure_min["type"] = sensor["type"]+":day:min"
+		measure_min["value"] =  parsed_json['almanac']['temp_low']['record']['C']
+		measures.append(measure_min)
 		measure["type"] = sensor["type"]+":day:max"
 		measure["value"] =  parsed_json['almanac']['temp_high']['record']['C']
 	elif sensor["type"] == "temperature_normal":
-                measure["type"] = sensor["type"]+":day:min"
-                measure["value"] =  parsed_json['almanac']['temp_low']['normal']['C']
-                measures.append(measure)
+		measure_min = {}
+                measure_min["type"] = sensor["type"]+":day:min"
+                measure_min["value"] =  parsed_json['almanac']['temp_low']['normal']['C']
+                measures.append(measure_min)
                 measure["type"] = sensor["type"]+":day:max"
                 measure["value"] =  parsed_json['almanac']['temp_high']['normal']['C']
 	# append the measure and return it
