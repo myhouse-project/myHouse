@@ -19,22 +19,16 @@ $(document).ready(function(){
 	};
 
 	
-	function get_widget_template(size,title,body) {
+	function get_widget_template(size,title,tag) {
 		// define the widget HTML
 		var html = '\
 					<div class="col-md-#size#">\
 							<div class="box box-solid box-primary">\
 								<div class="box-header">\
 									<h3 class="box-title">#title#</h3>\
-									<div class="box-tools pull-right">\
-										<button class="btn btn-box-tool" data-widget="collapse">\
-											<i class="fa fa-minus"></i>\
-										</button>\
-									</div>\
 								</div>\
 								<div class="box-body no-padding box-primary">\
-								    <div class="box-body">\
-									#body#\
+								    <div class="box-body" id="#tag#">\
 									</div>\
 								</div>\
 							</div>\
@@ -43,32 +37,27 @@ $(document).ready(function(){
 		// replace the placeholders with the provided input
 		html = html.replaceAll("#size#",size);
 		html = html.replaceAll("#title#",title);
-		html = html.replaceAll("#body#",body);
+		html = html.replaceAll("#tag#",tag);
 		return html;
 	}
 	
-	function get_summary_widget(group_id,table) {
+	function get_summary_widget(group_id,tag) {
 		// define the widget HTML
 		var html = '\
-								          <div class="box-profile">\
-												<img class="profile-user-img img-responsive img-circle" id="#group_id#_summary_icon" src="web/weather-icons/unknown.png" >\
-													<h3 class="profile-username text-center" id="#group_id#_summary_current">Loading...</h3>\
-													<p class="text-muted text-center" id="#group_id#_summary_timestamp">...</p>\
-													 <table class="table table-condensed">\
+								          <table class="table table-condensed" id="#tag#">\
 														<tbody>\
 														<tr>\
 															<th>Sensor</th>\
-															<th>Current</th>\
-															<th>Today</th>\
-															<th>Yesterday</th>\
+															<th style="text-align: center">Current</th>\
+															<th style="text-align: center">Today</th>\
+															<th style="text-align: center">Yesterday</th>\
 														</tr>\
-														#table#\
 														</tbody>\
 													</table>\
-											</div>';
+											';
 		// replace the placeholders with the provided input
 		html = html.replaceAll("#group_id#",group_id);
-		html = html.replaceAll("#table#",table);
+		html = html.replaceAll("#tag#",tag);
 		return html;
 	}
 	
@@ -76,9 +65,19 @@ $(document).ready(function(){
 		var html = '\
 					<tr>\
 						<td>#sensor_name#</td>\
-						<td><span id="#group_id#_#sensor_id#_latest">...</span></td>\
-						<td><span id="#group_id#_#sensor_id#_today_min">...</span> - <span id="#group_id#_#sensor_id#_today_avg">...</span> - <span id="#group_id#_#sensor_id#_today_max">...</span></td>\
-						<td><span id="#group_id#_#sensor_id#_yesterday_min">...</span> - <span id="#group_id#_#sensor_id#_yesterday_avg">...</span> - <span id="#group_id#_#sensor_id#_yesterday_max">...</span></td>\
+						<td style="text-align: center">\
+							<span class="badge bg-yellow" id="#group_id#_#sensor_id#_latest"></span>\
+						</td>\
+						<td style="text-align: center">\
+							<span class="label bg-blue" id="#group_id#_#sensor_id#_today_min"></span>\
+							<span class="label bg-green" id="#group_id#_#sensor_id#_today_avg"></span>\
+							<span class="label bg-red" id="#group_id#_#sensor_id#_today_max"></span>\
+						</td>\
+						<td style="text-align: center">\
+							<span class="label bg-blue" id="#group_id#_#sensor_id#_yesterday_min"></span>\
+							<span class="label bg-green" id="#group_id#_#sensor_id#_yesterday_avg"></span>\
+							<span class="label bg-red" id="#group_id#_#sensor_id#_yesterday_max"></span>\
+						</td>\
 					</tr>\
 					';
 		html = html.replaceAll("#group_id#",group_id);
@@ -94,6 +93,16 @@ $(document).ready(function(){
 				};
 		}(tag));
 	}
+	
+	function addSeries(chart,url) {
+		$.getJSON(url, function(chart) {
+				return function (data) {
+					var series = $.extend(true,{}, conf["charts"]["spline"]);
+					series["data"] = data;
+					chart.addSeries(series);
+				};
+		}(chart));
+	}
 
 
 	function load_test() {
@@ -107,20 +116,27 @@ $(document).ready(function(){
 				group = conf["modules"][module]["sensor_groups"][group_id];
 				// do not render the builin group
 				if (group_id == "__builtin__") continue;
-				var html = '<div class="row">';
-				// for each sensor
-				var html_table = "";
+				// define the tags to use
+				var row1 = group_id+"_row1";
+				var row2 = group_id+"_row2";
+				var summary_widget = group_id+"_summary";
+				var summary_table = group_id+"_summary_table";
+				var recent_chart = group_id+"_recent_chart";
+				var history_chart = group_id+"_history_chart";
+				// start a new row
+				$("#sensors").append('<div class="row" id="'+row1+'">');
+				
+				// SUMMARY TABLE
+				// add a new widget container
+				$("#"+row1).append(get_widget_template(12,group["name"]+" Summary",summary_widget));
+				// add the summary widget to it
+				$("#"+summary_widget).html(get_summary_widget(group_id,summary_table));
+				// for each sensor	
 				for (var sensor_id in group["sensors"]) {
 					var sensor = group["sensors"][sensor_id];
-					html_table = html_table + get_summary_table(group_id,sensor_id,sensor["name"]);
-				} // end for each sensor
-				html_summary = get_summary_widget(group_id,html_table);
-				var html_widget = get_widget_template(4,group["name"]+" Summary",html_summary);
-				html = html + html_widget;
-				html = html + '</div>';
-				$("#sensors").append(html);
-				
-				for (var sensor_id in group["sensors"]) {
+					// add a new line to the summary table
+					$("#"+summary_table+" tbody").append(get_summary_table(group_id,sensor_id,sensor["name"]));
+					// load the data
 					get("sensors/"+module+"/"+group_id+"/"+sensor_id,"#"+group_id+"_"+sensor_id+"_latest")
 					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/today/min","#"+group_id+"_"+sensor_id+"_today_min")
 					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/today/avg","#"+group_id+"_"+sensor_id+"_today_avg")
@@ -128,7 +144,45 @@ $(document).ready(function(){
 					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/yesterday/min","#"+group_id+"_"+sensor_id+"_yesterday_min")
 					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/yesterday/avg","#"+group_id+"_"+sensor_id+"_yesterday_avg")
 					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/yesterday/max","#"+group_id+"_"+sensor_id+"_yesterday_max")
-				} // end for each sensor
+				} 
+				// end the row
+				$("#"+row1).append('</div>');
+				$("#sensors").append('<div class="row" id="'+row2+'">');
+				
+				// RECENT CHART
+				// add a new widget container
+				$("#"+row1).append(get_widget_template(6,group["name"]+" Recent",recent_chart));
+				var options = $.extend(true,{}, conf["charts"]["default"]);
+				options['xAxis']['type'] = 'datetime';
+				options['chart']['zoomType'] = 'x';
+				options['navigator'] = {'enabled' : false};
+				options['rangeSelector'] = {'enabled' : false};
+				$("#"+recent_chart).highcharts('StockChart',options);
+				var highchart_recent = $("#"+recent_chart).highcharts();
+				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/avg");
+				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/min");
+				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/max");
+				
+				// HISTORY CHART
+				// add a new widget container
+				$("#"+row1).append(get_widget_template(6,group["name"]+" History",history_chart));
+				var options = $.extend(true,{}, conf["charts"]["default"]);
+				options['xAxis']['type'] = 'datetime';
+				options['chart']['zoomType'] = 'x';
+				$("#"+history_chart).highcharts('StockChart',options);
+				var highchart_history = $("#"+history_chart).highcharts();
+				addSeries(highchart_history,"sensors/weather/outside/temperature/history/avg");
+				addSeries(highchart_history,"sensors/weather/outside/temperature/history/min");
+				addSeries(highchart_history,"sensors/weather/outside/temperature/history/max");
+				
+				// end the row
+				$("#"+row2).append('</div>');
+				
+				
+
+				
+				
+				
 				
 			} // end for each ground
 			
