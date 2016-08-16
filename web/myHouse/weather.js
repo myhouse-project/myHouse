@@ -153,6 +153,7 @@ $(document).ready(function(){
 				// add a new widget container
 				$("#"+row1).append(get_widget_template(6,group["name"]+" Recent",recent_chart));
 				var options = $.extend(true,{}, conf["charts"]["default"]);
+				options['xAxis'] = {}
 				options['xAxis']['type'] = 'datetime';
 				options['chart']['zoomType'] = 'x';
 				options['navigator'] = {'enabled' : false};
@@ -162,6 +163,9 @@ $(document).ready(function(){
 				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/avg");
 				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/min");
 				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/max");
+				addSeries(highchart_recent,"sensors/weather/outside/record/history/min");
+				addSeries(highchart_recent,"sensors/weather/outside/record/history/max");
+				
 				
 				// HISTORY CHART
 				// add a new widget container
@@ -174,6 +178,9 @@ $(document).ready(function(){
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/avg");
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/min");
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/max");
+				addSeries(highchart_history,"sensors/weather/outside/temperature/history/max");
+				addSeries(highchart_history,"sensors/weather/outside/record/history/min");
+				addSeries(highchart_history,"sensors/weather/outside/record/history/max");
 				
 				// end the row
 				$("#"+row2).append('</div>');

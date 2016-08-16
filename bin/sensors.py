@@ -21,11 +21,13 @@ def poll(plugin,sensor):
 	# poll the data
 	data = None
 	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
-        try: data = plugin.poll(sensor)
+        try: 
+		data = plugin.poll(sensor)
+	        # store it in the cache
+	        db.set(sensor["db_cache"],data,utils.now())
 	except Exception,e: 
 		log.warning("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to poll: "+utils.get_exception(e))
-        # store it in the cache
-        db.set(sensor["db_cache"],data,utils.now())
+	return data
 
 # parse the data of a sensor from the cache and return the value read
 def parse(plugin,sensor):
@@ -37,9 +39,9 @@ def parse(plugin,sensor):
 		measures = plugin.parse(sensor,data)
 		# format each values
 		for i in range(len(measures)): measures[i]["value"] = utils.normalize(measures[i]["value"])
+		log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
 		log.warning("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to parse "+str(data)+": "+utils.get_exception(e))
-	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	return measures
 
 # save the data of a sensor into the database
@@ -51,9 +53,10 @@ def save(plugin,sensor):
 		cache_timestamp = data[0][0]
 	# if too old, refresh it
 	if utils.now() - cache_timestamp > conf['modules'][sensor["module"]]['cache_valid_for_seconds']:
-		poll(plugin,sensor)
+		if poll(plugin,sensor) is None: return
 	# get the parsed data
 	measures = parse(plugin,sensor)
+	if measures is None: return
 	# for each returned measure
 	for measure in measures:
 	        # set the timestamp to now if not already set
@@ -65,10 +68,10 @@ def save(plugin,sensor):
 		# check if the same value is already stored
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
-			log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["type"]+": "+str(measure["value"]))
+			log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
 			return
 		# store the value into the database
-		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+str(measure["value"]))
+		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
 		if constants.sensor_types[sensor["type"]]["avg"]:
@@ -102,7 +105,7 @@ def summarize(sensor,timeframe,start,end):
 		max = utils.max(data)
 		db.deletebyscore(key_to_write+":max",start,end)
                 db.set(key_to_write+":max",max,timestamp)
-	log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
+	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
 
 # read or save the measure of a given sensor
 def run(module,group_id,sensor_id,action):

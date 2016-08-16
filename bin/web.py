@@ -54,7 +54,7 @@ def sensor_data(module,group_id,sensor_id,timeframe,stat):
 		key = key+":hour:"+stat
                 start = utils.recent()
 		end = utils.now()
-		withscores = True
+		withscores = False
         elif timeframe == "history":
 		# historical daily measures up to new
 		key = key+":day:"+stat
