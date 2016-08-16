@@ -126,3 +126,8 @@ def timestamp2date(timestamp):
 	return datetime.datetime.fromtimestamp(utc(int(timestamp))).strftime('%Y-%m-%d %H:%M:%S')
 
 
+# truncate a long string 
+def truncate(string):
+	max_len = 20
+	return (string[:max_len] + '...') if len(string) > max_len else string
+
