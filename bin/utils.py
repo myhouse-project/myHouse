@@ -9,7 +9,6 @@ import numpy
 import random
 import __builtin__
 
-import constants
 import logger
 import config
 log = logger.get_logger(__name__)
@@ -21,11 +20,11 @@ def remove_all(array,value):
 
 # return the timestamp with a the timezone offset applied
 def timezone(timestamp):
-	return int(timestamp+conf["general"]["timezone_offset_hours"]*constants.hour)
+	return int(timestamp+conf["general"]["timezone_offset_hours"]*conf["constants"]["1_hour"])
 
 # return an UTC timestamp from a local timezone timestamp
 def utc(timestamp):
-	return int(timestamp-conf["general"]["timezone_offset_hours"]*constants.hour)
+	return int(timestamp-conf["general"]["timezone_offset_hours"]*conf["constants"]["1_hour"])
 
 # return the now timestamp
 def now():
@@ -33,11 +32,11 @@ def now():
 
 # return yesterday's timestamp
 def yesterday():
-	return now()-24*constants.hour
+	return now()-24*conf["constants"]["1_hour"]
 
 # return the last hour timestamp
 def last_hour():
-	return now()-60*constants.minute
+	return now()-60*conf["constants"]["1_minute"]
 
 # generate a given timestamp based on the input
 def get_timestamp(years,months,days,hours,minutes,seconds):
@@ -66,11 +65,11 @@ def hour_end(timestamp):
 
 # return the recent timestamp (default: last 24 hours)
 def recent():
-	return now()-24*constants.hour
+	return now()-48*conf["constants"]["1_hour"]
 
 # return the history timestamp (default: last 1 year)
 def history():
-	return now()-365*constants.day
+	return now()-365*conf["constants"]["1_day"]
 
 # return true if the input is a number
 def is_number(s):
@@ -128,6 +127,6 @@ def timestamp2date(timestamp):
 
 # truncate a long string 
 def truncate(string):
-	max_len = 20
+	max_len = 50
 	return (string[:max_len] + '...') if len(string) > max_len else string
 

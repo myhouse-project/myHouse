@@ -1,10 +1,10 @@
 #!/usr/bin/python
 import sys
 import os
+import datetime
 
 import utils
 import db
-import constants
 import logger
 import config
 log = logger.get_logger(__name__)
@@ -22,6 +22,7 @@ def poll(plugin,sensor):
 	data = None
 	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
         try: 
+		# retrieve the raw data 
 		data = plugin.poll(sensor)
 	        # store it in the cache
 	        db.set(sensor["db_cache"],data,utils.now())
@@ -31,7 +32,7 @@ def poll(plugin,sensor):
 
 # parse the data of a sensor from the cache and return the value read
 def parse(plugin,sensor):
-	# parse the data out of the cache
+	# retrieve the raw data from the cache
 	data = db.range(sensor["db_cache"],withscores=False)[0]
 	measures = None
         try:
@@ -42,20 +43,23 @@ def parse(plugin,sensor):
 		log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
 		log.warning("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to parse "+str(data)+": "+utils.get_exception(e))
+	# return the structured data
 	return measures
 
 # save the data of a sensor into the database
 def save(plugin,sensor):
 	cache_timestamp = 0
-	# get the data out of the cache
+	# get the raw data from the cache
 	if db.exists(sensor["db_cache"]):
 		data = db.range(sensor["db_cache"],withscores=True)
 		cache_timestamp = data[0][0]
 	# if too old, refresh it
 	if utils.now() - cache_timestamp > conf['modules'][sensor["module"]]['cache_valid_for_seconds']:
+		# if an exception occurred, skip this sensor
 		if poll(plugin,sensor) is None: return
 	# get the parsed data
 	measures = parse(plugin,sensor)
+	# if an exception occurred, skip this sensor
 	if measures is None: return
 	# for each returned measure
 	for measure in measures:
@@ -64,17 +68,18 @@ def save(plugin,sensor):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if no history has to be kept (e.g. single value)
-		if not constants.sensor_types[sensor["type"]]["avg"]: db.delete(key)
+		if not sensor['features']["calculate_avg"]: db.delete(key)
 		# check if the same value is already stored
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
+			# same value and same timestamp, do not store
 			log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
 			return
 		# store the value into the database
 		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
-		if constants.sensor_types[sensor["type"]]["avg"]:
+		if sensor['features']["calculate_avg"]:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
 	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
@@ -91,12 +96,12 @@ def summarize(sensor,timeframe,start,end):
 	data = db.rangebyscore(key_to_read,start,end,withscores=False)
 	timestamp = start
 	min = avg = max = "-"
-	if constants.sensor_types[sensor["type"]]["avg"]:
+	if sensor['features']["calculate_avg"]:
 		# calculate avg
 		avg = utils.avg(data)
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
-	if constants.sensor_types[sensor["type"]]["min_max"]:
+	if sensor['features']["calculate_min_max"]:
 		# calculate min
 		min = utils.min(data)
 		db.deletebyscore(key_to_write+":min",start,end)
@@ -118,15 +123,16 @@ def run(module,group_id,sensor_id,action):
 	sensor['module'] = module
 	sensor['group_id'] = group_id
 	sensor['sensor_id'] = sensor_id
+	sensor['features'] = conf["constants"]["sensor_features"][sensor["request"]]
         # determine the plugin to use 
 	if sensor["plugin"] == "ds18b20": plugin = sensor_ds18b20
         elif sensor["plugin"] == "wunderground": plugin = sensor_wunderground
 	elif sensor["plugin"] == "weatherchannel": plugin = sensor_weatherchannel
 	else: log.error("Plugin "+sensor["plugin"]+" not supported")
 	# define the database schema
-        sensor['db_group'] = constants.db_schema["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
+        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
 	sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
-        sensor['db_cache'] = constants.db_schema["root"]+":"+sensor["module"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor["type"])
+        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor["request"])
 	# execute the action
 	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
 	if action == "poll":
@@ -151,21 +157,79 @@ def run(module,group_id,sensor_id,action):
 # schedule each sensor
 def schedule_all():
         # for each module
-        for module in constants.modules_with_sensors:
+        for module in conf["modules"]:
+		# skip modules without sensors
+		if "sensor_groups" not in conf["modules"][module]: continue
 	        # for each group of sensors
                 for group_id in conf["modules"][module]["sensor_groups"]:
 			# for each sensor of the group
 			for sensor_id in conf["modules"][module]["sensor_groups"][group_id]["sensors"]:
 				sensor = conf["modules"][module]["sensor_groups"][group_id]["sensors"][sensor_id]
+				sensor['features'] = conf["constants"]["sensor_features"][sensor["request"]]
                                 log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
-                                # schedule it
+				# run it now first
+				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[module,group_id,sensor_id,'save'])
+                                # then schedule it
        	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,group_id,sensor_id,'save'])
-                                if constants.sensor_types[sensor["type"]]["avg"]:
+                                if sensor['features']["calculate_avg"]:
        	                                # schedule a summarize job every hour and every day
                	                        log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling summary every hour and day")
                        	                schedule.add_job(run,'cron',hour="*",args=[module,group_id,sensor_id,'summarize_hour'])
                                	        schedule.add_job(run,'cron',day="*",args=[module,group_id,sensor_id,'summarize_day'])
 
+# return the latest read of a sensor for a web request
+def web_get_current(module,group_id,sensor_id):
+        data = []
+        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
+        # return the latest measure
+        data = db.range(key,withscores=False,milliseconds=True)
+	return data
+
+# return the data of a requested sensor based on the timeframe and stat requested
+def web_get_data(module,group_id,sensor_id,timeframe,stat):
+        data = []
+        # get the parameters for the requested timeframe
+        if timeframe == "recent":
+                # recent hourly measures up to now
+                range = "hour"
+                start = utils.recent()
+                end = utils.now()
+                withscores = True
+        elif timeframe == "history":
+                # historical daily measures up to new
+                range = "day"
+                start = utils.history()
+                end = utils.now()
+                withscores = True
+        elif timeframe == "today":
+                # today's measure
+                range = "day"
+                start = utils.day_start(utils.now())
+                end = utils.day_end(utils.now())
+                withscores = False
+        elif timeframe == "yesterday":
+                # yesterday's measure
+                range = "day"
+                start = utils.day_start(utils.yesterday())
+                end = utils.day_end(utils.yesterday())
+                withscores = False
+        else: return data
+        # define the key to request
+        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id+":"+range
+        requested_stat = stat
+        # if a range is requested, start asking for the min
+        if stat == "range": requested_stat = "min"
+        # requeste the data
+        data = db.rangebyscore(key+":"+requested_stat,start,end,withscores=withscores,milliseconds=True)
+        if stat == "range" and len(data) > 0:
+                # if a range is requested, ask for the max and combine the results
+                data_max = db.rangebyscore(key+":max",start,end,withscores=False,milliseconds=True)
+                for i, item in enumerate(data):
+                        # ensure data_max has a correspondent value
+                        if i < len(data_max):
+                                if (isinstance(item,list)): data[i].append(data_max[i])
+                                else: data.append(data_max[i])
+        return data
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
