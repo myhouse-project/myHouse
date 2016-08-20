@@ -6,22 +6,21 @@ import datetime
 from multiprocessing import Process
 
 import utils
-import constants
 import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 import scheduler
-scheduler = scheduler.get_scheduler()
+schedule = scheduler.get_scheduler()
 import web
 
 # run the main application
 def run():
 	# schedule each sensor 
-	scheduler.start()
+	schedule.start()
 	sensors.schedule_all()
-	scheduler.add_job(web.run,'date',run_date=datetime.datetime.now())
+	schedule.add_job(web.run,'date',run_date=datetime.datetime.now())
 	while True:
 		sleep(1)
 	# run the web server

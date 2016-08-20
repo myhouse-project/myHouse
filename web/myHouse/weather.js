@@ -19,7 +19,7 @@ $(document).ready(function(){
 	};
 
 	
-	function get_widget_template(size,title,tag) {
+	function get_widget_template(group_id,type,title,size) {
 		// define the widget HTML
 		var html = '\
 					<div class="col-md-#size#">\
@@ -28,7 +28,7 @@ $(document).ready(function(){
 									<h3 class="box-title">#title#</h3>\
 								</div>\
 								<div class="box-body no-padding box-primary">\
-								    <div class="box-body" id="#tag#">\
+								    <div class="box-body" id="#group_id#_#type#">\
 									</div>\
 								</div>\
 							</div>\
@@ -37,43 +37,41 @@ $(document).ready(function(){
 		// replace the placeholders with the provided input
 		html = html.replaceAll("#size#",size);
 		html = html.replaceAll("#title#",title);
-		html = html.replaceAll("#tag#",tag);
+		html = html.replaceAll("#type#",type);
+		html = html.replaceAll("#group_id#",group_id);
 		return html;
 	}
 	
-	function get_summary_widget(group_id,tag) {
+	function get_summary_body(group_id) {
 		// define the widget HTML
 		var html = '\
-								          <table class="table table-condensed" id="#tag#">\
-														<tbody>\
-														<tr>\
-															<th>Sensor</th>\
-															<th style="text-align: center">Current</th>\
-															<th style="text-align: center">Today</th>\
-															<th style="text-align: center">Yesterday</th>\
-														</tr>\
-														</tbody>\
-													</table>\
+									<div class="box-profile">\
+										<img class="profile-user-img img-responsive img-circle" id="#group_id#_icon" src="web/weather-icons/unknown.png">\
+										<h3 class="profile-username text-center" id="#group_id#_current">Loading...</h3>\
+										<p class="text-muted text-center" id="#group_id#_timestamp">...</p>\
+											<ul class="list-group list-group-unbordered">\
+												<li class="list-group-item" id="#group_id#_summary_chart">\
+												</li>\
+											</ul>\
+									<div>\
 											';
 		// replace the placeholders with the provided input
 		html = html.replaceAll("#group_id#",group_id);
-		html = html.replaceAll("#tag#",tag);
 		return html;
 	}
-	
+	/*
 	function get_summary_table(group_id,sensor_id,sensor_name) {
 		var html = '\
 					<tr>\
 						<td>#sensor_name#</td>\
-						<td style="text-align: center">\
-							<span class="badge bg-yellow" id="#group_id#_#sensor_id#_latest"></span>\
+						<td style="text-align: center" id="#group_id#_#sensor_id#_latest">\
 						</td>\
-						<td style="text-align: center">\
+						<td style="text-align: center" id="#group_id#_#sensor_id#_today">\
 							<span class="label bg-blue" id="#group_id#_#sensor_id#_today_min"></span>\
 							<span class="label bg-green" id="#group_id#_#sensor_id#_today_avg"></span>\
 							<span class="label bg-red" id="#group_id#_#sensor_id#_today_max"></span>\
 						</td>\
-						<td style="text-align: center">\
+						<td style="text-align: center" id="#group_id#_#sensor_id#_yesterday">\
 							<span class="label bg-blue" id="#group_id#_#sensor_id#_yesterday_min"></span>\
 							<span class="label bg-green" id="#group_id#_#sensor_id#_yesterday_avg"></span>\
 							<span class="label bg-red" id="#group_id#_#sensor_id#_yesterday_max"></span>\
@@ -84,74 +82,68 @@ $(document).ready(function(){
 		html = html.replaceAll("#sensor_id#",sensor_id);
 		html = html.replaceAll("#sensor_name#",sensor_name);
 		return html;
-	}
+	}*/
 	
-	function get(url,tag) {
-		$.getJSON(url, function(tag) {
+	function get(url,tag,html,append=true) {
+		$.getJSON(url, function(tag,html,append) {
 				return function (data) {
-					$(tag).html(data[0]);
+					if (data.length != 1) return;
+					html = html.replaceAll("#data#",data[0]);
+					if (append) $(tag).append(html);
+					else $(tag).html(html);
 				};
-		}(tag));
+		}(tag,html,append));
 	}
 	
-	function addSeries(chart,url) {
-		$.getJSON(url, function(chart) {
+	function addSeries(chart,sensor,url) {
+		$.getJSON(url, function(chart,sensor) {
 				return function (data) {
 					var series = $.extend(true,{}, conf["charts"]["spline"]);
 					series["data"] = data;
+					series["name"] = sensor["name"];
 					chart.addSeries(series);
 				};
-		}(chart));
+		}(chart,sensor));
 	}
 
 
 	function load_test() {
 		var module = "weather"
 		
-		// request the configuration		
-		$.getJSON("get_config",function(data) {
+		// request the configuration first
+		$.getJSON("config",function(data) {
 			conf = data
 			// for each group
 			for (var group_id in conf["modules"][module]["sensor_groups"]) {
 				group = conf["modules"][module]["sensor_groups"][group_id];
-				// do not render the builin group
+				// do not render the builtin group
 				if (group_id == "__builtin__") continue;
 				// define the tags to use
 				var row1 = group_id+"_row1";
 				var row2 = group_id+"_row2";
 				var summary_widget = group_id+"_summary";
-				var summary_table = group_id+"_summary_table";
-				var recent_chart = group_id+"_recent_chart";
-				var history_chart = group_id+"_history_chart";
+				var summary_chart = group_id+"_summary_chart";
+				var recent_chart = group_id+"_recent";
+				var history_chart = group_id+"_history";
 				// start a new row
 				$("#sensors").append('<div class="row" id="'+row1+'">');
 				
-				// SUMMARY TABLE
+				// SUMMARY WIDGET
 				// add a new widget container
-				$("#"+row1).append(get_widget_template(12,group["name"]+" Summary",summary_widget));
-				// add the summary widget to it
-				$("#"+summary_widget).html(get_summary_widget(group_id,summary_table));
-				// for each sensor	
+				$("#"+row1).append(get_widget_template(group_id,"summary",group["display_name"]+": Summary",3));
+				// add the summary body to it
+				$("#"+summary_widget).html(get_summary_body(group_id));
+
+				// for each sensor
 				for (var sensor_id in group["sensors"]) {
 					var sensor = group["sensors"][sensor_id];
-					// add a new line to the summary table
-					$("#"+summary_table+" tbody").append(get_summary_table(group_id,sensor_id,sensor["name"]));
-					// load the data
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id,"#"+group_id+"_"+sensor_id+"_latest")
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/today/min","#"+group_id+"_"+sensor_id+"_today_min")
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/today/avg","#"+group_id+"_"+sensor_id+"_today_avg")
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/today/max","#"+group_id+"_"+sensor_id+"_today_max")
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/yesterday/min","#"+group_id+"_"+sensor_id+"_yesterday_min")
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/yesterday/avg","#"+group_id+"_"+sensor_id+"_yesterday_avg")
-					get("sensors/"+module+"/"+group_id+"/"+sensor_id+"/yesterday/max","#"+group_id+"_"+sensor_id+"_yesterday_max")
+					var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
 				} 
-				// end the row
-				$("#"+row1).append('</div>');
-				$("#sensors").append('<div class="row" id="'+row2+'">');
+
 				
 				// RECENT CHART
 				// add a new widget container
-				$("#"+row1).append(get_widget_template(6,group["name"]+" Recent",recent_chart));
+				$("#"+row1).append(get_widget_template(group_id,"recent",group["display_name"]+": Recent",3));
 				var options = $.extend(true,{}, conf["charts"]["default"]);
 				options['xAxis'] = {}
 				options['xAxis']['type'] = 'datetime';
@@ -160,30 +152,50 @@ $(document).ready(function(){
 				options['rangeSelector'] = {'enabled' : false};
 				$("#"+recent_chart).highcharts('StockChart',options);
 				var highchart_recent = $("#"+recent_chart).highcharts();
-				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/avg");
+				for (var sensor_id in group["sensors"]) {
+					var sensor = group["sensors"][sensor_id];
+					var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
+					addSeries(highchart_recent,sensor,sensor_url+"/recent/avg");
+				}
+				/*addSeries(highchart_recent,"sensors/"+module+"/"+group_id+"/"+sensor_id+"/temperature/recent/avg");
 				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/min");
 				addSeries(highchart_recent,"sensors/weather/outside/temperature/recent/max");
 				addSeries(highchart_recent,"sensors/weather/outside/record/history/min");
-				addSeries(highchart_recent,"sensors/weather/outside/record/history/max");
+				addSeries(highchart_recent,"sensors/weather/outside/record/history/max");*/
 				
 				
 				// HISTORY CHART
 				// add a new widget container
-				$("#"+row1).append(get_widget_template(6,group["name"]+" History",history_chart));
+				/*
+				$("#"+row1).append(get_widget_template(5,group["name"]+" History",history_chart));
 				var options = $.extend(true,{}, conf["charts"]["default"]);
 				options['xAxis']['type'] = 'datetime';
 				options['chart']['zoomType'] = 'x';
 				$("#"+history_chart).highcharts('StockChart',options);
 				var highchart_history = $("#"+history_chart).highcharts();
+				for (var sensor_id in group["sensors"]) {
+					var sensor = group["sensors"][sensor_id];
+					if (conf["constants"]["sensors"][sensor["type"]]["show_avg"]) {
+						addSeries(highchart_history,sensor,"sensors/"+module+"/"+group_id+"/"+sensor_id+"/history/avg");
+					}
+					if (conf["constants"]["sensors"][sensor["type"]]["show_min_max"]) {
+						addSeries(highchart_history,sensor,"sensors/"+module+"/"+group_id+"/"+sensor_id+"/history/min");
+						addSeries(highchart_history,sensor,"sensors/"+module+"/"+group_id+"/"+sensor_id+"/history/max");
+					}
+				}*/
+				/*
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/avg");
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/min");
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/max");
 				addSeries(highchart_history,"sensors/weather/outside/temperature/history/max");
 				addSeries(highchart_history,"sensors/weather/outside/record/history/min");
-				addSeries(highchart_history,"sensors/weather/outside/record/history/max");
+				addSeries(highchart_history,"sensors/weather/outside/record/history/max");*/
 				
 				// end the row
-				$("#"+row2).append('</div>');
+								// end the row
+				$("#"+row1).append('</div>');
+				//$("#sensors").append('<div class="row" id="'+row2+'">');
+				//$("#"+row2).append('</div>');
 				
 				
 

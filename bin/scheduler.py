@@ -3,7 +3,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 
 import utils
-import constants
 import logger
 import config
 log = logger.get_logger(__name__)
@@ -15,7 +14,7 @@ scheduler = BackgroundScheduler()
 scheduler_logger = logging.getLogger('apscheduler.executors.default')
 scheduler_logger.setLevel(conf["logging"]["level"]["scheduler"])
 scheduler_logger.addHandler(logger.get_console_logger(conf["logging"]["level"]["scheduler"]))
-scheduler_logger.addHandler(logger.get_file_logger(conf["logging"]["level"]["scheduler"],constants.log_file))
+scheduler_logger.addHandler(logger.get_file_logger(conf["logging"]["level"]["scheduler"],conf["constants"]["logging"]["logfile"]))
 
 # return the scheduler object
 def get_scheduler():

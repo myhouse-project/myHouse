@@ -2,7 +2,6 @@
 import logging
 import os
 
-import constants
 import config
 conf = config.get_config()
 
@@ -13,13 +12,13 @@ def get_logger(name):
 def get_console_logger(level):
 	console = logging.StreamHandler()
 	console.setLevel(level)
-	console.setFormatter(constants.log_formatter)
+	console.setFormatter(conf["constants"]["logging"]["formatter"])
 	return console
 
 def get_file_logger(level,file):
 	file = logging.FileHandler(file)
 	file.setLevel(level)
-	file.setFormatter(constants.log_formatter)
+	file.setFormatter(conf["constants"]["logging"]["formatter"])
 	return file
 
 
@@ -27,4 +26,4 @@ def get_file_logger(level,file):
 logger = logging.getLogger("myHouse")
 logger.setLevel(conf["logging"]["level"]["myHouse"])
 logger.addHandler(get_console_logger(conf["logging"]["level"]["myHouse"]))
-logger.addHandler(get_file_logger(conf["logging"]["level"]["myHouse"],constants.log_file))
+logger.addHandler(get_file_logger(conf["logging"]["level"]["myHouse"],(conf["constants"]["logging"]["logfile"])))

@@ -4,7 +4,7 @@ import logging
 import json
 
 import utils
-import constants
+import sensors
 import db
 import logger
 import config
@@ -36,54 +36,26 @@ def shutdown():
 	shutdown_server()
 
 # return the json config
-@app.route('/get_config')
+@app.route('/config')
 def get_config():
 	return config.get_json_config()
 
-@app.route('/sensors/<module>/<group_id>/<sensor_id>')
-def sensor_latest(module,group_id,sensor_id):
-	key = constants.db_schema["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
-	# return the latest measure
-	return json.dumps(db.range(key,withscores=False,milliseconds=True))
+# return the latest read of a sensor
+@app.route('/<module>/sensors/<group_id>/<sensor_id>')
+def sensor_get_current(module,group_id,sensor_id):
+	return json.dumps(sensors.web_get_current(module,group_id,sensor_id))
 
-@app.route('/sensors/<module>/<group_id>/<sensor_id>/<timeframe>/<stat>')
-def sensor_data(module,group_id,sensor_id,timeframe,stat):
-        key = constants.db_schema["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
-        if timeframe == "recent":
-		# recent hourly measures up to now
-		key = key+":hour:"+stat
-                start = utils.recent()
-		end = utils.now()
-		withscores = False
-        elif timeframe == "history":
-		# historical daily measures up to new
-		key = key+":day:"+stat
-                start = utils.history()
-		end = utils.now()
-		withscores = True
-	elif timeframe == "today":
-		# today's measure
-		key = key+":day:"+stat
-		start = utils.day_start(utils.now())
-		end = utils.day_end(utils.now())
-		withscores = False
-        elif timeframe == "yesterday":
-		# yesterday's measure
-                key = key+":day:"+stat
-                start = utils.day_start(utils.yesterday())
-                end = utils.day_end(utils.yesterday())
-                withscores = False
-        else: return json.dumps([])
-        return json.dumps(db.rangebyscore(key,start,end,withscores=withscores,milliseconds=True))
-
-
+# return the data of a requested sensor based on the timeframe and stat requested
+@app.route('/<module>/sensors/<group_id>/<sensor_id>/<timeframe>/<stat>')
+def sensor_get_data(module,group_id,sensor_id,timeframe,stat):
+	return json.dumps(sensors.web_get_data(module,group_id,sensor_id,timeframe,stat))
 
 # run the web server
 def run():
 	# configure logging
 	web_logger = logging.getLogger('werkzeug')
 	web_logger.setLevel(conf["logging"]["level"]["scheduler"])
-	web_logger.addHandler(logger.get_file_logger(conf["logging"]["level"]["scheduler"],constants.log_path+"web.log"))
+	web_logger.addHandler(logger.get_file_logger(conf["logging"]["level"]["scheduler"],conf["constants"]["logging"]["path"]+"web.log"))
 	# run the application
 	log.info("Starting web server on port "+str(conf["web"]["port"]))
         app.run(debug=True, use_reloader=conf["web"]["use_reloader"], host='0.0.0.0',port=conf["web"]["port"])
