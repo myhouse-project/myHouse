@@ -3,6 +3,7 @@ import sys
 import os
 import requests
 import time
+import math
 import traceback
 import datetime
 import numpy
@@ -130,3 +131,23 @@ def truncate(string):
 	max_len = 50
 	return (string[:max_len] + '...') if len(string) > max_len else string
 
+# return the difference between two timestamps in a human readable format
+def timestamp_difference(date1,date2):
+	seconds = math.floor(math.fabs(date1-date2))
+	interval = math.floor(seconds / 31536000)
+	if interval > 1: return str(int(interval)) + " years ago"
+	interval = math.floor(seconds / 2592000)
+	if interval > 1: return str(int(interval)) + " months ago"
+	interval = math.floor(seconds / 86400)
+	if interval > 1: return str(int(interval)) + " days ago"
+	interval = math.floor(seconds / 3600)
+	if interval > 1: return str(int(interval)) + " hours ago"
+	interval = math.floor(seconds / 60)
+	if interval > 1: return str(int(interval)) + " minutes ago"
+	return str(int(math.floor(seconds))) + " seconds ago"
+
+# return a dict merging delta into template
+def merge(template,delta):
+	new_dict = template.copy()
+	new_dict.update(delta)
+	
