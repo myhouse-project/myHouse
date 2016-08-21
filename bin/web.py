@@ -41,9 +41,15 @@ def get_config():
 	return config.get_json_config()
 
 # return the latest read of a sensor
-@app.route('/<module>/sensors/<group_id>/<sensor_id>')
+@app.route('/<module>/sensors/<group_id>/<sensor_id>/current')
 def sensor_get_current(module,group_id,sensor_id):
 	return json.dumps(sensors.web_get_current(module,group_id,sensor_id))
+
+# return the time difference between now and the latest measure
+@app.route('/<module>/sensors/<group_id>/<sensor_id>/timestamp')
+def sensor_get_current_timestamp(module,group_id,sensor_id):
+        return json.dumps(sensors.web_get_current_timestamp(module,group_id,sensor_id))
+
 
 # return the data of a requested sensor based on the timeframe and stat requested
 @app.route('/<module>/sensors/<group_id>/<sensor_id>/<timeframe>/<stat>')
