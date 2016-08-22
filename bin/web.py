@@ -12,7 +12,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 
 # define the web application
-app = Flask(__name__,template_folder='../web/templates')
+app = Flask(__name__,template_folder='../web')
 
 # render index if no page name is provided
 @app.route('/')

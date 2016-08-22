@@ -104,7 +104,6 @@ for key_from in recent:
 	        sensor['module'] = module
 	        sensor['group_id'] = group_id
         	sensor['sensor_id'] = sensor_id
-	        sensor['features'] = conf["constants"]["sensor_features"][sensor["request"]]
 	        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
 	        sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 		sensors.summarize(sensor,'hour',utils.hour_start(timestamp),utils.hour_end(timestamp))
