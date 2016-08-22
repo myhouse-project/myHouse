@@ -4,6 +4,7 @@ import os
 
 # constants
 constants = {
+	'version': 1.1,
 	'1_minute': 60,
 	'1_hour': 3600,
 	'1_day': 86400,
