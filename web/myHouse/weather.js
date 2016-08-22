@@ -87,8 +87,17 @@ $(document).ready(function(){
 					// get the series template
 					var series = $.extend(true,{}, sensor['timeline_series'][series_name]);
 					series['name'] = sensor['display_name']+" "+series_name;
+					series['id'] = sensor['sensor_id']+":"+series_name;
 					//add the data to it and attach to the chart
 					series['data'] = data;
+					// if the data is a string, add flags
+					if (conf['constants']['sensor_features'][sensor['request']]['format'] == 'string') {
+						flags = [];
+						for (i = 0; i < data.length; i++) {
+							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="20" heigth="20" src="web/images/'+data[i][1]+'.png">'};
+						}
+						series['data'] = flags;
+					} 
 					chart.addSeries(series);
 				};
 		}(chart,sensor,series_name));
@@ -146,7 +155,10 @@ $(document).ready(function(){
 				// for each sensor
 				for (var sensor_id in group["sensors"]) {
 					var sensor = group["sensors"][sensor_id];
+					sensor['sensor_id']= sensor_id;
 					var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
+					// skip flags
+					if (conf['constants']['sensor_features'][sensor['request']]['format'] == 'string') continue;
 					// if the sensor has to be shown in the summary add the current measure and timestamp
 					if (sensor_id == group['summary_sensor']) {
 						set_html(summary_current,sensor_url+"/current");
@@ -175,6 +187,7 @@ $(document).ready(function(){
 					// for each sensor
 					for (var sensor_id in group["sensors"]) {
 						var sensor = group["sensors"][sensor_id];
+						sensor['sensor_id']= sensor_id;
 						var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
 						// add a new line to the chart for each series
 						for (var series_name in sensor["timeline_series"]) {

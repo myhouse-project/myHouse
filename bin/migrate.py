@@ -30,14 +30,14 @@ history = {
         'home:weather:almanac:normal:min': 'myHouse:weather:sensors:external_temperature:normal:day:min',
         'home:weather:almanac:normal:max': 'myHouse:weather:sensors:external_temperature:normal:day:max',
 
-	'home:weather:outdoor:condition:day': 'myHouse:weather:sensors:__builtin__:condition:day:avg',
+	'home:weather:outdoor:condition:day': 'myHouse:weather:sensors:external_temperature:condition:day:avg',
 }
 
 # keys to migrate recent data (from key -> to key)
 recent = {
 	'home:weather:outdoor:temperature:measure': 'myHouse:weather:sensors:external_temperature:temperature',
 	'home:weather:indoor:temperature:measure': 'myHouse:weather:sensors:internal_temperature:temperature_1',
-	'home:weather:outdoor:condition:measure': 'myHouse:weather:sensors:__builtin__:condition',
+	'home:weather:outdoor:condition:measure': 'myHouse:weather:sensors:external_temperature:condition',
 }
 
 # enable history/recent migration
