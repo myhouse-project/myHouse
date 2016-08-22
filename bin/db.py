@@ -21,7 +21,7 @@ def connect():
 	if db is None: 
 		log.debug("connecting to DB: "+str(db))
 		db = redis.StrictRedis(host=conf['db']['hostname'], port=conf['db']['port'], db=conf['db']['database'])
-	if not conf['db']['enable']: log.warning("Database writing disabled")
+	if not conf['db']['enabled']: log.warning("Database writing disabled")
 	return db
 
 # normalize the output
@@ -56,13 +56,13 @@ def set(key,value,timestamp):
 	# simple set query
 	if timestamp is None: 
 		log.debug("set "+key+" "+str(value))
-		if not conf['db']['enable']: return 0
+		if not conf['db']['enabled']: return 0
 		return db.set(key,value)
 	# zadd with the score	
 	else: 
 		value = str(timestamp)+":"+str(value)
 		log.debug("zadd "+key+" "+str(timestamp)+" "+str(value))
-		if not conf['db']['enable']: return 0
+		if not conf['db']['enabled']: return 0
 		return db.zadd(key,timestamp,value)
 
 # get a single value from the db

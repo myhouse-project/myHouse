@@ -17,14 +17,14 @@ conf = config.get_config()
 
 # define constants
 url = 'https://api.weather.com/v1/geocode/'
-url_suffix = '/wwir.json?apiKey='+conf['modules']['weather']['weatherchannel_api_key']+'&units=m&language=en'
 
 # poll the sensor
 def poll(sensor):
-	location = sensor["args"][0].replace(',','/')
+	api_key = sensor["args"][0]
+	location = sensor["args"][1].replace(',','/')
 	if sensor["request"] == "weather_alerts":
 		# request the web page
-		return utils.get(url+location+'/'+cache_schema(sensor["request"])+url_suffix)
+		return utils.get(url+location+'/'+cache_schema(sensor["request"])+'/wwir.json?apiKey='+api_key+'&units=m&language=en')
 
 # parse the data
 def parse(sensor,data):

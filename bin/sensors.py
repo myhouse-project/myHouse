@@ -68,7 +68,7 @@ def save(plugin,sensor):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if no history has to be kept (e.g. single value)
-		if not sensor['features']["calculate_avg"]: db.delete(key)
+		if not sensor["calculate_avg"]: db.delete(key)
 		# check if the same value is already stored
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
@@ -79,7 +79,7 @@ def save(plugin,sensor):
 		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
-		if sensor['features']["calculate_avg"]:
+		if sensor["calculate_avg"]:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
 	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
@@ -96,12 +96,12 @@ def summarize(sensor,timeframe,start,end):
 	data = db.rangebyscore(key_to_read,start,end,withscores=False)
 	timestamp = start
 	min = avg = max = "-"
-	if sensor['features']["calculate_avg"]:
+	if sensor["calculate_avg"]:
 		# calculate avg
 		avg = utils.avg(data)
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
-	if sensor['features']["calculate_min_max"]:
+	if sensor["calculate_min_max"]:
 		# calculate min
 		min = utils.min(data)
 		db.deletebyscore(key_to_write+":min",start,end)
@@ -123,7 +123,6 @@ def run(module,group_id,sensor_id,action):
 	sensor['module'] = module
 	sensor['group_id'] = group_id
 	sensor['sensor_id'] = sensor_id
-	sensor['features'] = conf["constants"]["sensor_features"][sensor["request"]]
         # determine the plugin to use 
 	if sensor["plugin"] == "ds18b20": plugin = sensor_ds18b20
         elif sensor["plugin"] == "wunderground": plugin = sensor_wunderground
@@ -165,13 +164,12 @@ def schedule_all():
 			# for each sensor of the group
 			for sensor_id in conf["modules"][module]["sensor_groups"][group_id]["sensors"]:
 				sensor = conf["modules"][module]["sensor_groups"][group_id]["sensors"][sensor_id]
-				sensor['features'] = conf["constants"]["sensor_features"][sensor["request"]]
                                 log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 				# run it now first
 				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[module,group_id,sensor_id,'save'])
                                 # then schedule it
        	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,group_id,sensor_id,'save'])
-                                if sensor['features']["calculate_avg"]:
+                                if sensor["calculate_avg"]:
        	                                # schedule a summarize job every hour and every day
                	                        log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling summary every hour and day")
                        	                schedule.add_job(run,'cron',hour="*",args=[module,group_id,sensor_id,'summarize_hour'])

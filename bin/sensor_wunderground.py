@@ -16,13 +16,14 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 
 # define the url constants
-url = 'http://api.wunderground.com/api/'+conf['modules']['weather']['wunderground_api_key']+'/'
+url = 'http://api.wunderground.com/api'
 
 # poll the sensor
 def poll(sensor):
 	# request the web page with lat,lon as parameter
-	location = sensor["args"][0]
-	return utils.get(url+cache_schema(sensor["request"])+"/q/"+location+".json")
+	api_key = sensor["args"][0]
+	location = sensor["args"][1]
+	return utils.get(url+"/"+api_key+"/"+cache_schema(sensor["request"])+"/q/"+location+".json")
 
 # parse the data
 def parse(sensor,data):

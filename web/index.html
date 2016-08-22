@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>myHouse</title>
+<!-- Tell the browser to be responsive to screen width -->
+<meta
+	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+	name="viewport">
+
+<!-- jQuery -->
+<script src="web/jquery/jquery.min.js"></script>
+
+<!-- Bootstrap -->
+<script src="web/bootstrap/bootstrap.min.js"></script>
+<link rel="stylesheet" href="web/bootstrap/bootstrap.min.css">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="web/font-awesome/font-awesome.min.css">
+<!-- <link rel="stylesheet" href="web/font-awesome/font-awesome-animation.min.css"> -->
+
+<!-- SlimScroll -->
+<script src="web/slimScroll/jquery.slimscroll.min.js"></script>
+
+<!-- FastClick -->
+<script src="web/fastclick/fastclick.min.js"></script>
+
+<!--  PNotify -->
+<script src="web/pnotify/pnotify.custom.js"></script>
+<link rel="stylesheet" href="web/pnotify/pnotify.custom.min.css" />
+	
+<!--  Highstock -->
+<script src="web/highstock/highstock.js"></script>
+<script src="web/highstock/highcharts-more.js"></script>
+
+<!--  AdminLTE -->
+<link rel="stylesheet" href="web/AdminLTE/AdminLTE.css">
+<link rel="stylesheet" href="web/AdminLTE/all-skins.css">
+
+<!-- IE8 Respond -->
+<!--[if lt IE 9]>
+        <script src="web/IE8/html5shiv.min.js"></script>
+        <script src="web/IE8/respond.min.js"></script>
+    <![endif]-->
+</head>
+<style>
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+	<div class="wrapper">
+
+		<!-- =============================================== -->
+		<header class="main-header">
+			<a href="/" class="logo"> 
+				<span class="logo-mini"><b>my</b>H</span> 
+				<span class="logo-lg"><b><i class="fa fa-home"></i>
+						my</b>House</span>
+			</a>
+
+			<nav class="navbar navbar-static-top" role="navigation">
+				<a href="" class="sidebar-toggle" data-toggle="offcanvas"
+					role="button"> <span class="sr-only">Toggle navigation</span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span> <span
+					class="icon-bar"></span>
+				</a>
+				<div class="navbar-custom-menu">
+					<ul class="nav navbar-nav">
+					</ul>
+				</div>
+			</nav>
+		</header>
+
+		<!-- =============================================== -->
+		<aside class="main-sidebar">
+			<section class="sidebar">
+
+				<ul class="sidebar-menu">
+					<li class="header"><a id="status"><i
+							class="fa fa-circle text-red"></i> Offline</a></li>
+				</ul>
+
+				<ul class="sidebar-menu" id="menu">
+				</ul>
+
+			</section>
+		</aside>
+
+		<!-- =============================================== -->
+
+		<div class="content-wrapper">
+			<section class="content">
+
+				<!-- Content -->
+
+
+				<!-- =============================================== -->
+				<div id="body"></div>
+			</section>
+		</div>
+
+		<!-- =============================================== -->
+
+		<!-- Modals -->
+
+
+		<!-- =============================================== -->
+		<footer class="main-footer" id="footer">
+			<div class="pull-right hidden-xs">
+				<b>Version</b> <span id="version"></span>
+			</div>
+			<strong>Copyright &copy; 2016 <a>myHouse</a>.
+			</strong> All rights reserved.
+		</footer>
+
+		<!-- =============================================== -->
+	</div>
+
+	<script src="web/AdminLTE/app.js"></script>
+	<script src="web/AdminLTE/menu.js"></script>
+
+	<script type="text/javascript">
+	
+	// variables
+	var refresh_seconds = 5*60;
+	var max_forecast_entries = 6;
+	
+	var module = '';
+	var conf = {};
+
+	// helper to replace all occurences in a string
+	String.prototype.replaceAll = function (find, replace) {
+		var str = this;
+		return str.replace(new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), replace);
+	};
+	
+	// capitalize the first letter
+	function capitalizeFirst(string) {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+
+	// return an empty HTML widget template
+	function get_widget_template(group_id,type,title,size) {
+		// define the widget HTML
+		var html = '\
+					<div class="col-md-#size#">\
+							<div class="box box-solid box-primary">\
+								<div class="box-header">\
+									<h3 class="box-title">#title#</h3>\
+								</div>\
+								<div class="box-body no-padding box-primary">\
+								    <div class="box-body" id="#group_id#_#type#">\
+									</div>\
+								</div>\
+							</div>\
+					</div>\
+				';		
+		// replace the placeholders with the provided input
+		html = html.replaceAll("#size#",size);
+		html = html.replaceAll("#title#",title);
+		html = html.replaceAll("#type#",type);
+		html = html.replaceAll("#group_id#",group_id);
+		return html;
+	}
+	
+	// return an sensor summary HTML body
+	function get_summary_body(group_id) {
+		// define the widget HTML
+		var html = '\
+									<div class="box-profile">\
+										<img class="profile-user-img img-responsive img-circle" id="#group_id#_icon" src="web/images/unknown.png">\
+										<h3 class="profile-username text-center"><span id="#group_id#_current">Loading...</span><span id="#group_id#_current_suffix"></span></h3>\
+										<p class="text-muted text-center" id="#group_id#_timestamp">...</p>\
+											<ul class="list-group list-group-unbordered">\
+												<li class="list-group-item" id="#group_id#_summary_chart">\
+												</li>\
+											</ul>\
+									<div>\
+											';
+		// replace the placeholders with the provided input
+		html = html.replaceAll("#group_id#",group_id);
+		return html;
+	}
+	
+	// set the html of a given tag
+	function set_html(tag,url) {
+		$.getJSON(url, function(tag) {
+				return function (data) {
+					if (data.length != 1) $(tag).html("N/A");
+					$(tag).html(data[0]);
+				};
+		}(tag));
+	}
+	
+	// set an image src
+	function set_img(tag,url) {
+		$.getJSON(url, function(tag) {
+				return function (data) {
+					if (data.length != 1) return;
+					$(tag).attr('src','web/images/'+data[0]+'.png');
+				};
+		}(tag));
+	}
+	
+	// add a new series to a chart
+	function add_series(chart,url,sensor,series_name) {
+		$.getJSON(url, function(chart,sensor,series_name) {
+				return function (data) {
+					// get the series template
+					var series = $.extend(true,{}, sensor['timeline_series'][series_name]);
+					series['name'] = sensor['display_name']+" "+series_name;
+					series['id'] = sensor['sensor_id']+":"+series_name;
+					// add the sensor suffix
+					if (!('tooltip' in sensor)) series['tooltip'] = {};
+					if ('value_suffix' in sensor) series['tooltip']['valueSuffix'] = sensor['value_suffix'];
+					//add the data to it and attach to the chart
+					series['data'] = data;
+					// if the data is a string, add flags
+					if (sensor['format'] == 'string') {
+						flags = [];
+						for (i = 0; i < data.length; i++) {
+							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="20" heigth="20" src="web/images/'+data[i][1]+'.png">'};
+						}
+						series['data'] = flags;
+					} 
+					chart.addSeries(series);
+				};
+		}(chart,sensor,series_name));
+	}
+	
+	// add a new point to an existing series
+	function add_point(chart,url,series_index) {
+		$.getJSON(url, function(chart,series_index) {
+				return function (data) {
+					// add the data as a new point to an existing series
+					chart.series[series_index].addPoint(data);
+				};
+		}(chart,series_index));
+	}
+	
+	// auto refresh the page
+	function auto_refresh(minutes) {
+		setTimeout(function(){
+			load_module();
+		}, minutes*60*1000);
+	}
+	
+	// load status
+	function load_status() {
+		$.getJSON("https://api.ipify.org/?format=json",function(data) {
+			$("#status").html('<i class="fa fa-circle text-success"></i>'+data.ip);
+		});
+	}
+	
+	// load menu
+	function load_menu() {
+		$("#menu").empty()
+		var menu = '<li class="header">MENU</li><li class="treeview">';
+		for (var module_name in conf['modules']) {
+			var module_data = conf['modules'][module_name];
+			if (! module_data['enabled']) continue;
+			menu = menu + '<a href="/"> <i class="fa '+module_data['icon']+'"></i> <span>'+capitalizeFirst(module_name)+'</span></a></li>';
+		}
+		$("#menu").html(menu);
+	}
+
+	// load module
+	function load_module() {
+			$("#body").empty();
+			// for each group
+			for (var group_id in conf["modules"][module]["sensor_groups"]) {
+				group = conf["modules"][module]["sensor_groups"][group_id];
+				// do not render the builtin group
+				if (group_id == "__builtin__") continue;
+				// define the tags to use
+				var row1 = group_id+"_row1";
+				var row2 = group_id+"_row2";
+				var summary_widget = "#"+group_id+"_summary";
+				var summary_current = "#"+group_id+"_current";
+				var summary_current_suffix = "#"+group_id+"_current_suffix";
+				var summary_timestamp = "#"+group_id+"_timestamp";
+				var summary_icon = "#"+group_id+"_icon";
+				var summary_chart = "#"+group_id+"_summary_chart";
+				// start a new row
+				$("#body").append('<div class="row" id="'+row1+'">');
+				
+				// SUMMARY WIDGET
+				// add a new empty widget
+				$("#"+row1).append(get_widget_template(group_id,"summary",group["display_name"]+": summary",3));
+				// add the summary body to it
+				$(summary_widget).html(get_summary_body(group_id));
+				// add the summary chart
+				var options = $.extend(true,{}, conf["charts"]["summary"]);
+				$(summary_chart).highcharts(options);
+				var chart = $(summary_chart).highcharts();
+
+				// add the summary icon
+				var icon_sensor = group['summary_icon'].match(/sensor:\/\/(.+)$/);
+				if (icon_sensor) set_img(summary_icon,module+"/sensors/"+icon_sensor[1])
+				var icon_file = group['summary_icon'].match(/file:\/\/(.+)$/);
+				if (icon_file) $(summary_icon).attr('src','web/images/'+icon_file[1]);
+				
+				// for each sensor
+				for (var sensor_id in group["sensors"]) {
+					var sensor = group["sensors"][sensor_id];
+					sensor['sensor_id']= sensor_id;
+					var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
+					// skip flags
+					if (sensor['format'] == 'string') continue;
+					// if the sensor has to be shown in the summary add the current measure and timestamp
+					if (sensor_id == group['summary_sensor']) {
+						set_html(summary_current,sensor_url+"/current");
+						if ('value_suffix' in sensor) $(summary_current_suffix).html(sensor['value_suffix']);
+						set_html(summary_timestamp,sensor_url+"/timestamp");
+					}
+					// add the sensor to the xAxis
+					chart['xAxis'][0]['categories'].push(sensor["display_name"]);
+					// add the point for yesterday's range
+					add_point(chart,sensor_url+"/yesterday/range",0);
+					// add the point for today's range
+					add_point(chart,sensor_url+"/today/range",1);
+				}
+				
+				// RECENT/HISTORY CHARTS
+				var timeline_charts = {'recent': 3, 'history':6,}
+				// for each timeline chart
+				for (chart_type in timeline_charts) {
+					// append a new empty widget
+					$("#"+row1).append(get_widget_template(group_id,chart_type,group["display_name"]+": "+chart_type,timeline_charts[chart_type]));
+					// set chart options
+					var options = $.extend(true,{}, conf["charts"][chart_type]);
+					// create the chart
+					var timeline_chart = "#"+group_id+"_"+chart_type;
+					$(timeline_chart).highcharts('StockChart',options);
+					var chart = $(timeline_chart).highcharts();
+					// for each sensor
+					for (var sensor_id in group["sensors"]) {
+						var sensor = group["sensors"][sensor_id];
+						sensor['sensor_id']= sensor_id;
+						var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
+						// add a new line to the chart for each series
+						for (var series_name in sensor["timeline_series"]) {
+							add_series(chart,sensor_url+"/"+chart_type+"/"+series_name,sensor,series_name);
+						}
+					}
+				}
+				// end of the row
+				$("#"+row1).append('</div>');
+			} // end for each group
+			auto_refresh(5);
+	}
+	
+	
+	// MAIN
+	$(document).ready(function(){
+		// request the configuration first
+		$.getJSON("config",function(data) {
+			conf = data;
+			// load the status
+			load_status();
+			// load the side menu
+			load_menu();
+			// load the module
+			module = conf['general']['default_module'];
+			if (location.hash) module = location.hash;
+			load_module();
+		});
+	});
+	
+	
+	
+
+	</script>
+
+</body>
+</html>
