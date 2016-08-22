@@ -190,7 +190,8 @@ def web_get_current_timestamp(module,group_id,sensor_id):
         data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
-	return [utils.timestamp_difference(utils.now(),data[0][0]/1000)]
+	if len(data) > 0: return [utils.timestamp_difference(utils.now(),data[0][0]/1000)]
+	else: return data
 
 # return the data of a requested sensor based on the timeframe and stat requested
 def web_get_data(module,group_id,sensor_id,timeframe,stat):

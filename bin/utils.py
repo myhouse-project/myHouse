@@ -27,11 +27,11 @@ def timezone(timestamp):
 def utc(timestamp):
 	return int(timestamp-conf["general"]["timezone_offset_hours"]*conf["constants"]["1_hour"])
 
-# return the now timestamp
+# return the now timestamp (in the local timezone)
 def now():
 	return timezone(int(time.time()))
 
-# return yesterday's timestamp
+# return yesterday's timestamp (in the local timezone)
 def yesterday():
 	return now()-24*conf["constants"]["1_hour"]
 
@@ -39,7 +39,7 @@ def yesterday():
 def last_hour():
 	return now()-60*conf["constants"]["1_minute"]
 
-# generate a given timestamp based on the input
+# generate a given timestamp based on the input (in the local timezone)
 def get_timestamp(years,months,days,hours,minutes,seconds):
 	timestamp = datetime.datetime(years,months,days,hours,minutes,seconds,0)
 	return timezone(int(time.mktime(timestamp.timetuple())))
@@ -64,13 +64,13 @@ def hour_end(timestamp):
         date = datetime.datetime.fromtimestamp(utc(timestamp))
         return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
-# return the recent timestamp (default: last 24 hours)
+# return the recent timestamp
 def recent():
-	return now()-48*conf["constants"]["1_hour"]
+	return now()-conf["charts"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
 
-# return the history timestamp (default: last 1 year)
+# return the history timestamp
 def history():
-	return now()-365*conf["constants"]["1_day"]
+	return now()-conf["charts"]["history_timeframe_days"]*conf["constants"]["1_day"]
 
 # return true if the input is a number
 def is_number(s):

@@ -14,9 +14,11 @@ import sensors
 import scheduler
 schedule = scheduler.get_scheduler()
 import web
+import db
 
 # run the main application
 def run():
+	db.init()
 	# schedule each sensor 
 	schedule.start()
 	sensors.schedule_all()

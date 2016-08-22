@@ -101,4 +101,12 @@ def exists(key):
         log.debug("exists "+key)
         return db.exists(key)
 
-
+# initialize an empty database
+def init():
+	db = connect()
+	# check the version
+	version_key = conf["constants"]["db_schema"]["root"]+":version"
+	if not exists(version_key): set(version_key,conf["constants"]["version"],None)
+	else:
+		version = get(version_key)
+		if version != conf["constants"]["version"]: log.error("database version mismatch (expecting v"+conf["constants"]["version"]+" but found v"+version+")")

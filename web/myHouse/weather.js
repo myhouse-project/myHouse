@@ -10,8 +10,8 @@ $(document).ready(function(){
 	var hour = 3600*1000;
 	var day = 24*hour;
 	var columnrange_data = {};
-	Highcharts.setOptions({global: {timezoneOffset: -timezone_offset * 60}});
-	Highcharts.getOptions().colors[1] = Highcharts.getOptions().colors[6];
+	//Highcharts.setOptions({global: {timezoneOffset: -timezone_offset * 60}});
+	//Highcharts.getOptions().colors[1] = Highcharts.getOptions().colors[6];
 	
 	String.prototype.replaceAll = function (find, replace) {
 		var str = this;
@@ -60,15 +60,17 @@ $(document).ready(function(){
 		return html;
 	}
 	
+	// set the html of a given tag
 	function set_html(tag,url) {
 		$.getJSON(url, function(tag) {
 				return function (data) {
-					if (data.length != 1) return;
+					if (data.length != 1) $(tag).html("N/A");
 					$(tag).html(data[0]);
 				};
 		}(tag));
 	}
 	
+	// set an image src
 	function set_img(tag,url) {
 		$.getJSON(url, function(tag) {
 				return function (data) {
@@ -137,7 +139,6 @@ $(document).ready(function(){
 
 				// add the summary icon
 				var icon_sensor = group['summary_icon'].match(/sensor:\/\/(.+)$/);
-				console.log(icon_sensor)
 				if (icon_sensor) set_img(summary_icon,module+"/sensors/"+icon_sensor[1])
 				var icon_file = group['summary_icon'].match(/file:\/\/(.+)$/);
 				if (icon_file) $(summary_icon).attr('src','web/images/'+icon_file[1]);
