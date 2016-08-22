@@ -19,18 +19,21 @@ constants = {
 	},
 	'sensor_features': {
 		'weather_forecast': {
+			'format': 'string',
                         'calculate_avg': False,
                         'calculate_min_max': False,
                         'show_avg': False,
                         'show_min_max': False,
 		},
 		'weather_alerts': {
+			'format': 'string',
 	                'calculate_avg': False,
 	                'calculate_min_max': False,
                         'show_avg': False,
                         'show_min_max': False,
 		},
 		'temperature': {
+			'format': 'float',
 	                'calculate_avg': True,
 	                'calculate_min_max': True,
 			'show_current': True,
@@ -38,6 +41,7 @@ constants = {
                         'show_min_max': True,
 		},
 		'weather_condition': {
+			'format': 'string',
         	        'calculate_avg': True,
 	                'calculate_min_max': False,
 			'show_current': True,
@@ -45,6 +49,7 @@ constants = {
                         'show_min_max': False,
 		},
 		'temperature_record': {
+			'format': 'float',
         	        'calculate_avg': False,
 	                'calculate_min_max': False,
 			'show_current': False,
@@ -52,6 +57,7 @@ constants = {
                         'show_min_max': True,
 		},
 		'temperature_normal': {
+			'format': 'float',
 			'calculate_avg': False,
 	                'calculate_min_max': False,
 			'show_current': False,
