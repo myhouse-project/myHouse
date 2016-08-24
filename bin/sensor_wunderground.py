@@ -43,14 +43,14 @@ def parse(sensor,data):
 		forecast = []
 		for entry in parsed_json['forecast']['simpleforecast']['forecastday']:
 			forecast_entry = {}
+                        forecast_entry["day"] = entry["date"]["weekday"]
 			forecast_entry["condition"] = entry["icon"]
-			forecast_entry["temp_high"] = entry["high"]["celsius"]
-			forecast_entry["temp_low"] = entry["low"]["celsius"]
-			forecast_entry["day"] = entry["date"]["weekday"]+', '+str(entry["date"]["monthname"])+' '+str(entry["date"]["day"])+' '+str(entry["date"]["year"])
-			forecast_entry["forecast"] = entry["conditions"]+'. '
-			if (entry["pop"] > 0): forecast_entry["forecast"] = forecast_entry["forecast"] + 'Precip. '+str(entry["pop"])+'%. '
-			if (entry["qpf_allday"]["mm"] > 0): forecast_entry["forecast"] = forecast_entry["forecast"] + 'Rain '+str(entry["qpf_allday"]["mm"])+' mm. '
-			if (entry["snow_allday"]["cm"] > 0): forecast_entry["forecast"] = forecast_entry["forecast"] + 'Snow '+str(entry["snow_allday"]["cm"])+' cm. '
+			forecast_entry["temp_high"] = utils.normalize(entry["high"]["celsius"])
+			forecast_entry["temp_low"] = utils.normalize(entry["low"]["celsius"])
+			forecast_entry["description"] = entry["conditions"]
+			forecast_entry["pop"] = entry["pop"] if entry["pop"] > 0 else 0
+			forecast_entry["rain"] = entry["qpf_allday"]["mm"] if entry["qpf_allday"]["mm"] > 0 else 0
+			forecast_entry["snow"] = entry["snow_allday"]["cm"] if entry["snow_allday"]["cm"] > 0 else 0
 			forecast.append(forecast_entry)
 		measure["value"] = json.dumps(forecast)
 	elif sensor["request"] == "temperature_record": 
