@@ -169,8 +169,8 @@
 		var html = '\
 									<div class="box-profile">\
 										<img class="profile-user-img img-responsive img-circle" id="#group_id#_icon" src="web/images/unknown.png">\
-										<h3 class="profile-username text-center"><span id="#group_id#_current">Loading...</span><span id="#group_id#_current_suffix"></span></h3>\
-										<p class="text-muted text-center" id="#group_id#_timestamp">...</p>\
+										<h3 class="profile-username text-center"><span id="#group_id#_current">N/A</span><span id="#group_id#_current_suffix"></span></h3>\
+										<p class="text-muted text-center" id="#group_id#_timestamp">N/A</p>\
 											<ul class="list-group list-group-unbordered">\
 												<li class="list-group-item" id="#group_id#_summary_chart">\
 												</li>\
@@ -193,13 +193,13 @@
 	}
 	
 	// set an image src
-	function set_img(tag,url) {
+	function set_img(tag,url,prefix,suffix) {
 		$.getJSON(url, function(tag) {
 				return function (data) {
 					if (data.length != 1) return;
-					$(tag).attr('src','web/images/'+data[0]+'.png');
+					$(tag).attr('src','web/images/'+prefix+data[0]+suffix);
 				};
-		}(tag));
+		}(tag,prefix,suffix));
 	}
 	
 	// add a new series to a chart
@@ -218,6 +218,9 @@
 					// if the data is a string, add flags
 					if (sensor['format'] == 'string') {
 						flags = [];
+						series['marker'] = {};
+						series['marker']['enabled'] = true;
+						series['marker']['symbol'] = 'url(https://www.highcharts.com/samples/graphics/sun.png)';
 						for (i = 0; i < data.length; i++) {
 							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="20" heigth="20" src="web/images/'+data[i][1]+'.png">'};
 						}
@@ -259,14 +262,122 @@
 		for (var module_name in conf['modules']) {
 			var module_data = conf['modules'][module_name];
 			if (! module_data['enabled']) continue;
-			menu = menu + '<a href="/"> <i class="fa '+module_data['icon']+'"></i> <span>'+capitalizeFirst(module_name)+'</span></a></li>';
+			menu = menu + '<a href="#'+module_name+'"> <i class="fa '+module_data['icon']+'"></i> <span>'+capitalizeFirst(module_name)+'</span></a></li>';
 		}
 		$("#menu").html(menu);
+	}
+	
+	// load version
+	function load_version() {
+		$("#version").html(conf['constants']['version_string']);
 	}
 
 	// load module
 	function load_module() {
-			$("#body").empty();
+		// clean up the body
+		$("#body").empty();
+		
+				
+		// WEATHER MODULE
+		if (module == "weather") {
+			// add forecast
+			$("#body").append('<div class="row" id="forecast">');
+			$.getJSON("weather/sensors/__builtin__/forecast/current", function() {
+				return function (data) {
+					if (data.length == 0) return;
+					forecast_data = JSON.parse(data[0])
+					var forecast_charts = {'temperature': 6, 'pop':4,'rain':2}
+					for (chart_type in forecast_charts) {
+						series = conf["modules"]["weather"]["sensor_groups"]["__builtin__"]["sensors"]["forecast"]["charts"][chart_type]
+						var tag = "#forecast_" + chart_type
+						$("#forecast").append(get_widget_template("forecast",chart_type,"Forecast - "+capitalizeFirst(series["name"]),forecast_charts[chart_type]));
+						var options = $.extend(true,{}, conf["charts"]["summary"]);
+						if (chart_type != "temperature") options["chart"]["type"] = 'bar';
+						if (chart_type == "pop") options["yAxis"]["max"] = 100;
+						$(tag).highcharts(options);
+						var chart = $(tag).highcharts();
+						var data = []
+						var categories = []
+						for (index in forecast_data) {
+							entry = forecast_data[index];
+							categories.push(entry["day"]);
+							if (chart_type == "temperature") data.push([entry["temp_low"],entry["temp_high"]]);
+							else data.push(entry[chart_type]);
+						}
+						chart['xAxis'][0]['categories'] = categories;
+						series["data"] = data;
+						chart.addSeries(series);
+					}
+					
+					$("#body").append('</div>');
+				}
+			}());
+			
+			$("#body").append('<div id="sensors"></div>');
+			
+			
+			
+			
+			
+			
+			// add forecast temperature widget and chart
+			$("#forecast").append(get_widget_template("forecast","temperature","Forecast - Temperature",6));
+			var options = $.extend(true,{}, conf["charts"]["summary"]);
+			$("#forecast_temperature").highcharts(options);
+			var chart_forecast_temperature = $("#forecast_temperature").highcharts();
+
+			// add forecast precipitation probability widget and chart
+			$("#forecast").append(get_widget_template("forecast","pop","Forecast - Chance of Rain",4));
+			var options = $.extend(true,{}, conf["charts"]["summary"]);
+			options["chart"]["type"] = 'bar';
+			options["yAxis"]["max"] = 100;
+			$("#forecast_pop").highcharts(options);
+			var chart_forecast_pop = $("#forecast_pop").highcharts();
+			
+			// add forecast precipitation widget and chart
+			$("#forecast").append(get_widget_template("forecast","rain","Forecast - Precipitation",2));
+			var options = $.extend(true,{}, conf["charts"]["summary"]);
+			options["chart"]["type"] = 'bar';
+			$("#forecast_rain").highcharts(options);
+			var chart_forecast_rain = $("#forecast_rain").highcharts();
+			
+			$.getJSON("weather/sensors/__builtin__/forecast/current", function(chart_forecast_temperature,chart_forecast_pop,chart_forecast_rain) {
+				return function (data) {
+					if (data.length == 0) return;
+					forecast_data = JSON.parse(data[0])
+					var categories = [];
+					var data_temperature = []
+					var data_pop = []
+					var data_rain = []
+					var data_snow = []
+					for (index in forecast_data) {
+						entry = forecast_data[index];
+						categories.push(entry["day"]);
+						data_temperature.push([entry["temp_low"],entry["temp_high"]]);
+						data_pop.push(entry["pop"]);
+						data_rain.push(entry["rain"]);
+						data_snow.push(entry["snow"]);
+					}
+					chart_forecast_temperature['xAxis'][0]['categories'] = categories;
+					chart_forecast_pop['xAxis'][0]['categories'] = categories;
+					chart_forecast_rain['xAxis'][0]['categories'] = categories;
+					var series_temperature = {'name':'Temperature','pointWidth': 10,'data':data_temperature,'dataLabels':{'enabled':true}};
+					var series_pop = {'name':'Precipitation','pointWidth': 10,'data':data_pop};
+					var series_rain = {'name':'Rain','pointWidth': 10,'data':data_rain};
+					var series_snow = {'name':'Snow','pointWidth': 10,'data':data_snow};
+					chart_forecast_temperature.addSeries(series_temperature);
+					chart_forecast_pop.addSeries(series_pop);
+					chart_forecast_rain.addSeries(series_rain);
+					chart_forecast_rain.addSeries(series_snow);
+				};
+			}(chart_forecast_temperature,chart_forecast_pop,chart_forecast_rain));
+			$("#body").append('</div>');
+			$("#body").append('<div id="sensors"></div>');
+			auto_refresh(5);
+		}
+		
+		// COMMON TO ALL MODULE WITH SENSORS
+		if ('sensor_groups' in conf["modules"][module]) {
 			// for each group
 			for (var group_id in conf["modules"][module]["sensor_groups"]) {
 				group = conf["modules"][module]["sensor_groups"][group_id];
@@ -282,11 +393,11 @@
 				var summary_icon = "#"+group_id+"_icon";
 				var summary_chart = "#"+group_id+"_summary_chart";
 				// start a new row
-				$("#body").append('<div class="row" id="'+row1+'">');
+				$("#sensors").append('<div class="row" id="'+row1+'">');
 				
 				// SUMMARY WIDGET
 				// add a new empty widget
-				$("#"+row1).append(get_widget_template(group_id,"summary",group["display_name"]+": summary",3));
+				$("#"+row1).append(get_widget_template(group_id,"summary",group["display_name"]+": Summary",3));
 				// add the summary body to it
 				$(summary_widget).html(get_summary_body(group_id));
 				// add the summary chart
@@ -296,7 +407,8 @@
 
 				// add the summary icon
 				var icon_sensor = group['summary_icon'].match(/sensor:\/\/(.+)$/);
-				if (icon_sensor) set_img(summary_icon,module+"/sensors/"+icon_sensor[1])
+				if (conf['constants']['is_night']) is_night = 'nt_';
+				if (icon_sensor) set_img(summary_icon,module+"/sensors/"+icon_sensor[1],is_night,'.png')
 				var icon_file = group['summary_icon'].match(/file:\/\/(.+)$/);
 				if (icon_file) $(summary_icon).attr('src','web/images/'+icon_file[1]);
 				
@@ -326,7 +438,7 @@
 				// for each timeline chart
 				for (chart_type in timeline_charts) {
 					// append a new empty widget
-					$("#"+row1).append(get_widget_template(group_id,chart_type,group["display_name"]+": "+chart_type,timeline_charts[chart_type]));
+					$("#"+row1).append(get_widget_template(group_id,chart_type,group["display_name"]+": "+capitalizeFirst(chart_type),timeline_charts[chart_type]));
 					// set chart options
 					var options = $.extend(true,{}, conf["charts"][chart_type]);
 					// create the chart
@@ -347,7 +459,8 @@
 				// end of the row
 				$("#"+row1).append('</div>');
 			} // end for each group
-			auto_refresh(5);
+		}
+
 	}
 	
 	
@@ -356,20 +469,19 @@
 		// request the configuration first
 		$.getJSON("config",function(data) {
 			conf = data;
+			// set the version
+			load_version();
 			// load the status
 			load_status();
 			// load the side menu
 			load_menu();
 			// load the module
 			module = conf['general']['default_module'];
-			if (location.hash) module = location.hash;
+			if (location.hash) module = location.hash.replace('#','');
 			load_module();
 		});
 	});
 	
-	
-	
-
 	</script>
 
 </body>

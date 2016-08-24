@@ -68,7 +68,7 @@ def save(plugin,sensor):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if no history has to be kept (e.g. single value)
-		if not sensor["calculate_avg"]: db.delete(key)
+		#if not sensor["calculate_avg"]: db.delete(key)
 		# check if the same value is already stored
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
@@ -219,6 +219,12 @@ def web_get_data(module,group_id,sensor_id,timeframe,stat):
                 start = utils.day_start(utils.yesterday())
                 end = utils.day_end(utils.yesterday())
                 withscores = False
+	elif timeframe == "forecast":
+		# next days measures
+                range = "day"
+                start = utils.day_start(utils.now())
+                end = utils.day_start(utils.now()+(conf["charts"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
+                withscores = True
         else: return data
         # define the key to request
         key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id+":"+range
