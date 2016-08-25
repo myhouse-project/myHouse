@@ -277,106 +277,56 @@
 		// clean up the body
 		$("#body").empty();
 		
-				
 		// WEATHER MODULE
 		if (module == "weather") {
 			// add forecast
 			$("#body").append('<div class="row" id="forecast">');
+			// retrieve the entire forecast data
 			$.getJSON("weather/sensors/__builtin__/forecast/current", function() {
 				return function (data) {
 					if (data.length == 0) return;
 					forecast_data = JSON.parse(data[0])
+					// define the charts to add and their size
 					var forecast_charts = {'temperature': 6, 'pop':4,'rain':2}
+					// for each chart
 					for (chart_type in forecast_charts) {
 						series = conf["modules"]["weather"]["sensor_groups"]["__builtin__"]["sensors"]["forecast"]["charts"][chart_type]
 						var tag = "#forecast_" + chart_type
+						// add an empty widget
 						$("#forecast").append(get_widget_template("forecast",chart_type,"Forecast - "+capitalizeFirst(series["name"]),forecast_charts[chart_type]));
+						// add a chart
 						var options = $.extend(true,{}, conf["charts"]["summary"]);
 						if (chart_type != "temperature") options["chart"]["type"] = 'bar';
 						if (chart_type == "pop") options["yAxis"]["max"] = 100;
 						$(tag).highcharts(options);
 						var chart = $(tag).highcharts();
+						// add prepare the data for the chart
 						var data = []
 						var categories = []
+						count = 0
 						for (index in forecast_data) {
 							entry = forecast_data[index];
 							categories.push(entry["day"]);
 							if (chart_type == "temperature") data.push([entry["temp_low"],entry["temp_high"]]);
 							else data.push(entry[chart_type]);
+							count++
+							if (count >= conf["charts"]["forecast_timeframe_days"]) break;
 						}
+						// add the seriesto the chart
 						chart['xAxis'][0]['categories'] = categories;
 						series["data"] = data;
 						chart.addSeries(series);
 					}
-					
+					//close the forecast
 					$("#body").append('</div>');
 				}
 			}());
-			
-			$("#body").append('<div id="sensors"></div>');
-			
-			
-			
-			
-			
-			
-			// add forecast temperature widget and chart
-			$("#forecast").append(get_widget_template("forecast","temperature","Forecast - Temperature",6));
-			var options = $.extend(true,{}, conf["charts"]["summary"]);
-			$("#forecast_temperature").highcharts(options);
-			var chart_forecast_temperature = $("#forecast_temperature").highcharts();
-
-			// add forecast precipitation probability widget and chart
-			$("#forecast").append(get_widget_template("forecast","pop","Forecast - Chance of Rain",4));
-			var options = $.extend(true,{}, conf["charts"]["summary"]);
-			options["chart"]["type"] = 'bar';
-			options["yAxis"]["max"] = 100;
-			$("#forecast_pop").highcharts(options);
-			var chart_forecast_pop = $("#forecast_pop").highcharts();
-			
-			// add forecast precipitation widget and chart
-			$("#forecast").append(get_widget_template("forecast","rain","Forecast - Precipitation",2));
-			var options = $.extend(true,{}, conf["charts"]["summary"]);
-			options["chart"]["type"] = 'bar';
-			$("#forecast_rain").highcharts(options);
-			var chart_forecast_rain = $("#forecast_rain").highcharts();
-			
-			$.getJSON("weather/sensors/__builtin__/forecast/current", function(chart_forecast_temperature,chart_forecast_pop,chart_forecast_rain) {
-				return function (data) {
-					if (data.length == 0) return;
-					forecast_data = JSON.parse(data[0])
-					var categories = [];
-					var data_temperature = []
-					var data_pop = []
-					var data_rain = []
-					var data_snow = []
-					for (index in forecast_data) {
-						entry = forecast_data[index];
-						categories.push(entry["day"]);
-						data_temperature.push([entry["temp_low"],entry["temp_high"]]);
-						data_pop.push(entry["pop"]);
-						data_rain.push(entry["rain"]);
-						data_snow.push(entry["snow"]);
-					}
-					chart_forecast_temperature['xAxis'][0]['categories'] = categories;
-					chart_forecast_pop['xAxis'][0]['categories'] = categories;
-					chart_forecast_rain['xAxis'][0]['categories'] = categories;
-					var series_temperature = {'name':'Temperature','pointWidth': 10,'data':data_temperature,'dataLabels':{'enabled':true}};
-					var series_pop = {'name':'Precipitation','pointWidth': 10,'data':data_pop};
-					var series_rain = {'name':'Rain','pointWidth': 10,'data':data_rain};
-					var series_snow = {'name':'Snow','pointWidth': 10,'data':data_snow};
-					chart_forecast_temperature.addSeries(series_temperature);
-					chart_forecast_pop.addSeries(series_pop);
-					chart_forecast_rain.addSeries(series_rain);
-					chart_forecast_rain.addSeries(series_snow);
-				};
-			}(chart_forecast_temperature,chart_forecast_pop,chart_forecast_rain));
-			$("#body").append('</div>');
-			$("#body").append('<div id="sensors"></div>');
+			// set the auto refresh
 			auto_refresh(5);
 		}
 		
 		// COMMON TO ALL MODULE WITH SENSORS
+		$("#body").append('<div id="sensors"></div>');
 		if ('sensor_groups' in conf["modules"][module]) {
 			// for each group
 			for (var group_id in conf["modules"][module]["sensor_groups"]) {

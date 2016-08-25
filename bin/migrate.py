@@ -53,6 +53,11 @@ def change_db(database):
 	db.db = None
 	conf['db']['database'] = database
 
+# empty the target database first
+print "Flushing target database..."
+change_db(db_to)
+db.flushdb()
+
 # for each history key to migrate
 print "Migrating historical data..."
 for key_from in history:
