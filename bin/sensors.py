@@ -15,6 +15,7 @@ schedule = scheduler.get_scheduler()
 import sensor_ds18b20
 import sensor_wunderground
 import sensor_weatherchannel
+import sensor_linux
 
 # read data out of a sensor and store the output in the cache
 def poll(plugin,sensor):
@@ -138,6 +139,7 @@ def run(module,group_id,sensor_id,action):
 	if sensor["plugin"] == "ds18b20": plugin = sensor_ds18b20
         elif sensor["plugin"] == "wunderground": plugin = sensor_wunderground
 	elif sensor["plugin"] == "weatherchannel": plugin = sensor_weatherchannel
+	elif sensor["plugin"] == "linux": plugin = sensor_linux
 	else: log.error("Plugin "+sensor["plugin"]+" not supported")
 	# define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
@@ -184,7 +186,7 @@ def schedule_all():
                                 # then schedule it for each refresh interval
        	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,group_id,sensor_id,'save'])
 				# schedule an expire job every day
-				schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[module,group_id,sensor_id,'expire'])
+				schedule.add_job(run,'cron',day="*",args=[module,group_id,sensor_id,'expire'])
                                 if sensor["calculate_avg"]:
        	                                # schedule a summarize job every hour and every day
                	                        log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling summary every hour and day")
