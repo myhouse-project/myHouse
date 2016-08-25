@@ -18,7 +18,7 @@ constants = {
                 'logfile': os.path.abspath(os.path.dirname(__file__))+"/../logs/myHouse.log",
 		'formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
 	},
-	'expire_days': 2,
+	'expire_days': 7,
 }
 
 # return all the configuration settings as an object
