@@ -112,6 +112,17 @@ def summarize(sensor,timeframe,start,end):
                 db.set(key_to_write+":max",max,timestamp)
 	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
 
+# purge old data from the database
+def expire(sensor):
+	total = 0
+	for stat in ["",':hour:min',':hour:avg',':hour:max']:
+		key = sensor['db_sensor']+stat
+		if db.exists(key):
+			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["expire_days"]*conf["constants"]["1_day"])
+			log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+stat+" "+str(total)+" items")
+			total = total + deleted
+	log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
+
 # read or save the measure of a given sensor
 def run(module,group_id,sensor_id,action):
 	# ensure the group and sensor exist
@@ -151,6 +162,9 @@ def run(module,group_id,sensor_id,action):
         elif action == "summarize_day":
 		# every day calculate and save min,max,avg of the previous day (using hourly averages)
                 summarize(sensor,'day',utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
+	elif action == "expire":
+		# purge old data from the database
+		expire(sensor)
 	else: log.error("Unknown action "+action)
 
 # schedule each sensor
@@ -167,13 +181,15 @@ def schedule_all():
                                 log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 				# run it now first
 				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[module,group_id,sensor_id,'save'])
-                                # then schedule it
+                                # then schedule it for each refresh interval
        	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,group_id,sensor_id,'save'])
+				# schedule an expire job every day
+				schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[module,group_id,sensor_id,'expire'])
                                 if sensor["calculate_avg"]:
        	                                # schedule a summarize job every hour and every day
                	                        log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling summary every hour and day")
-                       	                schedule.add_job(run,'cron',hour="*",args=[module,group_id,sensor_id,'summarize_hour'])
-                               	        schedule.add_job(run,'cron',day="*",args=[module,group_id,sensor_id,'summarize_day'])
+                       	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[module,group_id,sensor_id,'summarize_hour'])
+                               	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[module,group_id,sensor_id,'summarize_day'])
 
 # return the latest read of a sensor for a web request
 def web_get_current(module,group_id,sensor_id):
