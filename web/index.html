@@ -120,11 +120,7 @@
 	<script src="web/AdminLTE/menu.js"></script>
 
 	<script type="text/javascript">
-	
-	// variables
-	var refresh_seconds = 5*60;
-	var max_forecast_entries = 6;
-	
+
 	var module = '';
 	var conf = {};
 
@@ -203,24 +199,20 @@
 	}
 	
 	// add a new series to a chart
-	function add_series(chart,url,sensor,series_name) {
-		$.getJSON(url, function(chart,sensor,series_name) {
+	function add_series(chart,url,sensor,series_index) {
+		$.getJSON(url, function(chart,sensor,series_index) {
 				return function (data) {
 					// get the series template
-					var series = $.extend(true,{}, sensor['timeline_series'][series_name]);
-					series['name'] = sensor['display_name']+" "+series_name;
-					series['id'] = sensor['sensor_id']+":"+series_name;
-					// add the sensor suffix
-					if (!('tooltip' in sensor)) series['tooltip'] = {};
-					if ('value_suffix' in sensor) series['tooltip']['valueSuffix'] = sensor['value_suffix'];
+					var series = $.extend(true,{}, sensor['series'][series_index]);
+					series['name'] = sensor['display_name']+" "+sensor['series'][series_index]['series_id'];
+					series['id'] = sensor['sensor_id']+":"+sensor['series'][series_index]['series_id'];
+					// add the sensor suffix and tooltip
+					apply_format(series,sensor['format']);
 					//add the data to it and attach to the chart
 					series['data'] = data;
 					// if the data is a string, add flags
 					if (sensor['format'] == 'string') {
 						flags = [];
-						series['marker'] = {};
-						series['marker']['enabled'] = true;
-						series['marker']['symbol'] = 'url(https://www.highcharts.com/samples/graphics/sun.png)';
 						for (i = 0; i < data.length; i++) {
 							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="20" heigth="20" src="web/images/'+data[i][1]+'.png">'};
 						}
@@ -228,7 +220,7 @@
 					} 
 					chart.addSeries(series);
 				};
-		}(chart,sensor,series_name));
+		}(chart,sensor,series_index));
 	}
 	
 	// add a new point to an existing series
@@ -258,11 +250,11 @@
 	// load menu
 	function load_menu() {
 		$("#menu").empty()
-		var menu = '<li class="header">MENU</li><li class="treeview">';
+		var menu = '<li class="header">MENU</li>';
 		for (var module_name in conf['modules']) {
 			var module_data = conf['modules'][module_name];
 			if (! module_data['enabled']) continue;
-			menu = menu + '<a href="#'+module_name+'"> <i class="fa '+module_data['icon']+'"></i> <span>'+capitalizeFirst(module_name)+'</span></a></li>';
+			menu = menu + '<li><a href="#'+module_name+'"> <i class="fa '+module_data['icon']+'"></i> <span>'+capitalizeFirst(module_name)+'</span></a></li>';
 		}
 		$("#menu").html(menu);
 	}
@@ -271,6 +263,167 @@
 	function load_version() {
 		$("#version").html(conf['constants']['version_string']);
 	}
+	
+	// apply a given format to a chart series
+	function apply_format(series,format) {
+		if (!('tooltip' in series)) series['tooltip'] = {};
+		if (!('dataLabels' in series)) series['dataLabels'] = {};
+		series['tooltip']['valueSuffix'] = conf['constants']['formats'][format]['suffix'];
+		series['dataLabels']['format'] = '{y}'+conf['constants']['formats'][format]['suffix'];
+	}
+	
+	// load the weather forecast
+	function load_weather_forecast() {
+		// retrieve the entire forecast data
+		$.getJSON("weather/sensors/__builtin__/forecast/current", function() {
+			return function (data) {
+				if (data.length == 0) return;
+				forecast_data = JSON.parse(data[0])
+				// find the forecast sensor
+				var sensor;
+				for (i = 0; i < conf["modules"][module]["sensor_groups"].length; i++) {
+					var this_group = conf["modules"][module]["sensor_groups"][i];
+					if (this_group["group_id"] != "__builtin__") continue;
+					for (var j = 0; j < this_group["sensors"].length; j++) {
+						var this_sensor = this_group["sensors"][j];
+						if (this_sensor["sensor_id"] == "forecast") {
+							sensor = this_sensor;
+							break;
+						}
+					}
+				}
+				if (sensor == null) return;
+						
+				// for each series
+				for (var k = 0; k < sensor["series"].length; k++) {
+					series = sensor["series"][k]
+					var tag = "#forecast_" + series["series_id"]
+					// add an empty widget
+					$("#forecast").append(get_widget_template("forecast",series["series_id"],"Forecast - "+capitalizeFirst(series["name"]),series["size"]));
+					// add a chart
+					var options = $.extend(true,{}, conf["constants"]["charts"]["min_max"]);
+					if (series["series_id"] != "temperature") options["chart"]["type"] = 'bar';
+					if (series["series_id"] == "pop") options["yAxis"]["max"] = 100;
+					$(tag).highcharts(options);
+					var chart = $(tag).highcharts();
+					// add prepare the data for the chart
+					var data = []
+					var categories = []
+					count = 0
+					for (index in forecast_data) {
+						entry = forecast_data[index];
+						categories.push(entry["day"]);
+							if (series["series_id"] == "temperature") data.push([entry["temp_low"],entry["temp_high"]]);
+						else data.push(entry[series["series_id"]]);
+						count++
+						if (count >= conf["charts"]["forecast_timeframe_days"]) break;
+					}
+					// add the seriesto the chart
+					chart['xAxis'][0]['categories'] = categories;
+					series["data"] = data;
+					apply_format(series,series['format']);
+					chart.addSeries(series);
+				}
+				//close the forecast
+				$("#body").append('</div>');
+			}
+		}());
+	}
+	
+	// load data from all the sensors of the current module
+	function load_sensors() {
+		// COMMON TO ALL MODULE WITH SENSORS
+		$("#body").append('<div id="sensors"></div>');
+		if ('sensor_groups' in conf["modules"][module]) {
+			// for each group
+			for (i = 0; i < conf["modules"][module]["sensor_groups"].length; i++) {
+				var group = conf["modules"][module]["sensor_groups"][i];
+				// do not render the builtin group
+				if (group["group_id"] == "__builtin__") continue;
+				// define the tags to use
+				var row1 = group["group_id"]+"_row1";
+				var row2 = group["group_id"]+"_row2";
+				var summary_widget = "#"+group["group_id"]+"_summary";
+				var summary_current = "#"+group["group_id"]+"_current";
+				var summary_current_suffix = "#"+group["group_id"]+"_current_suffix";
+				var summary_timestamp = "#"+group["group_id"]+"_timestamp";
+				var summary_icon = "#"+group["group_id"]+"_icon";
+				var summary_chart = "#"+group["group_id"]+"_summary_chart";
+				// start a new row
+				$("#sensors").append('<div class="row" id="'+row1+'">');
+				
+				// SUMMARY WIDGET
+				// add a new empty widget
+				if (group["charts"]["summary"]["size"] > 0) {
+					$("#"+row1).append(get_widget_template(group["group_id"],"summary",group["display_name"]+": Summary",group["charts"]["summary"]["size"]));
+					// add the summary body to it
+					$(summary_widget).html(get_summary_body(group["group_id"]));
+					// add the summary chart
+					var options = $.extend(true,{}, conf["constants"]["charts"]["min_max"]);
+					$(summary_chart).highcharts(options);
+					var chart = $(summary_chart).highcharts();
+
+					// add the summary icon
+					var icon_sensor = group["charts"]["summary"]["icon"].match(/sensor:\/\/(.+)$/);
+					if (conf['constants']['is_night']) is_night = 'nt_';
+					if (icon_sensor) set_img(summary_icon,module+"/sensors/"+icon_sensor[1],is_night,'.png')
+					var icon_file = group["charts"]["summary"]["icon"].match(/file:\/\/(.+)$/);
+					if (icon_file) $(summary_icon).attr('src','web/images/'+icon_file[1]);
+				
+					// for each sensor	
+					for (var j = 0; j < group["sensors"].length; j++) {
+						var sensor = group["sensors"][j];
+						var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+						// skip flags
+						if (sensor['format'] == 'string') continue;
+						// if the sensor has to be shown in the summary add the current measure and timestamp
+						if (sensor["sensor_id"] == group["charts"]["summary"]["current_sensor"]) {
+							set_html(summary_current,sensor_url+"/current");
+							$(summary_current_suffix).html(conf['constants']['formats'][sensor['format']]['suffix']);
+							set_html(summary_timestamp,sensor_url+"/timestamp");
+						}
+						// add the sensor to the xAxis
+						chart['xAxis'][0]['categories'].push(sensor["display_name"]);
+						// add the point for yesterday's range
+						add_point(chart,sensor_url+"/yesterday/range",0);
+						// add the point for today's range
+						add_point(chart,sensor_url+"/today/range",1);
+					}
+				}
+				
+				// RECENT/HISTORY CHARTS
+				var timeline_charts = ['recent','history'];
+				// for each timeline chart
+				for (index in timeline_charts) {
+					var chart_type = timeline_charts[index];
+					if (group["charts"][chart_type]["size"] > 0) {
+						// append a new empty widget
+						$("#"+row1).append(get_widget_template(group["group_id"],chart_type,group["display_name"]+": "+capitalizeFirst(chart_type),group["charts"][chart_type]["size"]));
+						// set chart options
+						var options = $.extend(true,{}, conf["constants"]["charts"]["timeline_"+chart_type]);
+						// create the chart
+						var timeline_chart = "#"+group["group_id"]+"_"+chart_type;
+						$(timeline_chart).highcharts('StockChart',options);
+						var chart = $(timeline_chart).highcharts();
+						// for each sensor	
+						for (var j = 0; j < group["sensors"].length; j++) {
+							var sensor = group["sensors"][j];
+							var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+							// add a new line to the chart for each series
+							if (! ("series" in sensor)) continue;
+							for (var k = 0; k < sensor["series"].length; k++) {
+								series = sensor["series"][k]
+								add_series(chart,sensor_url+"/"+chart_type+"/"+series["series_id"],sensor,k);
+							}
+						}
+					}
+				}
+				// end of the row
+				$("#"+row1).append('</div>');
+			} // end for each group
+		}
+	}
+	
 
 	// load module
 	function load_module() {
@@ -281,135 +434,14 @@
 		if (module == "weather") {
 			// add forecast
 			$("#body").append('<div class="row" id="forecast">');
-			// retrieve the entire forecast data
-			$.getJSON("weather/sensors/__builtin__/forecast/current", function() {
-				return function (data) {
-					if (data.length == 0) return;
-					forecast_data = JSON.parse(data[0])
-					// define the charts to add and their size
-					var forecast_charts = {'temperature': 6, 'pop':4,'rain':2}
-					// for each chart
-					for (chart_type in forecast_charts) {
-						series = conf["modules"]["weather"]["sensor_groups"]["__builtin__"]["sensors"]["forecast"]["charts"][chart_type]
-						var tag = "#forecast_" + chart_type
-						// add an empty widget
-						$("#forecast").append(get_widget_template("forecast",chart_type,"Forecast - "+capitalizeFirst(series["name"]),forecast_charts[chart_type]));
-						// add a chart
-						var options = $.extend(true,{}, conf["charts"]["summary"]);
-						if (chart_type != "temperature") options["chart"]["type"] = 'bar';
-						if (chart_type == "pop") options["yAxis"]["max"] = 100;
-						$(tag).highcharts(options);
-						var chart = $(tag).highcharts();
-						// add prepare the data for the chart
-						var data = []
-						var categories = []
-						count = 0
-						for (index in forecast_data) {
-							entry = forecast_data[index];
-							categories.push(entry["day"]);
-							if (chart_type == "temperature") data.push([entry["temp_low"],entry["temp_high"]]);
-							else data.push(entry[chart_type]);
-							count++
-							if (count >= conf["charts"]["forecast_timeframe_days"]) break;
-						}
-						// add the seriesto the chart
-						chart['xAxis'][0]['categories'] = categories;
-						series["data"] = data;
-						chart.addSeries(series);
-					}
-					//close the forecast
-					$("#body").append('</div>');
-				}
-			}());
+			load_weather_forecast();
 			// set the auto refresh
 			auto_refresh(5);
 		}
 		
-		// COMMON TO ALL MODULE WITH SENSORS
-		$("#body").append('<div id="sensors"></div>');
-		if ('sensor_groups' in conf["modules"][module]) {
-			// for each group
-			for (var group_id in conf["modules"][module]["sensor_groups"]) {
-				group = conf["modules"][module]["sensor_groups"][group_id];
-				// do not render the builtin group
-				if (group_id == "__builtin__") continue;
-				// define the tags to use
-				var row1 = group_id+"_row1";
-				var row2 = group_id+"_row2";
-				var summary_widget = "#"+group_id+"_summary";
-				var summary_current = "#"+group_id+"_current";
-				var summary_current_suffix = "#"+group_id+"_current_suffix";
-				var summary_timestamp = "#"+group_id+"_timestamp";
-				var summary_icon = "#"+group_id+"_icon";
-				var summary_chart = "#"+group_id+"_summary_chart";
-				// start a new row
-				$("#sensors").append('<div class="row" id="'+row1+'">');
-				
-				// SUMMARY WIDGET
-				// add a new empty widget
-				$("#"+row1).append(get_widget_template(group_id,"summary",group["display_name"]+": Summary",3));
-				// add the summary body to it
-				$(summary_widget).html(get_summary_body(group_id));
-				// add the summary chart
-				var options = $.extend(true,{}, conf["charts"]["summary"]);
-				$(summary_chart).highcharts(options);
-				var chart = $(summary_chart).highcharts();
+		// load data from the sensors of the current module
+		load_sensors();
 
-				// add the summary icon
-				var icon_sensor = group['summary_icon'].match(/sensor:\/\/(.+)$/);
-				if (conf['constants']['is_night']) is_night = 'nt_';
-				if (icon_sensor) set_img(summary_icon,module+"/sensors/"+icon_sensor[1],is_night,'.png')
-				var icon_file = group['summary_icon'].match(/file:\/\/(.+)$/);
-				if (icon_file) $(summary_icon).attr('src','web/images/'+icon_file[1]);
-				
-				// for each sensor
-				for (var sensor_id in group["sensors"]) {
-					var sensor = group["sensors"][sensor_id];
-					sensor['sensor_id']= sensor_id;
-					var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
-					// skip flags
-					if (sensor['format'] == 'string') continue;
-					// if the sensor has to be shown in the summary add the current measure and timestamp
-					if (sensor_id == group['summary_sensor']) {
-						set_html(summary_current,sensor_url+"/current");
-						if ('value_suffix' in sensor) $(summary_current_suffix).html(sensor['value_suffix']);
-						set_html(summary_timestamp,sensor_url+"/timestamp");
-					}
-					// add the sensor to the xAxis
-					chart['xAxis'][0]['categories'].push(sensor["display_name"]);
-					// add the point for yesterday's range
-					add_point(chart,sensor_url+"/yesterday/range",0);
-					// add the point for today's range
-					add_point(chart,sensor_url+"/today/range",1);
-				}
-				
-				// RECENT/HISTORY CHARTS
-				var timeline_charts = {'recent': 3, 'history':6,}
-				// for each timeline chart
-				for (chart_type in timeline_charts) {
-					// append a new empty widget
-					$("#"+row1).append(get_widget_template(group_id,chart_type,group["display_name"]+": "+capitalizeFirst(chart_type),timeline_charts[chart_type]));
-					// set chart options
-					var options = $.extend(true,{}, conf["charts"][chart_type]);
-					// create the chart
-					var timeline_chart = "#"+group_id+"_"+chart_type;
-					$(timeline_chart).highcharts('StockChart',options);
-					var chart = $(timeline_chart).highcharts();
-					// for each sensor
-					for (var sensor_id in group["sensors"]) {
-						var sensor = group["sensors"][sensor_id];
-						sensor['sensor_id']= sensor_id;
-						var sensor_url = module+"/sensors/"+group_id+"/"+sensor_id;
-						// add a new line to the chart for each series
-						for (var series_name in sensor["timeline_series"]) {
-							add_series(chart,sensor_url+"/"+chart_type+"/"+series_name,sensor,series_name);
-						}
-					}
-				}
-				// end of the row
-				$("#"+row1).append('</div>');
-			} // end for each group
-		}
 
 	}
 	
@@ -427,8 +459,11 @@
 			load_menu();
 			// load the module
 			module = conf['general']['default_module'];
-			if (location.hash) module = location.hash.replace('#','');
 			load_module();
+			window.onhashchange = function() {
+				if (location.hash) module = location.hash.replace('#','');
+				load_module();
+			};
 		});
 	});
 	

@@ -127,14 +127,18 @@ def expire(sensor):
 # read or save the measure of a given sensor
 def run(module,group_id,sensor_id,action):
 	# ensure the group and sensor exist
+	sensor = None
 	if module not in conf['modules']: log.error("["+module+"] not configured")
-	if group_id not in conf['modules'][module]['sensor_groups']: log.error("["+module+"]["+group_id+"] not configured")
-	if sensor_id not in conf['modules'][module]['sensor_groups'][group_id]['sensors']: log.error("["+module+"]["+group_id+"]["+sensor_id+"] not configured")
-	# add to the sensor object all the required info
-	sensor = conf['modules'][module]['sensor_groups'][group_id]['sensors'][sensor_id]
-	sensor['module'] = module
-	sensor['group_id'] = group_id
-	sensor['sensor_id'] = sensor_id
+	for this_group in conf['modules'][module]['sensor_groups']:
+		if this_group['group_id'] != group_id: continue
+		for this_sensor in this_group['sensors']:
+			if this_sensor['sensor_id'] != sensor_id: continue
+			else: 
+				sensor = this_sensor
+				sensor['module'] = module
+				sensor['group_id'] = this_group['group_id']
+				break
+	if sensor is None: log.error("["+module+"]["+group_id+"]["+sensor_id+"] not configured")
         # determine the plugin to use 
 	if sensor["plugin"] == "ds18b20": plugin = sensor_ds18b20
         elif sensor["plugin"] == "wunderground": plugin = sensor_wunderground
@@ -176,22 +180,23 @@ def schedule_all():
 		# skip modules without sensors
 		if "sensor_groups" not in conf["modules"][module]: continue
 	        # for each group of sensors
-                for group_id in conf["modules"][module]["sensor_groups"]:
+                for group in conf["modules"][module]["sensor_groups"]:
 			# for each sensor of the group
-			for sensor_id in conf["modules"][module]["sensor_groups"][group_id]["sensors"]:
-				sensor = conf["modules"][module]["sensor_groups"][group_id]["sensors"][sensor_id]
-                                log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
+			for sensor in group["sensors"]:
+				sensor['module'] = module
+				sensor['group_id'] = group['group_id']
+                                log.info("["+module+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 				# run it now first
-				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[module,group_id,sensor_id,'save'])
+				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[module,sensor['group_id'],sensor['sensor_id'],'save'])
                                 # then schedule it for each refresh interval
-       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,group_id,sensor_id,'save'])
+       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,sensor['group_id'],sensor['sensor_id'],'save'])
 				# schedule an expire job every day
-				schedule.add_job(run,'cron',day="*",args=[module,group_id,sensor_id,'expire'])
+				schedule.add_job(run,'cron',day="*",args=[module,sensor['group_id'],sensor['sensor_id'],'expire'])
                                 if sensor["calculate_avg"]:
        	                                # schedule a summarize job every hour and every day
-               	                        log.info("["+module+"]["+group_id+"]["+sensor_id+"] scheduling summary every hour and day")
-                       	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[module,group_id,sensor_id,'summarize_hour'])
-                               	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[module,group_id,sensor_id,'summarize_day'])
+               	                        log.info("["+module+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
+                       	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[module,sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
+                               	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[module,sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 
 # return the latest read of a sensor for a web request
 def web_get_current(module,group_id,sensor_id):
