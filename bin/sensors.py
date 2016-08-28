@@ -23,14 +23,14 @@ import plugin_url
 def poll(plugin,sensor):
 	# poll the data
 	data = None
-	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
+	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
         try: 
 		# retrieve the raw data 
 		data = plugin.poll(sensor)
 	        # store it in the cache
 	        db.set(sensor["db_cache"],data,utils.now())
 	except Exception,e: 
-		log.warning("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to poll: "+utils.get_exception(e))
+		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to poll: "+utils.get_exception(e))
 	return data
 
 # parse the data of a sensor from the cache and return the value read
@@ -43,9 +43,9 @@ def parse(plugin,sensor):
 		measures = plugin.parse(sensor,data)
 		# format each values
 		for i in range(len(measures)): measures[i]["value"] = utils.normalize(measures[i]["value"])
-		log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
+		log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
-		log.warning("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to parse "+str(data)+": "+utils.get_exception(e))
+		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to parse "+str(data)+": "+utils.get_exception(e))
 	# return the structured data
 	return measures
 
@@ -57,7 +57,7 @@ def save(plugin,sensor):
 		data = db.range(sensor["db_cache"],withscores=True)
 		cache_timestamp = data[0][0]
 	# if too old, refresh it
-	if utils.now() - cache_timestamp > conf['modules'][sensor["module"]]['cache_valid_for_seconds']:
+	if utils.now() - cache_timestamp > conf['constants']['cache_expire_min']*conf["constants"]["1_minute"]:
 		# if an exception occurred, skip this sensor
 		if poll(plugin,sensor) is None: return
 	# get the parsed data
@@ -76,10 +76,10 @@ def save(plugin,sensor):
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
 			# same value and same timestamp, do not store
-			log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
+			log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
 			return
 		# store the value into the database
-		log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
+		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
 		if sensor["calculate_avg"]:
@@ -113,7 +113,7 @@ def summarize(sensor,timeframe,start,end):
 		max = utils.max(data)
 		db.deletebyscore(key_to_write+":max",start,end)
                 db.set(key_to_write+":max",max,timestamp)
-	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
+	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
 
 # purge old data from the database
 def expire(sensor):
@@ -121,26 +121,16 @@ def expire(sensor):
 	for stat in ["",':hour:min',':hour:avg',':hour:max']:
 		key = sensor['db_sensor']+stat
 		if db.exists(key):
-			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["expire_days"]*conf["constants"]["1_day"])
-			log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+stat+" "+str(total)+" items")
+			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["data_expire_days"]*conf["constants"]["1_day"])
+			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+stat+" "+str(total)+" items")
 			total = total + deleted
-	log.info("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
+	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
 
 # read or save the measure of a given sensor
-def run(module,group_id,sensor_id,action):
+def run(module_id,group_id,sensor_id,action):
 	# ensure the group and sensor exist
-	sensor = None
-	if module not in conf['modules']: log.error("["+module+"] not configured")
-	for this_group in conf['modules'][module]['sensor_groups']:
-		if this_group['group_id'] != group_id: continue
-		for this_sensor in this_group['sensors']:
-			if this_sensor['sensor_id'] != sensor_id: continue
-			else: 
-				sensor = this_sensor
-				sensor['module'] = module
-				sensor['group_id'] = this_group['group_id']
-				break
-	if sensor is None: log.error("["+module+"]["+group_id+"]["+sensor_id+"] not configured")
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None: log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not configured")
         # determine the plugin to use 
 	if sensor["plugin"] == "ds18b20": plugin = plugin_ds18b20
         elif sensor["plugin"] == "wunderground": plugin = plugin_wunderground
@@ -149,11 +139,11 @@ def run(module,group_id,sensor_id,action):
 	elif sensor["plugin"] == "url": plugin = plugin_url
 	else: log.error("Plugin "+sensor["plugin"]+" not supported")
 	# define the database schema
-        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
+        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
 	sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
-        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor)
+        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor)
 	# execute the action
-	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
+	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
 	if action == "poll":
 		# delete from the cache the previous value 
 		db.delete(sensor['db_cache'])
@@ -181,56 +171,57 @@ def schedule_all():
         # for each module
         for module in conf["modules"]:
 		# skip modules without sensors
-		if "sensor_groups" not in conf["modules"][module]: continue
+		if "sensor_groups" not in module: continue
 	        # for each group of sensors
-                for group in conf["modules"][module]["sensor_groups"]:
+                for group in module["sensor_groups"]:
 			# for each sensor of the group
+			if "sensors" not in group: continue
 			for sensor in group["sensors"]:
-				sensor['module'] = module
+				sensor['module_id'] = module['module_id']
 				sensor['group_id'] = group['group_id']
-                                log.info("["+module+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
+                                log.info("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 				# run it now first
-				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[module,sensor['group_id'],sensor['sensor_id'],'save'])
+				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                 # then schedule it for each refresh interval
-       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[module,sensor['group_id'],sensor['sensor_id'],'save'])
+       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
 				# schedule an expire job every day
-				schedule.add_job(run,'cron',day="*",args=[module,sensor['group_id'],sensor['sensor_id'],'expire'])
+				schedule.add_job(run,'cron',day="*",args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
                                 if sensor["calculate_avg"]:
        	                                # schedule a summarize job every hour and every day
-               	                        log.info("["+module+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
-                       	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[module,sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
-                               	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[module,sensor['group_id'],sensor['sensor_id'],'summarize_day'])
+               	                        log.info("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
+                       	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
+                               	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 
 # return the latest read of a sensor for a web request
-def web_get_current(module,group_id,sensor_id):
+def web_get_current(module_id,group_id,sensor_id):
         data = []
-        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True)
 	return data
 
 # return the latest image of a sensor for a web request
-def web_get_image(module,group_id,sensor_id):
+def web_get_image(module_id,group_id,sensor_id):
         data = []
-        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True)
-	if len(data) == 1: 
+	if len(data) == 1 and data[0] != "": 
 		return base64.b64decode(data[0])
 	else: 
 		with open('../web/images/image_unavailable.png','r') as content_file:
                         return content_file.read()
 
 # return the time difference between now and the latest measure
-def web_get_current_timestamp(module,group_id,sensor_id):
+def web_get_current_timestamp(module_id,group_id,sensor_id):
         data = []
-        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
 	if len(data) > 0: return [utils.timestamp_difference(utils.now(),data[0][0]/1000)]
 	else: return data
 
 # return the data of a requested sensor based on the timeframe and stat requested
-def web_get_data(module,group_id,sensor_id,timeframe,stat):
+def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
         data = []
         # get the parameters for the requested timeframe
         if timeframe == "recent":
@@ -265,7 +256,7 @@ def web_get_data(module,group_id,sensor_id,timeframe,stat):
                 withscores = True
         else: return data
         # define the key to request
-        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id+":"+range
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id+":"+range
         requested_stat = stat
         # if a range is requested, start asking for the min
         if stat == "range": requested_stat = "min"
@@ -283,6 +274,6 @@ def web_get_data(module,group_id,sensor_id,timeframe,stat):
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
-	if (len(sys.argv) != 5): print "Usage: sensors.py <module> <group_id> <sensor_id> <action>"
+	if (len(sys.argv) != 5): print "Usage: sensors.py <module_id> <group_id> <sensor_id> <action>"
 	else: run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
 

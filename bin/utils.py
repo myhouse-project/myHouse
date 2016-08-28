@@ -155,4 +155,19 @@ def timestamp_difference(date1,date2):
 def merge(template,delta):
 	new_dict = template.copy()
 	new_dict.update(delta)
-	
+
+# return the configuration of a given sensor	
+def get_sensor(module_id,group_id,sensor_id):
+        sensor = None
+        for this_module in conf['modules']:
+                if this_module['module_id'] != module_id: continue
+                for this_group in this_module['sensor_groups']:
+                        if this_group['group_id'] != group_id: continue
+                        for this_sensor in this_group['sensors']:
+                                if this_sensor['sensor_id'] != sensor_id: continue
+                                else:
+                                        sensor = this_sensor
+                                        sensor['module_id'] = this_module['module_id']
+                                        sensor['group_id'] = this_group['group_id']
+                                        break
+	return sensor

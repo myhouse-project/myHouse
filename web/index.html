@@ -121,7 +121,7 @@
 
 	<script type="text/javascript">
 
-	var module = '';
+	var module_id = '';
 	var conf = {};
 
 	// helper to replace all occurences in a string
@@ -253,10 +253,10 @@
 	function load_menu() {
 		$("#menu").empty()
 		var menu = '<li class="header">MENU</li>';
-		for (var module_name in conf['modules']) {
-			var module_data = conf['modules'][module_name];
-			if (! module_data['enabled']) continue;
-			menu = menu + '<li><a href="#'+module_name+'"> <i class="fa '+module_data['icon']+'"></i> <span>'+capitalizeFirst(module_name)+'</span></a></li>';
+		for (var i = 0; i < conf['modules'].length; i++) {
+			var module = conf['modules'][i];
+			if (! module['enabled']) continue;
+			menu = menu + '<li><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(module['display_name'])+'</span></a></li>';
 		}
 		$("#menu").html(menu);
 	}
@@ -274,17 +274,26 @@
 		series['dataLabels']['format'] = '{y}'+conf['constants']['formats'][format]['suffix'];
 	}
 	
+	// return a module data
+	function get_module() {
+		for (i = 0; i < conf["modules"].length; i++) {
+			var module = conf["modules"][i];
+			if (module["module_id"] == module_id) return module;
+		}
+	}
+	
 	// return a sensor group data
-	function get_group(module,group_id) {
-		for (i = 0; i < conf["modules"][module]["sensor_groups"].length; i++) {
-			var group = conf["modules"][module]["sensor_groups"][i];
+	function get_group(group_id) {
+		module = get_module();
+		for (i = 0; i < module["sensor_groups"].length; i++) {
+			var group = module["sensor_groups"][i];
 			if (group["group_id"] == group_id) return group;
 		}
 	}
 	
 	// return a sensor data
-	function get_sensor(module,group_id,sensor_id) {
-		group = get_group(module,group_id);
+	function get_sensor(group_id,sensor_id) {
+		group = get_group(group_id);
 		for (var j = 0; j < group["sensors"].length; j++) {
 			var sensor = group["sensors"][j];
 			if (sensor["sensor_id"] == sensor_id) return sensor;
@@ -313,13 +322,13 @@
 		var is_night = ''
 		if (conf['constants']['is_night']) is_night = 'nt_';
 		var icon_sensor = widget["icon"].match(/sensor:\/\/(.+)$/);
-		if (icon_sensor) set_img(tag+"_icon",module+"/sensors/"+icon_sensor[1],is_night,'.png')
+		if (icon_sensor) set_img(tag+"_icon",module_id+"/sensors/"+icon_sensor[1],is_night,'.png')
 		var icon_file = widget["icon"].match(/file:\/\/(.+)$/);
 		if (icon_file) $(tag+"_icon").attr('src','web/images/'+icon_file[1]);
 		// add current data and icon
-		var sensor = get_sensor(module,group["group_id"],widget["sensor"])
+		var sensor = get_sensor(group["group_id"],widget["sensor"])
 		if (sensor == null) return;
-		var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		set_html(tag+"_current",sensor_url+"/current");
 		$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
 		set_html(tag+"_timestamp",sensor_url+"/timestamp");
@@ -330,7 +339,7 @@
 		// for each sensor	
 		for (var j = 0; j < group["sensors"].length; j++) {
 			var sensor = group["sensors"][j];
-			var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+			var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 			// skip flags
 			if (sensor['format'] == 'string') continue;
 			// add the sensor to the xAxis
@@ -355,7 +364,7 @@
 		// for each sensor
 		for (var j = 0; j < group["sensors"].length; j++) {
 			var sensor = group["sensors"][j];
-			var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+			var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 			if (! ("series" in sensor)) continue;
 			// add each series, to the chart
 			for (var s = 0; s < sensor["series"].length; s++) {
@@ -369,7 +378,7 @@
 	function add_chart_widget(row,widget,group) {
 		if (widget["size"] == 0) return;
 		// retrieve the sensor referenced by the widget
-		var sensor = get_sensor(module,group["group_id"],widget["sensor"]);
+		var sensor = get_sensor(group["group_id"],widget["sensor"]);
 		var tag = "#"+group["group_id"]+"_"+sensor["sensor_id"];
 		// append an empty widget
 		$("#"+row).append(get_widget_template(group["group_id"],sensor["sensor_id"],group["display_name"]+": "+sensor["display_name"],widget["size"]));
@@ -379,7 +388,7 @@
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
 		// define the sensor URL
-		var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		// add each series, to the chart
 		if (! ("series" in sensor)) return;
 		for (var s = 0; s < sensor["series"].length; s++) {
@@ -393,8 +402,8 @@
 	function add_image_widget(row,widget,group) {
 		if (widget["size"] == 0) return;
 		// retrieve the sensor referenced by the widget
-		var sensor = get_sensor(module,group["group_id"],widget["sensor"]);
-		var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+		var sensor = get_sensor(group["group_id"],widget["sensor"]);
+		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		var tag = "#"+group["group_id"]+"_"+sensor["sensor_id"];
 		// append an empty widget
 		$("#"+row).append(get_widget_template(group["group_id"],sensor["sensor_id"],group["display_name"]+": "+sensor["display_name"],widget["size"]));
@@ -404,10 +413,11 @@
 	// load data from all the sensors of the current module
 	function load_sensors() {
 		$("#body").append('<div id="sensors"></div>');
-		if ('sensor_groups' in conf["modules"][module]) {
+		var module = get_module();
+		if ('sensor_groups' in module) {
 			// for each group
-			for (i = 0; i < conf["modules"][module]["sensor_groups"].length; i++) {
-				var group = conf["modules"][module]["sensor_groups"][i];
+			for (i = 0; i < module["sensor_groups"].length; i++) {
+				var group = module["sensor_groups"][i];
 				// start a new row
 				var row = group["group_id"]+"_row";
 				$("#sensors").append('<div class="row" id="'+row+'">');
@@ -430,13 +440,7 @@
 	function load_module() {
 		// clean up the body
 		$("#body").empty();
-		
-		// WEATHER MODULE
-		if (module == "weather") {
-			// set the auto refresh
-			auto_refresh(5);
-		}
-		
+		auto_refresh(5);
 		// load data from the sensors of the current module
 		load_sensors();
 
@@ -456,11 +460,11 @@
 			// load the side menu
 			load_menu();
 			// load the module
-			module = conf['general']['default_module'];
-			if (location.hash) module = location.hash.replace('#','');
+			module_id = conf['general']['default_module'];
+			if (location.hash) module_id = location.hash.replace('#','');
 			load_module();
 			window.onhashchange = function() {
-				if (location.hash) module = location.hash.replace('#','');
+				if (location.hash) module_id = location.hash.replace('#','');
 				load_module();
 			};
 		});

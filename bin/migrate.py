@@ -104,12 +104,11 @@ for key_from in recent:
 		key_split = key_to.split(":")
 		group_id = key_split[-2]
 		sensor_id = key_split[-1]
-		module = 'weather'
-	        sensor = conf['modules'][module]['sensor_groups'][group_id]['sensors'][sensor_id]
-	        sensor['module'] = module
+		module_id = 'weather'
+	        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	        sensor['module_id'] = module_id
 	        sensor['group_id'] = group_id
-        	sensor['sensor_id'] = sensor_id
-	        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
+	        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
 	        sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 		sensors.summarize(sensor,'hour',utils.hour_start(timestamp),utils.hour_end(timestamp))
                 count = count +1
