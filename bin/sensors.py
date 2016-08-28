@@ -12,10 +12,11 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 
-import sensor_ds18b20
-import sensor_wunderground
-import sensor_weatherchannel
-import sensor_linux
+import plugin_ds18b20
+import plugin_wunderground
+import plugin_weatherchannel
+import plugin_linux
+import plugin_url
 
 # read data out of a sensor and store the output in the cache
 def poll(plugin,sensor):
@@ -140,15 +141,16 @@ def run(module,group_id,sensor_id,action):
 				break
 	if sensor is None: log.error("["+module+"]["+group_id+"]["+sensor_id+"] not configured")
         # determine the plugin to use 
-	if sensor["plugin"] == "ds18b20": plugin = sensor_ds18b20
-        elif sensor["plugin"] == "wunderground": plugin = sensor_wunderground
-	elif sensor["plugin"] == "weatherchannel": plugin = sensor_weatherchannel
-	elif sensor["plugin"] == "linux": plugin = sensor_linux
+	if sensor["plugin"] == "ds18b20": plugin = plugin_ds18b20
+        elif sensor["plugin"] == "wunderground": plugin = plugin_wunderground
+	elif sensor["plugin"] == "weatherchannel": plugin = plugin_weatherchannel
+	elif sensor["plugin"] == "linux": plugin = plugin_linux
+	elif sensor["plugin"] == "url": plugin = plugin_url
 	else: log.error("Plugin "+sensor["plugin"]+" not supported")
 	# define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":sensors:"+sensor["group_id"]
 	sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
-        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor["request"])
+        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor)
 	# execute the action
 	log.debug("["+sensor["module"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
 	if action == "poll":
