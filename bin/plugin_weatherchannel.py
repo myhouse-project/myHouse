@@ -1,8 +1,4 @@
 #!/usr/bin/python
-##
-# Sensor for: Weather Channel
-# args: [<latitude>,<longitude>]
-# measures: alerts
 
 import sys
 import os
@@ -24,7 +20,7 @@ def poll(sensor):
 	location = sensor["args"][1].replace(',','/')
 	if sensor["request"] == "weather_alerts":
 		# request the web page
-		return utils.get(url+location+'/'+cache_schema(sensor["request"])+'/wwir.json?apiKey='+api_key+'&units=m&language=en')
+		return utils.web_get(url+location+'/'+cache_schema(sensor)+'/wwir.json?apiKey='+api_key+'&units=m&language=en')
 
 # parse the data
 def parse(sensor,data):
@@ -43,5 +39,5 @@ def parse(sensor,data):
         return measures
 
 # return the cache schema
-def cache_schema(request):
-	if request == "weather_alerts": return "forecast"
+def cache_schema(sensor):
+	if sensor['request'] == "weather_alerts": return "forecast"

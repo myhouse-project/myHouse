@@ -1,8 +1,4 @@
 #!/usr/bin/python
-##
-# Sensor for DS18B20
-# args: [<latitude>,<longitude>]
-# measures: temperature
 
 import sys
 import os
@@ -34,6 +30,6 @@ def parse(sensor,data):
         return measures
 
 # return the cache schema
-def cache_schema(request):
-	if request == "temperature": return "temperature"
+def cache_schema(sensor):
+	if sensor['request'] == "temperature": return "temperature"
 

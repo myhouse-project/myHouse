@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import logging
 import os
+import time
 
 # constants
 constants = {
@@ -75,13 +76,34 @@ constants = {
 						'enabled': True,
 					},					
 				},
+				'bar': {
+					'pointWidth': 10,
+					'dataLabels': { 
+						'enabled': True, 
+					},
+				},
 			},
-			'series': [
-				{
-					'data': [],
-				}
-			],
 		},
+                'inverted_delta': {
+                        'chart': {
+                                'inverted': True,
+                                'height': 194,
+                        },
+                        'xAxis': {
+                                'type': 'datetime',
+				'tickInterval': 24* 3600 * 1000,
+                                'tickWidth': 0,
+                                'gridLineWidth': 0,
+                        },
+                        'yAxis': {
+                                'title': '',
+                        },
+                        'tooltip': {
+                                'shared': True,
+                        },
+                        'series': [
+                        ],
+                },
 		'min_max_delta': {
 			'chart': {
 				'type': 'columnrange',
@@ -89,6 +111,7 @@ constants = {
 				'height': 194,
 			},
 			'xAxis': {
+				'type': 'datetime',
 				'categories': [],
 			},
 			'yAxis': {
@@ -152,8 +175,13 @@ constants['charts']['timeline_recent'] = constants['charts']['template'].copy()
 constants['charts']['timeline_recent'].update(constants['charts']['timeline_recent_delta'])
 constants['charts']['timeline_history'] = constants['charts']['template'].copy()
 constants['charts']['timeline_history'].update(constants['charts']['timeline_history_delta'])
+constants['charts']['inverted'] = constants['charts']['template'].copy()
+constants['charts']['inverted'].update(constants['charts']['inverted_delta'])
 
 # return all the configuration settings as an object
 def get_constants():
-    return constants
-
+	is_night = False
+	hour = int(time.strftime("%H"))
+	if hour >= 20 or hour <= 6: is_night = True;
+	constants['is_night'] = is_night
+	return constants
