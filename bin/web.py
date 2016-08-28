@@ -45,6 +45,11 @@ def get_config():
 def sensor_get_current(module,group_id,sensor_id):
 	return json.dumps(sensors.web_get_current(module,group_id,sensor_id))
 
+# return the latest image of a sensor
+@app.route('/<module>/sensors/<group_id>/<sensor_id>/image')
+def sensor_get_image(module,group_id,sensor_id):
+        return sensors.web_get_image(module,group_id,sensor_id)
+
 # return the time difference between now and the latest measure
 @app.route('/<module>/sensors/<group_id>/<sensor_id>/timestamp')
 def sensor_get_current_timestamp(module,group_id,sensor_id):

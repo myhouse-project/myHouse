@@ -145,7 +145,7 @@
 									<h3 class="box-title">#title#</h3>\
 								</div>\
 								<div class="box-body no-padding box-primary">\
-								    <div class="box-body" id="#group_id#_#type#">\
+								    <div class="box-body" id="#group_id#_#type#" align="center">\
 									</div>\
 								</div>\
 							</div>\
@@ -389,6 +389,18 @@
 		}
 	}
 	
+	// add an image widget
+	function add_image_widget(row,widget,group) {
+		if (widget["size"] == 0) return;
+		// retrieve the sensor referenced by the widget
+		var sensor = get_sensor(module,group["group_id"],widget["sensor"]);
+		var sensor_url = module+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+		var tag = "#"+group["group_id"]+"_"+sensor["sensor_id"];
+		// append an empty widget
+		$("#"+row).append(get_widget_template(group["group_id"],sensor["sensor_id"],group["display_name"]+": "+sensor["display_name"],widget["size"]));
+		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/image"+'" />');
+	}
+	
 	// load data from all the sensors of the current module
 	function load_sensors() {
 		$("#body").append('<div id="sensors"></div>');
@@ -405,6 +417,7 @@
 					if (widget["type"] == "summary") add_summary_widget(row,widget,group);
 					if (widget["type"] == "recent" || widget["type"] == "history") add_timeline_widget(row,widget,group);
 					if (widget["type"] == "chart") add_chart_widget(row,widget,group);
+					if (widget["type"] == "image") add_image_widget(row,widget,group);
 				}
 				// end of the row
 				$("#"+row).append('</div>');
@@ -444,6 +457,7 @@
 			load_menu();
 			// load the module
 			module = conf['general']['default_module'];
+			if (location.hash) module = location.hash.replace('#','');
 			load_module();
 			window.onhashchange = function() {
 				if (location.hash) module = location.hash.replace('#','');
