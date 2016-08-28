@@ -2,6 +2,7 @@
 import sys
 import os
 import datetime
+import base64
 
 import utils
 import db
@@ -207,6 +208,18 @@ def web_get_current(module,group_id,sensor_id):
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True)
 	return data
+
+# return the latest image of a sensor for a web request
+def web_get_image(module,group_id,sensor_id):
+        data = []
+        key = conf["constants"]["db_schema"]["root"]+":"+module+":sensors:"+group_id+":"+sensor_id
+        # return the latest measure
+        data = db.range(key,withscores=False,milliseconds=True)
+	if len(data) == 1: 
+		return base64.b64decode(data[0])
+	else: 
+		with open('../web/images/image_unavailable.png','r') as content_file:
+                        return content_file.read()
 
 # return the time difference between now and the latest measure
 def web_get_current_timestamp(module,group_id,sensor_id):

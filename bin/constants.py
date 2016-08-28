@@ -29,6 +29,7 @@ constants = {
 		'percentage': { 'unit': 'float', 'suffix': '%', },
 		'precipitation_rain': { 'unit': 'int', 'suffix': 'mm', },
 		'precipitation_snow': { 'unit': 'int', 'suffix': 'cm', },
+		'image': { 'unit': "", 'suffix': "",},
 	},
 	'charts': {
 		'template': {
