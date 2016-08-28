@@ -19,7 +19,8 @@ constants = {
 		'logfile': os.path.abspath(os.path.dirname(__file__))+"/../logs/myHouse.log",
 		'formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
 	},
-	'expire_days': 7,
+	'data_expire_days': 7,
+	'cache_expire_min': 1,
 	'formats': {
 		'int': { 'unit': 'int', 'suffix': '', },
 		'float': { 'unit': 'float', 'suffix': '', },
