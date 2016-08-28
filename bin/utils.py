@@ -85,14 +85,11 @@ def normalize(value):
 	return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
 
 # request a given url
-def web_get(url):
+def web_get(url,username=None,password=None,type='text'):
 	log.debug("Requesting web page "+url)
-	return requests.get(url).text
-
-# download a give file
-def web_download(url):
-	log.debug("Requesting web page "+url)
-	return requests.get(url).content
+	request = requests.get(url,auth=(username,password),timeout=conf['constants']['web_timeout'])
+	if type == 'text': return request.text
+	else: return request.content
 
 # calculate the min of a given array of data
 def min(data):

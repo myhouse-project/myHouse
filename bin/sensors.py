@@ -206,10 +206,14 @@ def web_get_image(module_id,group_id,sensor_id):
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True)
-	if len(data) == 1 and data[0] != "": 
-		return base64.b64decode(data[0])
-	else: 
-		with open('../web/images/image_unavailable.png','r') as content_file:
+        if len(data) == 1:
+                image = base64.b64decode(data[0])
+                if "<html" in image.lower() or image == "":
+                        with open('../web/images/image_unavailable.png','r') as content_file:
+                                return content_file.read()
+                else: return image
+        else:
+                with open('../web/images/image_unavailable.png','r') as content_file:
                         return content_file.read()
 
 # return the time difference between now and the latest measure
