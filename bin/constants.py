@@ -21,6 +21,7 @@ constants = {
 	},
 	'data_expire_days': 7,
 	'cache_expire_min': 1,
+	'web_timeout': 10,
 	'formats': {
 		'int': { 'unit': 'int', 'suffix': '', },
 		'float': { 'unit': 'float', 'suffix': '', },
@@ -33,13 +34,15 @@ constants = {
 		'image': { 'unit': "", 'suffix': "",},
 	},
 	'charts': {
-		'template': {
+		'master': {
 			'chart': {
 			},
 			'title': {
 				'text': '',
 			},
 			'xAxis': {
+			},
+			'yAxis': {
 			},
 			'credits': { 
 				'enabled': False,
@@ -50,6 +53,9 @@ constants = {
 			'rangeSelector' : {
 				'selected' : 0,
 			},
+			'tooltip': {
+				'shared': True,
+			},			
 			'plotOptions': {
 				'spline': {
 					'marker': {
@@ -86,27 +92,33 @@ constants = {
 				},
 			},
 		},
-                'inverted_delta': {
-                        'chart': {
-                                'inverted': True,
-                                'height': 194,
-                        },
-                        'xAxis': {
-                                'type': 'datetime',
+		'chart_short': {
+			'template': 'master',
+			'chart': {
+				'height': 194,
+			},
+			'xAxis': {
+				'type': 'datetime',
+			},
+			'yAxis': {
+				'title': '',
+			},
+		},
+		'chart_short_inverted': {
+			'template': 'chart_short',
+			'chart': {
+				'inverted': True,
+				'height': 194,
+			},
+			'xAxis': {
+				'type': 'datetime',
 				'tickInterval': 24* 3600 * 1000,
-                                'tickWidth': 0,
-                                'gridLineWidth': 0,
-                        },
-                        'yAxis': {
-                                'title': '',
-                        },
-                        'tooltip': {
-                                'shared': True,
-                        },
-                        'series': [
-                        ],
-                },
-		'min_max_delta': {
+				'tickWidth': 0,
+				'gridLineWidth': 0,
+			},
+		},
+		'chart_summary': {
+			'template': 'master',
 			'chart': {
 				'type': 'columnrange',
 				'inverted': True,
@@ -119,66 +131,56 @@ constants = {
 			'yAxis': {
 				'title': '',
 			},
-			'tooltip': {
-				'shared': True,
-			},
 			'series': [
 				{
 					'name': 'Yesterday',
 					'color': 'rgb(169,255,150)',
 					'pointWidth': 18,
+					'dataLabels': {
+						'enabled': False,
+					},
 				},
 				{
 					'name': 'Today',
 					'color': '#7cb5ec',
 					'pointWidth': 10,
-					'dataLabels': {
-						'enabled': True,
-					},
 				},
 			],
 		},
-		'timeline_recent_delta': {
+		'chart_history': {
+			'template': 'master',
 			'chart': {
 				'type': 'spline',
 				'zoomType': 'x',
 			},
 			'xAxis': {
 				'type': 'datetime',
-				'tickInterval': 1* 3600 * 1000,
+				'tickInterval': 1*24*3600*1000,
 				'tickWidth': 0,
 				'gridLineWidth': 1,
 			},
-			'navigator': {
-				'enabled': False,
+		},
+		'chart_recent': {
+			'template': 'chart_history',
+			'xAxis': {
+				'type': 'datetime',
+				'tickInterval': 1*3600*1000,
+				'tickWidth': 0,
+				'gridLineWidth': 1,
 			},
 			'rangeSelector': {
 				'enabled': False,
 			},
-		},
-		'timeline_history_delta': {
-			'chart': {
-				'type': 'spline',
-				'zoomType': 'x',
-			},
-			'xAxis': {
-				'type': 'datetime',
-				'tickInterval': 1*24* 3600 * 1000,
-				'tickWidth': 0,
-				'gridLineWidth': 1,
-			},
-		},
+		},		
 	},
 }
 # merge the chart template with the deltas
-constants['charts']['min_max'] = constants['charts']['template'].copy()
-constants['charts']['min_max'].update(constants['charts']['min_max_delta'])
-constants['charts']['timeline_recent'] = constants['charts']['template'].copy()
-constants['charts']['timeline_recent'].update(constants['charts']['timeline_recent_delta'])
-constants['charts']['timeline_history'] = constants['charts']['template'].copy()
-constants['charts']['timeline_history'].update(constants['charts']['timeline_history_delta'])
-constants['charts']['inverted'] = constants['charts']['template'].copy()
-constants['charts']['inverted'].update(constants['charts']['inverted_delta'])
+for chart_id in constants['charts']:
+	chart = constants['charts'][chart_id]
+	if 'template' not in chart: continue
+	new_chart = constants['charts'][chart['template']].copy()
+	new_chart.update(chart)
+	constants['charts'][chart_id] = new_chart
 
 # return all the configuration settings as an object
 def get_constants():

@@ -11,9 +11,11 @@ log = logger.get_logger(__name__)
 # poll the sensor
 def poll(sensor):
 	url = sensor["args"][0]
+	username = sensor["args"][1]
+	password = sensor["args"][2]
 	# visit the url, if an image is requested, return the base64 encoded data
-	if sensor["request"] == "image": content = base64.b64encode(utils.web_download(url))
-	else: content = utils.web_get(url)
+	if sensor["request"] == "image": content = base64.b64encode(utils.web_get(url,username,password,type='content'))
+	else: content = utils.web_get(url,username,password)
 	return content
 
 # parse the data

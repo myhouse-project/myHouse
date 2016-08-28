@@ -218,7 +218,7 @@
 							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="20" heigth="20" src="web/images/'+data[i][1]+'.png">'};
 						}
 						series['data'] = flags;
-					} 
+					}
 					// attach the series to the chart
 					chart.addSeries(series);
 				};
@@ -244,8 +244,8 @@
 	
 	// load status
 	function load_status() {
-		$.getJSON("https://api.ipify.org/?format=json",function(data) {
-			$("#status").html('<i class="fa fa-circle text-success"></i>'+data.ip);
+		$.getJSON("http://ipinfo.io",function(data) {
+			$("#status").html('<i class="fa fa-circle text-success"></i><span title="'+data.hostname+' ('+data.region+')">'+data.hostname+'</span>');
 		});
 	}
 	
@@ -333,7 +333,7 @@
 		$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
 		set_html(tag+"_timestamp",sensor_url+"/timestamp");
 		// add the summary chart
-		var options = $.extend(true,{}, conf["constants"]["charts"]["min_max"]);
+		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_summary"]);
 		$(tag+"_chart").highcharts(options);
 		var chart = $(tag+"_chart").highcharts();		
 		// for each sensor	
@@ -352,13 +352,13 @@
 	}
 	
 	// add a sensor timeline widget
-	function add_timeline_widget(row,widget,group) {
+	function add_timeline_widget(row,widget,group,chart_type) {
 		if (widget["size"] == 0) return;
 		var tag = "#"+group["group_id"]+"_"+widget["type"];
 		// append a new empty widget
-		$("#"+row).append(get_widget_template(group["group_id"],widget["type"],group["display_name"]+": "+capitalizeFirst(widget["type"]),widget["size"]));
+		$("#"+row).append(get_widget_template(group["group_id"],widget["type"],group["display_name"]+": "+capitalizeFirst(chart_type),widget["size"]));
 		// add the chart
-		var options = $.extend(true,{}, conf["constants"]["charts"]["timeline_"+widget["type"]]);
+		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
 		$(tag).highcharts('StockChart',options);
 		var chart = $(tag).highcharts();
 		// for each sensor
@@ -369,7 +369,7 @@
 			// add each series, to the chart
 			for (var s = 0; s < sensor["series"].length; s++) {
 				series = sensor["series"][s]
-				add_series(chart,sensor_url+"/"+widget["type"]+"/"+series["series_id"],sensor,s);
+				add_series(chart,sensor_url+"/"+chart_type+"/"+series["series_id"],sensor,s);
 			}
 		}
 	}	
@@ -383,7 +383,7 @@
 		// append an empty widget
 		$("#"+row).append(get_widget_template(group["group_id"],sensor["sensor_id"],group["display_name"]+": "+sensor["display_name"],widget["size"]));
 		// add the chart
-		var options = $.extend(true,{}, conf["constants"]["charts"]["inverted"]);
+		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
 		if (sensor["format"] == "percentage") options["yAxis"]["max"] = 100;
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
@@ -425,9 +425,10 @@
 					// add each configured widget
 					widget = group["widgets"][b];
 					if (widget["type"] == "summary") add_summary_widget(row,widget,group);
-					if (widget["type"] == "recent" || widget["type"] == "history") add_timeline_widget(row,widget,group);
-					if (widget["type"] == "chart") add_chart_widget(row,widget,group);
-					if (widget["type"] == "image") add_image_widget(row,widget,group);
+					else if (widget["type"] == "image") add_image_widget(row,widget,group);
+					else if (widget["type"] == "chart_recent") add_timeline_widget(row,widget,group,"recent");
+					else if (widget["type"] == "chart_history") add_timeline_widget(row,widget,group,"history");
+					else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,group);
 				}
 				// end of the row
 				$("#"+row).append('</div>');
