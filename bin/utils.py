@@ -85,11 +85,12 @@ def normalize(value):
 	return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
 
 # request a given url
-def web_get(url,username=None,password=None,type='text'):
+def web_get(url,username=None,password=None,binary=False):
 	log.debug("Requesting web page "+url)
-	request = requests.get(url,auth=(username,password),timeout=conf['constants']['web_timeout'])
-	if type == 'text': return request.text
-	else: return request.content
+	if username is not None: request = requests.get(url,auth=(username,password),timeout=conf['constants']['web_timeout'])
+	else: request = requests.get(url,timeout=conf['constants']['web_timeout'])
+	if binary: return request.content
+	else: return request.text
 
 # calculate the min of a given array of data
 def min(data):

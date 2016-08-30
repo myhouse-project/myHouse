@@ -13,11 +13,11 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 
-import plugin_ds18b20
 import plugin_wunderground
 import plugin_weatherchannel
 import plugin_linux
-import plugin_url
+import plugin_http
+import plugin_wirelessthings
 
 # read data out of a sensor and store the output in the cache
 def poll(plugin,sensor):
@@ -67,7 +67,7 @@ def save(plugin,sensor):
 	# for each returned measure
 	for measure in measures:
 	        # set the timestamp to now if not already set
-	        if "timestamp" not in measure:  measure["timestamp"] = utils.now()
+	        if "timestamp" not in measure: measure["timestamp"] = utils.now()
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if no history has to be kept (e.g. single value)
@@ -76,8 +76,8 @@ def save(plugin,sensor):
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
 			# same value and same timestamp, do not store
-			log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
-			return
+			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
+			continue
 		# store the value into the database
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
 		db.set(key,measure["value"],measure["timestamp"])
@@ -132,16 +132,17 @@ def run(module_id,group_id,sensor_id,action):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
 	if sensor is None: log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not configured")
         # determine the plugin to use 
-	if sensor["plugin"] == "ds18b20": plugin = plugin_ds18b20
-        elif sensor["plugin"] == "wunderground": plugin = plugin_wunderground
-	elif sensor["plugin"] == "weatherchannel": plugin = plugin_weatherchannel
-	elif sensor["plugin"] == "linux": plugin = plugin_linux
-	elif sensor["plugin"] == "url": plugin = plugin_url
+        elif sensor["plugin"]["name"] == "wunderground": plugin = plugin_wunderground
+	elif sensor["plugin"]["name"] == "weatherchannel": plugin = plugin_weatherchannel
+	elif sensor["plugin"]["name"] == "linux": plugin = plugin_linux
+	elif sensor["plugin"]["name"] == "http": plugin = plugin_http
+	elif sensor["plugin"]["name"] == "wirelessthings": plugin = plugin_wirelessthings
 	else: log.error("Plugin "+sensor["plugin"]+" not supported")
 	# define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
 	sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
-        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]+"_"+plugin.cache_schema(sensor)
+	if plugin.cache_schema(sensor) is None: log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")	
+        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]["name"]+"_"+plugin.cache_schema(sensor)
 	# execute the action
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
 	if action == "poll":

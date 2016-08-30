@@ -40,6 +40,10 @@ def shutdown():
 def get_config():
 	return config.get_json_config()
 
+@app.route('/internet_status')
+def get_internet_status():
+	return utils.web_get("http://ipinfo.io")
+
 # return the latest read of a sensor
 @app.route('/<module>/sensors/<group_id>/<sensor_id>/current')
 def sensor_get_current(module,group_id,sensor_id):

@@ -16,20 +16,20 @@ url = 'https://api.weather.com/v1/geocode/'
 
 # poll the sensor
 def poll(sensor):
-	api_key = sensor["args"][0]
-	location = sensor["args"][1].replace(',','/')
-	if sensor["request"] == "weather_alerts":
+	request = sensor['plugin']['request']
+	if request == "alerts":
 		# request the web page
-		return utils.web_get(url+location+'/'+cache_schema(sensor)+'/wwir.json?apiKey='+api_key+'&units=m&language=en')
+		return utils.web_get(url+str(sensor['plugin']['latitude'])+'/'+str(sensor['plugin']['longitude'])+'/'+cache_schema(sensor)+'/wwir.json?apiKey='+sensor['plugin']['api_key']+'&units=m&language=en')
 
 # parse the data
 def parse(sensor,data):
+	request = sensor['plugin']['request']
 	measures = []
         measure = {}
         measure["key"] = sensor["sensor_id"]
 	# parse the json 
 	parsed_json = json.loads(data)
-	if sensor["request"] == "weather_alerts": 
+	if request == "alerts": 
 		# return the alert
 		alert = ""
 		if isinstance(parsed_json["forecast"]["precip_time_24hr"],basestring): alert = parsed_json["forecast"]["phrase"]
@@ -40,4 +40,5 @@ def parse(sensor,data):
 
 # return the cache schema
 def cache_schema(sensor):
-	if sensor['request'] == "weather_alerts": return "forecast"
+	request = sensor['plugin']['request']
+	if request == "alerts": return "forecast"

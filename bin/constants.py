@@ -29,6 +29,7 @@ constants = {
 		'temperature': { 'unit': 'float', 'suffix': u'\u00B0C', },
 		'size': { 'unit': 'int', 'suffix': 'MB', },
 		'percentage': { 'unit': 'float', 'suffix': '%', },
+		'voltage': { 'unit': 'float', 'suffix': 'v', },
 		'precipitation_rain': { 'unit': 'int', 'suffix': 'mm', },
 		'precipitation_snow': { 'unit': 'int', 'suffix': 'cm', },
 		'image': { 'unit': "", 'suffix': "",},
@@ -48,7 +49,7 @@ constants = {
 				'enabled': False,
 			},
 			'legend': {
-				'enabled': False,
+				'enabled': True,
 			},
 			'rangeSelector' : {
 				'selected' : 0,
@@ -90,6 +91,11 @@ constants = {
 						'enabled': True, 
 					},
 				},
+				'flags': {
+					'useHTML' : True,
+					'color': 'gray',
+					'allowPointSelect': False,
+				},
 			},
 		},
 		'chart_short': {
@@ -99,6 +105,9 @@ constants = {
 			},
 			'xAxis': {
 				'type': 'datetime',
+                                'dateTimeLabelFormats': {
+                                        'day': '%A',
+                                },
 			},
 			'yAxis': {
 				'title': '',
@@ -115,6 +124,9 @@ constants = {
 				'tickInterval': 24* 3600 * 1000,
 				'tickWidth': 0,
 				'gridLineWidth': 0,
+            			'dateTimeLabelFormats': {
+		        		'day': '%A',
+			        },
 			},
 		},
 		'chart_summary': {

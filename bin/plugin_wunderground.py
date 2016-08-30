@@ -19,55 +19,54 @@ forecast_max_entries = 5
 
 # poll the sensor
 def poll(sensor):
-	# request the web page with lat,lon as parameter
-	api_key = sensor["args"][0]
-	location = sensor["args"][1]
-	return utils.web_get(url+"/"+api_key+"/"+cache_schema(sensor)+"/q/"+location+".json")
+	# request the web page
+	return utils.web_get(url+"/"+sensor['plugin']['api_key']+"/"+cache_schema(sensor)+"/q/"+str(sensor['plugin']['latitude'])+","+str(sensor['plugin']['longitude'])+".json")
 
 # parse the data
 def parse(sensor,data):
+	request = sensor['plugin']['request']
 	measures = []
 	measure = {}
 	measure["key"] = sensor["sensor_id"]
 	# parse the json
 	parsed_json = json.loads(data)
-	if sensor["request"] == "temperature": 
+	if request == "temperature": 
 		measure["value"] = parsed_json['current_observation']['temp_c']
 		measure["timestamp"] = utils.timezone(int(parsed_json['current_observation']['observation_epoch']))
 		measures.append(measure)
-	elif sensor["request"] == "condition": 
+	elif request == "condition": 
 		measure["value"] = parsed_json['current_observation']['icon']
 		measure["timestamp"] = utils.timezone(int(parsed_json['current_observation']['observation_epoch']))
 		measures.append(measure)
-	elif sensor["request"] == "forecast_condition":
+	elif request == "forecast_condition":
 		for entry in parsed_json['forecast']['simpleforecast']['forecastday'][:forecast_max_entries]:
 			measure = {}
 			measure["key"] = sensor["sensor_id"]+":day:avg"
 			measure["timestamp"] = utils.day_start(utils.timezone(int(entry["date"]["epoch"])))
 			measure["value"] = entry["icon"]
 			measures.append(measure)
-        elif sensor["request"] == "forecast_pop":
+        elif request == "forecast_pop":
                 for entry in parsed_json['forecast']['simpleforecast']['forecastday'][:forecast_max_entries]:
                         measure = {}
                         measure["key"] = sensor["sensor_id"]+":day:avg"
                         measure["timestamp"] = utils.day_start(utils.timezone(int(entry["date"]["epoch"])))
                         measure["value"] = entry["pop"] if entry["pop"] > 0 else 0
                         measures.append(measure)
-        elif sensor["request"] == "forecast_rain":
+        elif request == "forecast_rain":
                 for entry in parsed_json['forecast']['simpleforecast']['forecastday'][:forecast_max_entries]:
                         measure = {}
                         measure["key"] = sensor["sensor_id"]+":day:avg"
                         measure["timestamp"] = utils.day_start(utils.timezone(int(entry["date"]["epoch"])))
                         measure["value"] = entry["qpf_allday"]["mm"] if entry["qpf_allday"]["mm"] > 0 else 0
                         measures.append(measure)
-        elif sensor["request"] == "forecast_snow":
+        elif request == "forecast_snow":
                 for entry in parsed_json['forecast']['simpleforecast']['forecastday'][:forecast_max_entries]:
                         measure = {}
                         measure["key"] = sensor["sensor_id"]+":day:avg"
                         measure["timestamp"] = utils.day_start(utils.timezone(int(entry["date"]["epoch"])))
                         measure["value"] = entry["snow_allday"]["cm"] if entry["snow_allday"]["cm"] > 0 else 0
                         measures.append(measure)
-        elif sensor["request"] == "forecast_temperature":
+        elif request == "forecast_temperature":
                 for entry in parsed_json['forecast']['simpleforecast']['forecastday'][:forecast_max_entries]:
                         measure = {}
 	                measure["key"] = sensor["sensor_id"]+":day:min"
@@ -79,7 +78,7 @@ def parse(sensor,data):
 	                measure["value"] =  utils.normalize(entry["high"]["celsius"])
 	                measure["timestamp"] = utils.day_start(utils.timezone(int(entry["date"]["epoch"])))
 	                measures.append(measure)
-	elif sensor["request"] == "temperature_record": 
+	elif request == "record_temperature": 
 		measure["key"] = sensor["sensor_id"]+":day:min"
 		measure["value"] =  parsed_json['almanac']['temp_low']['record']['C']
 		measure["timestamp"] = utils.day_start(utils.now())
@@ -89,7 +88,7 @@ def parse(sensor,data):
 		measure["value"] =  parsed_json['almanac']['temp_high']['record']['C']
 		measure["timestamp"] = utils.day_start(utils.now())
 		measures.append(measure)
-	elif sensor["request"] == "temperature_normal":
+	elif request == "normal_temperature":
                 measure["key"] = sensor["sensor_id"]+":day:min"
                 measure["value"] =  parsed_json['almanac']['temp_low']['normal']['C']
 		measure["timestamp"] = utils.day_start(utils.now())
@@ -105,7 +104,8 @@ def parse(sensor,data):
 
 # return the cache schema
 def cache_schema(sensor):
+	request = sensor['plugin']['request']
 	# return the API to call
-	if sensor['request'] == "temperature" or sensor['request'] == "condition": return "conditions"
-	elif sensor['request'].startswith("forecast_"): return "forecast10day"
-	elif sensor['request'] == "temperature_record" or sensor['request'] == "temperature_normal": return "almanac"
+	if request == "temperature" or request == "condition": return "conditions"
+	elif request.startswith("forecast_"): return "forecast10day"
+	elif request == "record_temperature" or request == "normal_temperature": return "almanac"
