@@ -15,29 +15,30 @@ db_from = 0
 db_to = 1
 
 # keys to migrate history (from key -> to key)
+# destination key format: myHouse:weather:sensors:<group_id>:<sensor_id>
 history = {
-	'home:weather:outdoor:temperature:day:max': 'myHouse:weather:sensors:external_temperature:temperature:day:max',
-	'home:weather:outdoor:temperature:day:min': 'myHouse:weather:sensors:external_temperature:temperature:day:min',
-	'home:weather:outdoor:temperature:day': 'myHouse:weather:sensors:external_temperature:temperature:day:avg',
+	'home:weather:outdoor:temperature:day:max': 'myHouse:weather:sensors:temperature:external:day:max',
+	'home:weather:outdoor:temperature:day:min': 'myHouse:weather:sensors:temperature:external:day:min',
+	'home:weather:outdoor:temperature:day': 'myHouse:weather:sensors:temperature:external:day:avg',
 
-        'home:weather:indoor:temperature:day:max': 'myHouse:weather:sensors:internal_temperature:temperature_1:day:max',
-        'home:weather:indoor:temperature:day:min': 'myHouse:weather:sensors:internal_temperature:temperature_1:day:min',
-        'home:weather:indoor:temperature:day': 'myHouse:weather:sensors:internal_temperature:temperature_1:day:avg',
+        'home:weather:indoor:temperature:day:max': 'myHouse:house:sensors:temperature:first_floor:day:max',
+        'home:weather:indoor:temperature:day:min': 'myHouse:house:sensors:temperature:first_floor:day:min',
+        'home:weather:indoor:temperature:day': 'myHouse:house:sensors:temperature:first_floor:day:avg',
 
-	'home:weather:almanac:record:min': 'myHouse:weather:sensors:external_temperature:record:day:min',
-	'home:weather:almanac:record:max': 'myHouse:weather:sensors:external_temperature:record:day:max',
+	'home:weather:almanac:record:min': 'myHouse:weather:sensors:temperature:record:day:min',
+	'home:weather:almanac:record:max': 'myHouse:weather:sensors:temperature:record:day:max',
 
-        'home:weather:almanac:normal:min': 'myHouse:weather:sensors:external_temperature:normal:day:min',
-        'home:weather:almanac:normal:max': 'myHouse:weather:sensors:external_temperature:normal:day:max',
+        'home:weather:almanac:normal:min': 'myHouse:weather:sensors:temperature:normal:day:min',
+        'home:weather:almanac:normal:max': 'myHouse:weather:sensors:temperature:normal:day:max',
 
-	'home:weather:outdoor:condition:day': 'myHouse:weather:sensors:external_temperature:condition:day:avg',
+	'home:weather:outdoor:condition:day': 'myHouse:weather:sensors:temperature:condition:day:avg',
 }
 
 # keys to migrate recent data (from key -> to key)
 recent = {
-	'home:weather:outdoor:temperature:measure': 'myHouse:weather:sensors:external_temperature:temperature',
-	'home:weather:indoor:temperature:measure': 'myHouse:weather:sensors:internal_temperature:temperature_1',
-	'home:weather:outdoor:condition:measure': 'myHouse:weather:sensors:external_temperature:condition',
+	'home:weather:outdoor:temperature:measure': 'myHouse:weather:sensors:temperature:external',
+	'home:weather:indoor:temperature:measure': 'myHouse:house:sensors:temperature:first_floor',
+	'home:weather:outdoor:condition:measure': 'myHouse:weather:sensors:temperature:condition',
 }
 
 # enable history/recent migration
@@ -104,7 +105,7 @@ for key_from in recent:
 		key_split = key_to.split(":")
 		group_id = key_split[-2]
 		sensor_id = key_split[-1]
-		module_id = 'weather'
+		module_id = key_split[-4]
 	        sensor = utils.get_sensor(module_id,group_id,sensor_id)
 	        sensor['module_id'] = module_id
 	        sensor['group_id'] = group_id
