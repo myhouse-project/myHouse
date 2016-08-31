@@ -155,7 +155,7 @@ def merge(template,delta):
 	new_dict.update(delta)
 
 # return the configuration of a given sensor	
-def get_sensor(module_id,group_id,sensor_id):
+def get_sensor2(module_id,group_id,sensor_id):
         sensor = None
         for this_module in conf['modules']:
                 if this_module['module_id'] != module_id: continue
@@ -169,3 +169,23 @@ def get_sensor(module_id,group_id,sensor_id):
                                         sensor['group_id'] = this_group['group_id']
                                         break
 	return sensor
+
+
+def get_module(module_id):
+	for i in range(len(conf["modules"])):
+		module = conf["modules"][i]
+		if module["module_id"] == module_id: return module
+
+def get_group(module_id,group_id):
+	module = get_module(module_id)
+	for i in range(len(module["sensor_groups"])):
+		group = module["sensor_groups"][i]
+		if group["group_id"] == group_id: return group
+	
+def get_sensor(module_id,group_id,sensor_id):
+	group = get_group(module_id,group_id)
+	for j in range (len(group["sensors"])):
+		sensor = group["sensors"][j]
+		if sensor["sensor_id"] == sensor_id: return sensor
+	
+	
