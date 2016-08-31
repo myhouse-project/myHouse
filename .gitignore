@@ -7,3 +7,4 @@ conf/myHouse.py
 weather/charts/*.png
 *config.py
 *.save
+bin/charts/*

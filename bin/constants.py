@@ -3,6 +3,8 @@ import logging
 import os
 import time
 
+base_dir = os.path.abspath(os.path.dirname(__file__))+"/../"
+
 # constants
 constants = {
 	'version': 1.1,
@@ -15,10 +17,12 @@ constants = {
 	},
 	'null': "None",
 	'logging': {
-		'path': os.path.abspath(os.path.dirname(__file__))+"/../logs/",
-		'logfile': os.path.abspath(os.path.dirname(__file__))+"/../logs/myHouse.log",
+		'path': base_dir+"logs/",
+		'logfile': base_dir+"logs/myHouse.log",
 		'formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
 	},
+	'charts_directory': base_dir+"bin/charts",
+	'email_template': base_dir+"bin/email_template.html",
 	'data_expire_days': 7,
 	'cache_expire_min': 1,
 	'web_timeout': 10,
@@ -44,6 +48,8 @@ constants = {
 			'xAxis': {
 			},
 			'yAxis': {
+				'title': ' ',
+				'opposite': True,
 			},
 			'credits': { 
 				'enabled': False,
@@ -109,10 +115,19 @@ constants = {
                                         'day': '%A',
                                 },
 			},
-			'yAxis': {
-				'title': '',
-			},
 		},
+		'chart_inverted': {
+                        'template': 'master',
+                        'chart': {
+				'inverted': True,
+                        },
+                        'xAxis': {
+                                'type': 'datetime',
+                                'dateTimeLabelFormats': {
+                                        'day': '%A',
+                                },
+                        },
+                },
 		'chart_short_inverted': {
 			'template': 'chart_short',
 			'chart': {
@@ -139,9 +154,6 @@ constants = {
 			'xAxis': {
 				'type': 'datetime',
 				'categories': [],
-			},
-			'yAxis': {
-				'title': '',
 			},
 			'series': [
 				{

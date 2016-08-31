@@ -133,7 +133,7 @@
 			// load the given module
 			current_module = conf['general']['default_module'];
 			if (location.hash) current_module = location.hash.replace('#','');
-			load_module();
+			load_module(current_module);
 			// whenever the hash changes, load the requested module
 			window.onhashchange = function() {
 				if (location.hash) current_module = location.hash.replace('#','');
@@ -150,13 +150,16 @@
 
 	// load the internet status and public hostname
 	function load_status() {
+		log("info","loading internet status");
 		$.getJSON("internet_status",function(data) {
 			$("#status").html('<i class="fa fa-circle text-success"></i><span title="'+data.hostname+' ('+data.region+')">'+data.hostname+'</span>');
+			log("info","current hostname: "+data.hostname);
 		});
 	}
 	
 	// load menu
 	function load_menu() {
+		log("info","loading menu");
 		// empty the menu
 		$("#menu").empty()
 		var menu = '<li class="header">MENU</li>';
@@ -164,6 +167,7 @@
 			// for each module add it to the menu
 			var module = conf['modules'][i];
 			if (! module['enabled']) continue;
+			log("info","adding menu item "+module['display_name']);
 			menu = menu + '<li><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(module['display_name'])+'</span></a></li>';
 		}
 		$("#menu").html(menu);
@@ -171,11 +175,13 @@
 	
 	// load version
 	function load_version() {
+		log("info","setting version to "+conf['constants']['version_string']);
 		$("#version").html(conf['constants']['version_string']);
 	}	
 	
 	// load module
 	function load_module(module_id) {
+		log("info","loading module "+module_id);
 		// clean up the body
 		$("#body").empty();
 		// load data from the sensors of the current module
@@ -188,14 +194,15 @@
 		var module = get_module();
 		if ('sensor_groups' in module) {
 			// for each group
-			for (i = 0; i < module["sensor_groups"].length; i++) {
+			for (var i = 0; i < module["sensor_groups"].length; i++) {
 				var group = module["sensor_groups"][i];
 				// start a new row
 				var row = group["group_id"]+"_row";
 				$("#widgets").append('<div class="row" id="'+row+'">');
-				for (j = 0; j < group["widgets"].length; j++) {
+				for (var j = 0; j < group["widgets"].length; j++) {
 					// add each configured widget
 					widget = group["widgets"][j];
+					log("info","loading widget "+widget["type"]+" into "+row+" for module "+module_id+" group "+group["group_id"]);
 					if (widget["type"] == "summary") add_summary_widget(row,widget,module_id,group);
 					else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
 					else if (widget["type"] == "chart_recent") add_timeline_widget(row,widget,module_id,group,"recent");
@@ -360,7 +367,7 @@
 					// if the data is a string, add flags
 					if (sensor['format'] == 'string') {
 						flags = [];
-						for (i = 0; i < data.length; i++) {
+						for (var i = 0; i < data.length; i++) {
 							if (data[i][1] == null) continue;
 							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="'+series['width']+'" heigth="'+series['heigth']+'" src="web/images/'+data[i][1]+'.png">'};
 						}
@@ -428,7 +435,7 @@
 	// return a module data
 	function get_module(module_id) {
 		if (module_id == null) module_id = current_module;
-		for (i = 0; i < conf["modules"].length; i++) {
+		for (var i = 0; i < conf["modules"].length; i++) {
 			var module = conf["modules"][i];
 			if (module["module_id"] == module_id) return module;
 		}
@@ -437,7 +444,7 @@
 	// return a sensor group data
 	function get_group(module_id,group_id) {
 		module = get_module(module_id);
-		for (i = 0; i < module["sensor_groups"].length; i++) {
+		for (var i = 0; i < module["sensor_groups"].length; i++) {
 			var group = module["sensor_groups"][i];
 			if (group["group_id"] == group_id) return group;
 		}
@@ -484,7 +491,12 @@
 		refresher = setInterval(function(){
 			load_module();
 		}, minutes*60*1000);
-	}	
+	}
+	
+	// log to console a message
+	function log(level,message) {
+		console.log(level.toUpperCase()+": "+message);
+	}
 	</script>
 
 </body>
