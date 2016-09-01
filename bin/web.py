@@ -68,12 +68,13 @@ def sensor_get_data(module,group_id,sensor_id,timeframe,stat):
 # run the web server
 def run():
 	# configure logging
+	logger_name = "web"
 	web_logger = logging.getLogger('werkzeug')
-	web_logger.setLevel(conf["logging"]["level"]["scheduler"])
-	web_logger.addHandler(logger.get_file_logger(conf["logging"]["level"]["scheduler"],conf["constants"]["logging"]["path"]+"web.log"))
+	web_logger.setLevel(conf["logging"][logger_name]["level"])
+	web_logger.addHandler(logger.get_file_logger(logger_name))
 	# run the application
 	log.info("Starting web server on port "+str(conf["web"]["port"]))
-        app.run(debug=True, use_reloader=conf["web"]["use_reloader"], host='0.0.0.0',port=conf["web"]["port"])
+        app.run(debug=True, use_reloader=conf["constants"]["web_use_reloader"], host='0.0.0.0',port=conf["web"]["port"])
 
 # run the main web app
 if __name__ == '__main__':

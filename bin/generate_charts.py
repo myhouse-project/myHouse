@@ -21,7 +21,7 @@ def capitalizeFirst(string):
 
 # save the image to disk
 def save_to_file(r,filename):
-	with open(conf['constants']['charts_directory']+'/'+filename+'.'+extension,'wb') as fd:
+	with open(conf['constants']['charts_dir']+filename+'.'+extension,'wb') as fd:
         	for chunk in r.iter_content(1000):
                 	fd.write(chunk)
 
@@ -95,7 +95,7 @@ def add_group_timeline_widget(row,widget,module_id,group,timeframe):
 	tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
 	if "module" in widget: module_id = widget["module"]
 	if "sensor_group" in widget: group = utils.get_group(module_id,widget["sensor_group"])
-	chart = copy.deepcopy(conf["constants"]["charts"][widget["type"]])
+	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]])
 	# for each sensor
 	for i in range(len(group["sensors"])):
 		sensor = group["sensors"][i]
@@ -151,8 +151,7 @@ def load_widgets(module_id):
 				log.info("["+module_id+"]["+group["group_id"]+"] generating widget "+widget["widget_id"])
 				if widget["type"] == "group_summary": add_group_summary_widget(row,widget,module_id,group)
 				elif widget["type"] == "image": add_image_widget(row,widget,module_id,group)
-				elif widget["type"] == "chart_group_recent": add_group_timeline_widget(row,widget,module_id,group,"recent")
-				elif widget["type"] == "chart_group_history": add_group_timeline_widget(row,widget,module_id,group,"history")
+				elif widget["type"] == "group_timeline": add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"])
 				elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(row,widget,module_id,group)
 
 # load all the widgets of the requested module	

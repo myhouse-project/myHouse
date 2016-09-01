@@ -1,10 +1,6 @@
 #!/usr/bin/python
 import sys
 import datetime
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
 
 import utils
 import logger
@@ -12,8 +8,9 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import generate_charts
+import smtp
 
-run_generate_charts = True
+run_generate_charts = False
 
 # return the HTML template of the widget
 def get_widget_template(tag,title):
@@ -28,20 +25,12 @@ def get_widget_template(tag,title):
 	template = template.replace("!title!",title)
 	return template
 
-# attach the image to the given message
-def attach_image(msg,tag):
-        with open(conf['constants']['charts_directory']+'/'+tag+'.png', 'r') as chart:
-                img = MIMEImage(chart.read())
-                chart.close()
-                img.add_header('Content-ID', '<{}>'.format(tag))
-                msg.attach(img)
-
 # send out the email notification
 def run(module_id):
+	images = []
 	if run_generate_charts: generate_charts.run(module_id)
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
 	# load and prepare the template
-	msg = MIMEMultipart()
         with open(conf['constants']['email_template'], 'r') as file:
                 template = file.read()
         template = template.replace("!date!",date)
@@ -59,19 +48,13 @@ def run(module_id):
 	                        widget = group["widgets"][j];
 				tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"]
 				template = template.replace("<!-- widgets -->",get_widget_template(tag,'')+"\n<!-- widgets -->")
-				# attach the image to the message
-				attach_image(msg,tag)
+				# add the image to the queue
+				images.append({'filename': conf['constants']['charts_dir']+tag+'.png' , 'id': tag,})
         # send the email
-        msg['From'] = conf["email"]["from"]
-        msg['To'] = ", ".join(conf["email"]["to"])
-        msg['Subject'] = "[myHouse] "+module['display_name']+" Report "+date
-        msg.attach(MIMEText(template, 'html'))
-	smtp = smtplib.SMTP(conf["email"]["hostname"])
-	smtp.sendmail(conf["email"]["from"],conf["email"]["to"], msg.as_string())
-        smtp.quit()
+	smtp.send("[myHouse] "+module['display_name']+" Report "+date,template,images)
 
 # main
 if __name__ == '__main__':
-        if (len(sys.argv) != 2): print "Usage: email_notification.py <module_id>"
+        if (len(sys.argv) != 2): print "Usage: email_report.py <module_id>"
         else: run(sys.argv[1])
 

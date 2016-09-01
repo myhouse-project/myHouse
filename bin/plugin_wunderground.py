@@ -20,7 +20,7 @@ forecast_max_entries = 5
 # poll the sensor
 def poll(sensor):
 	# request the web page
-	return utils.web_get(url+"/"+sensor['plugin']['api_key']+"/"+cache_schema(sensor)+"/q/"+str(sensor['plugin']['latitude'])+","+str(sensor['plugin']['longitude'])+".json")
+	return utils.web_get(url+"/"+conf['plugins']['wunderground']['api_key']+"/"+cache_schema(sensor)+"/q/"+str(conf['plugins']['wunderground']['latitude'])+","+str(conf['plugins']['wunderground']['longitude'])+".json")
 
 # parse the data
 def parse(sensor,data):

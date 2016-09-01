@@ -66,11 +66,11 @@ def hour_end(timestamp):
 
 # return the recent timestamp
 def recent():
-	return now()-conf["charts"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
+	return now()-conf["web"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
 
 # return the history timestamp
 def history():
-	return now()-conf["charts"]["history_timeframe_days"]*conf["constants"]["1_day"]
+	return now()-conf["web"]["history_timeframe_days"]*conf["constants"]["1_day"]
 
 # return true if the input is a number
 def is_number(s):
