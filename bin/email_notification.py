@@ -57,18 +57,7 @@ def run(module_id):
 	               	for j in range(len(group["widgets"])):
 				# for each widget add it to the template
 	                        widget = group["widgets"][j];
-	                        if widget["type"] == "summary": 
-					tag = module_id+"_"+group["group_id"]+"_"+widget["type"]
-	                        elif widget["type"] == "image": 
-					sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
-					tag = module_id+"_"+group["group_id"]+"_"+sensor["sensor_id"]
-	                        elif widget["type"] == "chart_recent": 
-					tag = module_id+"_"+group["group_id"]+"_"+widget["type"]
-	                        elif widget["type"] == "chart_history": 
-					tag = module_id+"_"+group["group_id"]+"_"+widget["type"]
-	                        elif widget["type"] in conf["constants"]["charts"]: 
-					sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
-					tag = module_id+"_"+group["group_id"]+"_"+sensor["sensor_id"]
+				tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"]
 				template = template.replace("<!-- widgets -->",get_widget_template(tag,'')+"\n<!-- widgets -->")
 				# attach the image to the message
 				attach_image(msg,tag)
