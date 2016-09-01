@@ -144,7 +144,7 @@ constants = {
 			        },
 			},
 		},
-		'chart_summary': {
+		'chart_group_summary': {
 			'template': 'master',
 			'chart': {
 				'type': 'columnrange',
@@ -171,7 +171,7 @@ constants = {
 				},
 			],
 		},
-		'chart_history': {
+		'chart_group_history': {
 			'template': 'master',
 			'chart': {
 				'type': 'spline',
@@ -184,8 +184,12 @@ constants = {
 				'gridLineWidth': 1,
 			},
 		},
-		'chart_recent': {
-			'template': 'chart_history',
+		'chart_group_recent': {
+			'template': 'master',
+                        'chart': {
+                                'type': 'spline',
+                                'zoomType': 'x',
+                        },
 			'xAxis': {
 				'type': 'datetime',
 				'tickInterval': 1*3600*1000,

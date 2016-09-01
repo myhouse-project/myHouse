@@ -116,13 +116,15 @@
 	var conf = {};
 	// refresher
 	var refresher;
+	// hostname
+	var hostname = '';
 
 	/**
 		MAIN ENTRY POINT
 	**/
 	$(document).ready(function(){
 		// request the configuration first
-		$.getJSON("config",function(data) {
+		$.getJSON(hostname+"config",function(data) {
 			conf = data;
 			// set the version
 			load_version();
@@ -151,7 +153,7 @@
 	// load the internet status and public hostname
 	function load_status() {
 		log("info","loading internet status");
-		$.getJSON("internet_status",function(data) {
+		$.getJSON(hostname+"internet_status",function(data) {
 			$("#status").html('<i class="fa fa-circle text-success"></i><span title="'+data.hostname+' ('+data.region+')">'+data.hostname+'</span>');
 			log("info","current hostname: "+data.hostname);
 		});
@@ -191,7 +193,7 @@
 	// load data the widgets of the current module
 	function load_widgets(module_id) {
 		$("#body").append('<div id="widgets"></div>');
-		var module = get_module();
+		var module = get_module(module_id);
 		if ('sensor_groups' in module) {
 			// for each group
 			for (var i = 0; i < module["sensor_groups"].length; i++) {
@@ -202,11 +204,11 @@
 				for (var j = 0; j < group["widgets"].length; j++) {
 					// add each configured widget
 					widget = group["widgets"][j];
-					log("info","loading widget "+widget["type"]+" into "+row+" for module "+module_id+" group "+group["group_id"]);
-					if (widget["type"] == "summary") add_summary_widget(row,widget,module_id,group);
+					log("info","["+module_id+"]["+group["group_id"]+"] loading widget "+widget["widget_id"]);
+					if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);
 					else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
-					else if (widget["type"] == "chart_recent") add_timeline_widget(row,widget,module_id,group,"recent");
-					else if (widget["type"] == "chart_history") add_timeline_widget(row,widget,module_id,group,"history");
+					else if (widget["type"] == "chart_group_recent") add_group_timeline_widget(row,widget,module_id,group,"recent");
+					else if (widget["type"] == "chart_group_history") add_group_timeline_widget(row,widget,module_id,group,"history");
 					else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
 				}
 				// end of the row
@@ -220,12 +222,12 @@
 	**/
 
 	// add a sensor summary widget
-	function add_summary_widget(row,widget,module_id,group) {
+	function add_group_summary_widget(row,widget,module_id,group) {
 		if (widget["size"] == 0) return;
+		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
 		if ("module" in widget) module_id = widget["module"];
 		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
-		var tag = module_id+"_"+group["group_id"]+"_"+widget["type"];
-		var title = "display_name" in widget ? widget["display_name"] : group["display_name"]+": "+capitalizeFirst(widget["type"]);
+		
 		var summary_body = '\
 			<div class="box-profile">\
 				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
@@ -236,12 +238,11 @@
 						</li>\
 					</ul>\
 				<div>';
-		tag = "#"+tag;
 		//a add an empty widget
-		$("#"+row).append(get_widget_template(module_id,group["group_id"],widget["type"],title,widget["size"]));
+		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
+		tag = "#"+tag;
 		// add the summary body to it
 		$(tag).html(summary_body);
-		
 		// add the summary icon
 		var is_night = conf['constants']['is_night'] ? 'nt_' : '';
 		var icon_sensor = widget["icon"].match(/sensor:\/\/(.+)$/);
@@ -262,9 +263,9 @@
 		set_html(tag+"_timestamp",sensor_url+"/timestamp");
 		
 		// add the summary chart
-		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_summary"]);
+		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_group_summary"]);
 		$(tag+"_chart").highcharts(options);
-		var chart = $(tag+"_chart").highcharts();		
+		var chart = $(tag+"_chart").highcharts();
 		// for each sensor	
 		for (var i = 0; i < group["sensors"].length; i++) {
 			var sensor = group["sensors"][i];
@@ -281,14 +282,14 @@
 	}
 	
 	// add a sensor timeline widget
-	function add_timeline_widget(row,widget,module_id,group,timeframe) {
+	function add_group_timeline_widget(row,widget,module_id,group,timeframe) {
 		if (widget["size"] == 0) return;
+		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
 		if ("module" in widget) module_id = widget["module"];
 		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
-		var tag = "#"+module_id+"_"+group["group_id"]+"_"+widget["type"];
-		var title = "display_name" in widget ? widget["display_name"] : group["display_name"]+": "+capitalizeFirst(timeframe);
 		// append a new empty widget
-		$("#"+row).append(get_widget_template(module_id,group["group_id"],widget["type"],title,widget["size"]));
+		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
+		tag = "#"+tag;
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
 		$(tag).highcharts('StockChart',options);
@@ -309,15 +310,15 @@
 	// add a generic sensor chart widget
 	function add_chart_widget(row,widget,module_id,group) {
 		if (widget["size"] == 0) return;
+		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
 		if ("module" in widget) module_id = widget["module"];
 		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
 		// retrieve the sensor referenced by the widget
 		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"]);
 		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
-		var tag = "#"+module_id+"_"+group["group_id"]+"_"+sensor["sensor_id"];
-		var title = "display_name" in widget ? widget["display_name"] : group["display_name"]+": "+sensor["display_name"];
 		// append an empty widget
-		$("#"+row).append(get_widget_template(module_id,group["group_id"],sensor["sensor_id"],title,widget["size"]));
+		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
+		tag = "#"+tag;
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
 		if (sensor["format"] == "percentage") options["yAxis"]["max"] = 100;
@@ -334,15 +335,15 @@
 	// add an image widget
 	function add_image_widget(row,widget,module_id,group) {
 		if (widget["size"] == 0) return;
+		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
 		if ("module" in widget) module_id = widget["module"];
 		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
 		// retrieve the sensor referenced by the widget
 		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"]);
 		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
-		var tag = "#"+module_id+"_"+group["group_id"]+"_"+sensor["sensor_id"];
-		var title = "display_name" in widget ? widget["display_name"] : group["display_name"]+": "+sensor["display_name"];
 		// append an empty widget
-		$("#"+row).append(get_widget_template(module_id,group["group_id"],sensor["sensor_id"],title,widget["size"]));
+		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
+		tag = "#"+tag;
 		// add the image to the widget
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/image"+'" />');
 	}
@@ -353,7 +354,7 @@
 	
 	// add a new series to a chart
 	function add_series(chart,url,sensor,series_index) {
-		$.getJSON(url, function(chart,sensor,series_index) {
+		$.getJSON(hostname+url, function(chart,sensor,series_index) {
 				return function (data) {
 					// get the series template
 					var series = $.extend(true,{}, sensor['series'][series_index]);
@@ -381,7 +382,7 @@
 	
 	// add a new point to an existing series
 	function add_point(chart,url,series_index) {
-		$.getJSON(url, function(chart,series_index) {
+		$.getJSON(hostname+url, function(chart,series_index) {
 				return function (data) {
 					// add the data as a new point to an existing series
 					chart.series[series_index].addPoint(data);
@@ -406,7 +407,7 @@
 	
 	// set the html of a given tag
 	function set_html(tag,url) {
-		$.getJSON(url, function(tag) {
+		$.getJSON(hostname+url, function(tag) {
 				return function (data) {
 					if (data.length != 1) $(tag).html("N/A");
 					$(tag).html(data[0]);
@@ -416,7 +417,7 @@
 	
 	// set an image src
 	function set_img(tag,url,prefix,suffix) {
-		$.getJSON(url, function(tag) {
+		$.getJSON(hostname+url, function(tag) {
 				return function (data) {
 					if (data.length != 1) return;
 					$(tag).attr('src','web/images/'+prefix+data[0]+suffix);
@@ -460,7 +461,7 @@
 	}
 	
 	// return an empty HTML widget template
-	function get_widget_template(module_id,group_id,type,title,size) {
+	function get_widget_template(tag,title,size) {
 		// define the widget HTML
 		var html = '\
 					<div class="col-md-#size#">\
@@ -469,7 +470,7 @@
 									<h3 class="box-title">#title#</h3>\
 								</div>\
 								<div class="box-body no-padding box-primary">\
-								    <div class="box-body" id="#module_id#_#group_id#_#type#" align="center">\
+								    <div class="box-body" id="#tag#" align="center">\
 									</div>\
 								</div>\
 							</div>\
@@ -478,9 +479,7 @@
 		// replace the placeholders with the provided input
 		html = html.replaceAll("#size#",size);
 		html = html.replaceAll("#title#",title);
-		html = html.replaceAll("#type#",type);
-		html = html.replaceAll("#module_id#",module_id);
-		html = html.replaceAll("#group_id#",group_id);
+		html = html.replaceAll("#tag#",tag);
 		return html;
 	}
 
@@ -489,7 +488,7 @@
 		if (!(minutes > 0)) return;
 		if (refresher) clearInterval(refresher);
 		refresher = setInterval(function(){
-			load_module();
+			load_module(current_module);
 		}, minutes*60*1000);
 	}
 	
