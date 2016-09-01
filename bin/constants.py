@@ -16,16 +16,14 @@ constants = {
 		'root': "myHouse",
 	},
 	'null': "None",
-	'logging': {
-		'path': base_dir+"logs/",
-		'logfile': base_dir+"logs/myHouse.log",
-		'formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
-	},
-	'charts_directory': base_dir+"bin/charts",
+	'log_dir': base_dir+"logs/",
+	'log_formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
+	'charts_dir': base_dir+"bin/charts/",
 	'email_template': base_dir+"bin/email_template.html",
 	'data_expire_days': 7,
 	'cache_expire_min': 1,
 	'web_timeout': 10,
+	'web_use_reloader': True,
 	'formats': {
 		'int': { 'unit': 'int', 'suffix': '', },
 		'float': { 'unit': 'float', 'suffix': '', },
@@ -171,7 +169,7 @@ constants = {
 				},
 			],
 		},
-		'chart_group_history': {
+		'chart_group_timeline_history': {
 			'template': 'master',
 			'chart': {
 				'type': 'spline',
@@ -184,7 +182,7 @@ constants = {
 				'gridLineWidth': 1,
 			},
 		},
-		'chart_group_recent': {
+		'chart_group_timeline_recent': {
 			'template': 'master',
                         'chart': {
                                 'type': 'spline',

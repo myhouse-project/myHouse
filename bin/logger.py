@@ -1,6 +1,5 @@
 #!/usr/bin/python
-import logging
-import os
+import logging 
 
 import config
 conf = config.get_config()
@@ -9,21 +8,22 @@ conf = config.get_config()
 def get_logger(name):
 	return logger
 
-def get_console_logger(level):
+def get_console_logger(logger_name):
 	console = logging.StreamHandler()
-	console.setLevel(level)
-	console.setFormatter(conf["constants"]["logging"]["formatter"])
+	console.setLevel(conf["logging"][logger_name]["level"])
+	console.setFormatter(conf["constants"]["log_formatter"])
 	return console
 
-def get_file_logger(level,file):
-	file = logging.FileHandler(file)
-	file.setLevel(level)
-	file.setFormatter(conf["constants"]["logging"]["formatter"])
+def get_file_logger(logger_name):
+	file = logging.FileHandler(conf["constants"]["log_dir"]+conf["logging"][logger_name]["filename"])
+	file.setLevel(conf["logging"][logger_name]["level"])
+	file.setFormatter(conf["constants"]["log_formatter"])
 	return file
 
 
 # inizialize the logger
-logger = logging.getLogger("myHouse")
-logger.setLevel(conf["logging"]["level"]["myHouse"])
-logger.addHandler(get_console_logger(conf["logging"]["level"]["myHouse"]))
-logger.addHandler(get_file_logger(conf["logging"]["level"]["myHouse"],(conf["constants"]["logging"]["logfile"])))
+logger_name = "myHouse"
+logger = logging.getLogger(logger_name)
+logger.setLevel(conf["logging"][logger_name]["level"])
+logger.addHandler(get_console_logger(logger_name))
+logger.addHandler(get_file_logger(logger_name))

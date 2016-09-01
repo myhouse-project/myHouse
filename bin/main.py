@@ -1,9 +1,5 @@
-import sys
 from time import sleep
-import signal
-import sys
 import datetime
-from multiprocessing import Process
 
 import utils
 import logger
@@ -22,13 +18,12 @@ def run():
 	# schedule each sensor 
 	schedule.start()
 	sensors.schedule_all()
-	schedule.add_job(web.run,'date',run_date=datetime.datetime.now())
+	# start the web server
+	if conf['web']['enabled']: schedule.add_job(web.run,'date',run_date=datetime.datetime.now())
 	while True:
 		sleep(1)
-	# run the web server
-#	web.run()
  
 # allow running it both as a module and when called directly
 if __name__ == "__main__":
-	conf["web"]["use_reloader"] = False
+	conf["constants"]["web_use_reloader"] = False
 	run()

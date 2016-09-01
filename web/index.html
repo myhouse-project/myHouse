@@ -207,8 +207,7 @@
 					log("info","["+module_id+"]["+group["group_id"]+"] loading widget "+widget["widget_id"]);
 					if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);
 					else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
-					else if (widget["type"] == "chart_group_recent") add_group_timeline_widget(row,widget,module_id,group,"recent");
-					else if (widget["type"] == "chart_group_history") add_group_timeline_widget(row,widget,module_id,group,"history");
+					else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
 					else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
 				}
 				// end of the row
@@ -291,7 +290,7 @@
 		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
 		tag = "#"+tag;
 		// add the chart
-		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
+		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]]);
 		$(tag).highcharts('StockChart',options);
 		var chart = $(tag).highcharts();
 		// for each sensor

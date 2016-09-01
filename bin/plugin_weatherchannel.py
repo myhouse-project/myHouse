@@ -19,7 +19,7 @@ def poll(sensor):
 	request = sensor['plugin']['request']
 	if request == "alerts":
 		# request the web page
-		return utils.web_get(url+str(sensor['plugin']['latitude'])+'/'+str(sensor['plugin']['longitude'])+'/'+cache_schema(sensor)+'/wwir.json?apiKey='+sensor['plugin']['api_key']+'&units=m&language=en')
+		return utils.web_get(url+str(conf['plugins']['weatherchannel']['latitude'])+'/'+str(conf['plugins']['weatherchannel']['longitude'])+'/'+cache_schema(sensor)+'/wwir.json?apiKey='+conf['plugins']['weatherchannel']['api_key']+'&units=m&language=en')
 
 # parse the data
 def parse(sensor,data):

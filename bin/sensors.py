@@ -12,6 +12,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
+import email_report
 
 import plugin_wunderground
 import plugin_weatherchannel
@@ -171,6 +172,11 @@ def run(module_id,group_id,sensor_id,action):
 def schedule_all():
         # for each module
         for module in conf["modules"]:
+		if not module["enabled"]: continue
+		# schedule email reports
+		if module["email_report"]: 
+			schedule.add_job(email_report.run,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
+			log.info("["+module['module_id']+"] scheduling daily email report")
 		# skip modules without sensors
 		if "sensor_groups" not in module: continue
 	        # for each group of sensors
@@ -257,7 +263,7 @@ def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
 		# next days measures
                 range = "day"
                 start = utils.day_start(utils.now())
-                end = utils.day_start(utils.now()+(conf["charts"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
+                end = utils.day_start(utils.now()+(conf["web"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
                 withscores = True
         else: return data
         # define the key to request
