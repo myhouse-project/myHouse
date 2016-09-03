@@ -3,7 +3,7 @@ import logging
 import os
 import time
 
-base_dir = os.path.abspath(os.path.dirname(__file__))+"/../"
+base_dir = os.path.abspath(os.path.dirname(__file__))
 
 # constants
 constants = {
@@ -16,25 +16,61 @@ constants = {
 		'root': "myHouse",
 	},
 	'null': "None",
-	'log_dir': base_dir+"logs/",
-	'log_formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
-	'charts_dir': base_dir+"bin/charts/",
-	'email_template': base_dir+"bin/email_template.html",
+	'base_dir': base_dir,
+	'log_dir': base_dir+"/logs",
+	'tmp_dir': base_dir+"/tmp",
+	'email_template': base_dir+"/template_email.html",
+	'service_template': base_dir+"/template_service.sh",
+	'service_location': '/etc/init.d/myhouse',
 	'data_expire_days': 7,
 	'cache_expire_min': 1,
+	'log_formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
+	'image_unavailable': base_dir+"/web/images/image_unavailable.png",
+	'web_dir': base_dir+"/web",
+	'web_template': "template_web.html",
 	'web_timeout': 10,
 	'web_use_reloader': True,
 	'formats': {
-		'int': { 'unit': 'int', 'suffix': '', },
-		'float': { 'unit': 'float', 'suffix': '', },
-		'string': { 'unit': 'string', 'suffix': '', },
-		'temperature': { 'unit': 'float', 'suffix': u'\u00B0C', },
-		'size': { 'unit': 'int', 'suffix': 'MB', },
-		'percentage': { 'unit': 'float', 'suffix': '%', },
-		'voltage': { 'unit': 'float', 'suffix': 'v', },
-		'precipitation_rain': { 'unit': 'int', 'suffix': 'mm', },
-		'precipitation_snow': { 'unit': 'int', 'suffix': 'cm', },
-		'image': { 'unit': "", 'suffix': "",},
+		'int': { 
+			'formatter': 'int', 
+			'suffix': '', 
+		},
+		'float': { 
+			'formatter': 'float_1', 
+			'suffix': '', 
+		},
+		'string': { 
+			'formatter': 'string', 
+			'suffix': '', 
+		},
+		'temperature': { 
+			'formatter': 'float_1', 
+			'suffix': u'\u00B0C', 
+		},
+                'humidity': {
+                        'formatter': 'int',
+                        'suffix': '%',
+                },
+		'size': { 
+			'formatter': 'int', 
+			'suffix': 'MB', 
+		},
+		'percentage': { 
+			'formatter': 'float_1', 
+			'suffix': '%', 
+		},
+		'voltage': { 
+			'formatter': 'float_2', 
+			'suffix': 'v', 
+		},
+		'length': { 
+			'formatter': 'int', 
+			'suffix': 'mm', 
+		},
+		'image': { 
+			'formatter': "", 
+			'suffix': "",
+		},
 	},
 	'charts': {
 		'master': {
@@ -209,9 +245,12 @@ for chart_id in constants['charts']:
 	constants['charts'][chart_id] = new_chart
 
 # return all the configuration settings as an object
-def get_constants():
-	is_night = False
-	hour = int(time.strftime("%H"))
-	if hour >= 20 or hour <= 6: is_night = True;
-	constants['is_night'] = is_night
+def get_constants(conf):
+	# adapt the units if needed
+	if conf["general"]["imperial_units"]:
+		constants["formats"]["length"]["suffix"] = "in"
+		constants["formats"]["length"]["formatter"] = "float_2"
+        if conf["general"]["fahrenheit_temperature"]:
+                constants["formats"]["temperature"]["suffix"] = u'\u00B0F'
+                constants["formats"]["temperature"]["formatter"] = "int"
 	return constants

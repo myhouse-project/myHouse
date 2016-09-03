@@ -31,6 +31,7 @@ def send(subject,body,images=[]):
         msg.attach(MIMEText(body, 'html'))
         smtp = smtplib.SMTP(conf["email"]["hostname"])
 	# send it
+	log.info("sending email '"+subject+"' to "+msg['To'])
         smtp.sendmail(conf["email"]["from"],conf["email"]["to"], msg.as_string())
         smtp.quit()
 

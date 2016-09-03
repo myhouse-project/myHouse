@@ -21,9 +21,10 @@ def capitalizeFirst(string):
 
 # save the image to disk
 def save_to_file(r,filename):
-	with open(conf['constants']['charts_dir']+filename+'.'+extension,'wb') as fd:
+	with open(conf['constants']['tmp_dir']+'/daily_report_'+filename+'.'+extension,'wb') as file:
         	for chunk in r.iter_content(1000):
-                	fd.write(chunk)
+                	file.write(chunk)
+	file.close()
 
 # generate the chart
 def generate_chart(options,filename,is_stock_chart=False):
@@ -142,17 +143,18 @@ def add_image_widget(row,widget,module_id,group):
 def load_widgets(module_id):
 	module = utils.get_module(module_id)
 	row = ''
-	if 'sensor_groups' in module:
-		# for each group
-		for i in range(len(module["sensor_groups"])):
-			group = module["sensor_groups"][i]
-			for j in range(len(group["widgets"])):
-				widget = group["widgets"][j];
-				log.info("["+module_id+"]["+group["group_id"]+"] generating widget "+widget["widget_id"])
-				if widget["type"] == "group_summary": add_group_summary_widget(row,widget,module_id,group)
-				elif widget["type"] == "image": add_image_widget(row,widget,module_id,group)
-				elif widget["type"] == "group_timeline": add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"])
-				elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(row,widget,module_id,group)
+	if 'sensor_groups' not in module: return
+	# for each group
+	for i in range(len(module["sensor_groups"])):
+		group = module["sensor_groups"][i]
+		if 'widgets' not in group: continue
+		for j in range(len(group["widgets"])):
+			widget = group["widgets"][j];
+			log.info("["+module_id+"]["+group["group_id"]+"] generating widget "+widget["widget_id"])
+			if widget["type"] == "group_summary": add_group_summary_widget(row,widget,module_id,group)
+			elif widget["type"] == "image": add_image_widget(row,widget,module_id,group)
+			elif widget["type"] == "group_timeline": add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"])
+			elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(row,widget,module_id,group)
 
 # load all the widgets of the requested module	
 def run(module_id):
