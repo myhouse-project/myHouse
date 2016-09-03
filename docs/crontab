@@ -1,5 +1,0 @@
-HOME_PATH=/path/to/base/directory
-*/5 * * * * python $HOME_PATH/weather/weather.py measure >> $HOME_PATH/logs/logs.txt
-1 * * * * python $HOME_PATH/weather/weather.py hour >> $HOME_PATH/logs/logs.txt
-2 0 * * * python $HOME_PATH/weather/weather.py day >> $HOME_PATH/logs/logs.txt
-

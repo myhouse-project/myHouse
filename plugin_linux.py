@@ -1,10 +1,9 @@
 #!/usr/bin/python
-
-import subprocess
-
 import utils
 import logger
+import config
 log = logger.get_logger(__name__)
+conf = config.get_config()
 
 # define common commands
 commands = {
@@ -50,21 +49,10 @@ commands = {
         },
 }
 
-
-# run a command and return the output
-def execute(command):
-	log.debug("Executing "+command)
-	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = ''
-        for line in process.stdout.readlines():
-        	output = output+line
-	return output.rstrip()
-	
-
 # poll the sensor
 def poll(sensor):
 	command = commands[sensor['plugin']['request']]['command_poll'] if sensor['plugin']['request'] in commands else sensor['plugin']['command_poll']
-	return execute(command)
+	return utils.run_command(command)
 
 # parse the data
 def parse(sensor,data):
@@ -72,7 +60,7 @@ def parse(sensor,data):
 	measures = []
         measure = {}
         measure["key"] = sensor["sensor_id"]
-	parsed = execute("echo '"+str(data)+"' |"+command)
+	parsed = utils.run_command("echo '"+str(data)+"' |"+command)
 	measure["value"] = float(parsed)
         # append the measure and return it
         measures.append(measure)

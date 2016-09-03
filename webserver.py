@@ -12,17 +12,17 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 
 # define the web application
-app = Flask(__name__,template_folder='../web')
+app = Flask(__name__,template_folder=conf["constants"]["base_dir"])
 
 # render index if no page name is provided
 @app.route('/')
 def web_root():
-        return render_template("index.html")
+        return render_template(conf["constants"]["web_template"])
 
 # static folder (web)
 @app.route('/web/<path:filename>')
 def web_static(filename):
-        return send_from_directory("../web", filename)
+        return send_from_directory(conf["constants"]["web_dir"], filename)
 
 # shutdown the server
 def shutdown_server():
@@ -45,25 +45,24 @@ def get_internet_status():
 	return utils.web_get("http://ipinfo.io")
 
 # return the latest read of a sensor
-@app.route('/<module>/sensors/<group_id>/<sensor_id>/current')
-def sensor_get_current(module,group_id,sensor_id):
-	return json.dumps(sensors.web_get_current(module,group_id,sensor_id))
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/current')
+def sensor_get_current(module_id,group_id,sensor_id):
+	return sensors.web_get_current(module_id,group_id,sensor_id)
 
 # return the latest image of a sensor
-@app.route('/<module>/sensors/<group_id>/<sensor_id>/image')
-def sensor_get_image(module,group_id,sensor_id):
-        return sensors.web_get_image(module,group_id,sensor_id)
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/image')
+def sensor_get_current_image(module_id,group_id,sensor_id):
+        return sensors.web_get_current_image(module_id,group_id,sensor_id)
 
 # return the time difference between now and the latest measure
-@app.route('/<module>/sensors/<group_id>/<sensor_id>/timestamp')
-def sensor_get_current_timestamp(module,group_id,sensor_id):
-        return json.dumps(sensors.web_get_current_timestamp(module,group_id,sensor_id))
-
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/timestamp')
+def sensor_get_current_timestamp(module_id,group_id,sensor_id):
+        return sensors.web_get_current_timestamp(module_id,group_id,sensor_id)
 
 # return the data of a requested sensor based on the timeframe and stat requested
-@app.route('/<module>/sensors/<group_id>/<sensor_id>/<timeframe>/<stat>')
-def sensor_get_data(module,group_id,sensor_id,timeframe,stat):
-	return json.dumps(sensors.web_get_data(module,group_id,sensor_id,timeframe,stat))
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/<timeframe>/<stat>')
+def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
+	return sensors.web_get_data(module_id,group_id,sensor_id,timeframe,stat)
 
 # run the web server
 def run():

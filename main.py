@@ -1,46 +1,30 @@
-from flask import Flask,request,send_from_directory,render_template
-import redis
-import time
-import json
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.dirname(__file__))+"/weather")
-import weather_frontend
+from time import sleep
+import datetime
 
-app = Flask(__name__,template_folder='static/templates')
+import utils
+import logger
+import config
+log = logger.get_logger(__name__)
+conf = config.get_config()
+import sensors
+import scheduler
+schedule = scheduler.get_scheduler()
+import webserver
+import db
 
-debug = 0
-
-# read global settings
-config = {}
-execfile(os.path.abspath(os.path.dirname(__file__))+"/conf/myHouse.py", config)
-if (config["debug"]): debug = 1
-
-# static HTML files
-@app.route('/')
-def web_root():
-	return render_template("index.html")
-
-@app.route('/static/<path:filename>')
-def web_static(filename):
-	return send_from_directory("static", filename)
-
-## WEATHER MODULE
-# webcams
-@app.route('/weather/static/webcams')
-def weather_webcams():
-	return weather_frontend.webcams()
-
-# forecast
-@app.route('/weather/<query>')
-def weather_query(query):
-	return weather_frontend.query(request,query)
-
-# weather data
-@app.route('/weather/<sensor_name>/<sensor_measure>/<timeframe>')
-def weather_data(sensor_name,sensor_measure,timeframe):
-	return weather_frontend.data(request,sensor_name,sensor_measure,timeframe)
-
-# run the main web app
-if __name__ == '__main__':
-	app.run(debug=True, host='0.0.0.0',port=80)
+# run the main application
+def run():
+	log.info("Welcome to myHouse v"+conf["constants"]["version_string"])
+	db.init()
+	# schedule each sensor 
+	schedule.start()
+	sensors.schedule_all()
+	# start the web server
+	if conf['web']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
+	while True:
+		sleep(1)
+ 
+# allow running it both as a module and when called directly
+if __name__ == "__main__":
+	conf["constants"]["web_use_reloader"] = False
+	run()

@@ -15,7 +15,7 @@ def get_console_logger(logger_name):
 	return console
 
 def get_file_logger(logger_name):
-	file = logging.FileHandler(conf["constants"]["log_dir"]+conf["logging"][logger_name]["filename"])
+	file = logging.FileHandler(conf["constants"]["log_dir"]+"/"+conf["logging"][logger_name]["filename"])
 	file.setLevel(conf["logging"][logger_name]["level"])
 	file.setFormatter(conf["constants"]["log_formatter"])
 	return file

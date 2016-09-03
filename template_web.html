@@ -194,6 +194,8 @@
 	function load_widgets(module_id) {
 		$("#body").append('<div id="widgets"></div>');
 		var module = get_module(module_id);
+		if (module == null) return;
+		if (! ('sensor_groups' in module)) return;
 		if ('sensor_groups' in module) {
 			// for each group
 			for (var i = 0; i < module["sensor_groups"].length; i++) {
@@ -201,6 +203,7 @@
 				// start a new row
 				var row = group["group_id"]+"_row";
 				$("#widgets").append('<div class="row" id="'+row+'">');
+				if (! ('widgets' in group)) continue;
 				for (var j = 0; j < group["widgets"].length; j++) {
 					// add each configured widget
 					widget = group["widgets"][j];
@@ -226,7 +229,9 @@
 		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
 		if ("module" in widget) module_id = widget["module"];
 		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
-		
+		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
+		if (sensor == null) return;
+		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		var summary_body = '\
 			<div class="box-profile">\
 				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
@@ -243,18 +248,8 @@
 		// add the summary body to it
 		$(tag).html(summary_body);
 		// add the summary icon
-		var is_night = conf['constants']['is_night'] ? 'nt_' : '';
-		var icon_sensor = widget["icon"].match(/sensor:\/\/(.+)$/);
-		// if the image is coming from the current value of a widget, retrieve it 
-		if (icon_sensor) set_img(tag+"_icon",module_id+"/sensors/"+icon_sensor[1],is_night,'.png')
-		// if it is a static file, make the icon pointing to it
-		var icon_file = widget["icon"].match(/file:\/\/(.+)$/);
-		if (icon_file) $(tag+"_icon").attr('src','web/images/'+icon_file[1]);
+		$(tag+"_icon").attr('src',widget["icon_url"]);
 		
-		// add current data and icon
-		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
-		if (sensor == null) return;
-		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		// set the current measure
 		set_html(tag+"_current",sensor_url+"/current");
 		$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
@@ -344,7 +339,7 @@
 		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
 		tag = "#"+tag;
 		// add the image to the widget
-		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/image"+'" />');
+		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
 	}
 	
 	/**

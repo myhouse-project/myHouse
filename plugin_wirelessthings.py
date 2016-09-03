@@ -13,7 +13,9 @@ conf = config.get_config()
 def poll(sensor):
 	# read and return the content of file (in json)
 	with open(conf['plugins']['wirelessthings']['csv_file']) as file:
-		return json.dumps(file.readlines())
+		data = json.dumps(file.readlines())
+	file.close()
+	return data
 
 # parse the data
 def parse(sensor,data):
@@ -33,7 +35,7 @@ def parse(sensor,data):
 		if not value.startswith(sensor['plugin']['request']): continue
 		# generate the timestamp
 		date = datetime.datetime.strptime(entry[0],"%d %b %Y %H:%M:%S +0000")
-		measure["timestamp"] = utils.timezone(int(time.mktime(date.timetuple())))
+		measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
 		measure["key"] = sensor["sensor_id"]
 		# strip out the measure from the value
 		measure["value"] = float(value.replace(sensor['plugin']['request'],""))

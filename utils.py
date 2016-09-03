@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import sys
 import os
+import subprocess
 import requests
 import time
 import math
@@ -19,13 +20,19 @@ conf = config.get_config()
 def remove_all(array,value):
         return [x for x in array if x != value]
 
+# return the current offset from utc time
+def get_utc_offset():
+	is_dst = time.daylight and time.localtime().tm_isdst > 0
+	utc_offset = - (time.altzone if is_dst else time.timezone)
+	return int(utc_offset/3600)
+
 # return the timestamp with a the timezone offset applied
 def timezone(timestamp):
-	return int(timestamp+conf["general"]["timezone_offset_hours"]*conf["constants"]["1_hour"])
+	return int(timestamp+get_utc_offset()*conf["constants"]["1_hour"])
 
 # return an UTC timestamp from a local timezone timestamp
 def utc(timestamp):
-	return int(timestamp-conf["general"]["timezone_offset_hours"]*conf["constants"]["1_hour"])
+	return int(timestamp-get_utc_offset()*conf["constants"]["1_hour"])
 
 # return the now timestamp (in the local timezone)
 def now():
@@ -81,8 +88,13 @@ def is_number(s):
         return False
 
 # normalize the value. If the input is a number, keep a single digit, otherwise return a string
-def normalize(value):
-	return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
+def normalize(value,formatter=None):
+	if formatter is None:
+		return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
+	elif formatter == "int": return int(value)
+	elif formatter == "float_1": return float("{0:.1f}".format(float(value)))
+	elif formatter == "float_2": return float("{0:.2f}".format(float(value)))
+	else: return str(value)
 
 # request a given url
 def web_get(url,username=None,password=None,binary=False):
@@ -154,34 +166,20 @@ def merge(template,delta):
 	new_dict = template.copy()
 	new_dict.update(delta)
 
-# return the configuration of a given sensor	
-def get_sensor2(module_id,group_id,sensor_id):
-        sensor = None
-        for this_module in conf['modules']:
-                if this_module['module_id'] != module_id: continue
-                for this_group in this_module['sensor_groups']:
-                        if this_group['group_id'] != group_id: continue
-                        for this_sensor in this_group['sensors']:
-                                if this_sensor['sensor_id'] != sensor_id: continue
-                                else:
-                                        sensor = this_sensor
-                                        sensor['module_id'] = this_module['module_id']
-                                        sensor['group_id'] = this_group['group_id']
-                                        break
-	return sensor
-
-
+# return a given module
 def get_module(module_id):
 	for i in range(len(conf["modules"])):
 		module = conf["modules"][i]
 		if module["module_id"] == module_id: return module
 
+# return a given sensor group
 def get_group(module_id,group_id):
 	module = get_module(module_id)
 	for i in range(len(module["sensor_groups"])):
 		group = module["sensor_groups"][i]
 		if group["group_id"] == group_id: return group
-	
+
+# returna given sensor
 def get_sensor(module_id,group_id,sensor_id):
 	group = get_group(module_id,group_id)
 	for j in range (len(group["sensors"])):
@@ -189,3 +187,29 @@ def get_sensor(module_id,group_id,sensor_id):
 		if sensor["sensor_id"] == sensor_id: return sensor
 	
 	
+# run a command and return the output
+def run_command(command):
+        log.debug("Executing "+command)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = ''
+        for line in process.stdout.readlines():
+                output = output+line
+        return output.rstrip()
+
+# determine if it is night
+def is_night():
+        is_night = False
+        hour = int(time.strftime("%H"))
+        if hour >= 20 or hour <= 6: is_night = True;
+	return is_night
+
+# convert the temperature if needed
+def temperature_unit(temperature):
+	if conf["general"]["fahrenheit_temperature"]: return (temperature * 1.8) + 32
+	else: return temperature
+
+# convert a length if neeeded
+def length_unit(length):
+        if conf["general"]["imperial_units"]: return length*0.039370
+        else: return length
+

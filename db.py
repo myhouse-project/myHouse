@@ -9,9 +9,6 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-# multiply the timestamp when normalizing the result
-timestamp_multiplier = 1
-
 # initialize the connection
 db = None
 
@@ -25,17 +22,16 @@ def connect():
 	return db
 
 # normalize the output
-def normalize(data,withscores,milliseconds):
+def normalize_dataset(data,withscores,milliseconds):
 	output = []
-	timestamp_multiplier = 1
-	if milliseconds: timestamp_multiplier = 1000
+	timestamp_multiplier = 1000 if milliseconds else 1
 	for entry in data:
 		# get the timestamp 
 		timestamp = int(entry[1])*timestamp_multiplier
-		# get the value (entry is timetime:value)
+		# normalize the value (entry is timetime:value)
 		value_string = entry[0].split(":",1)[1];
 		# cut the float if a number of make it string
-		value = utils.normalize(value_string)
+		value = float(value_string) if utils.is_number(value_string) else str(value_string)
 		# normalize "None" in null
 		if value == conf["constants"]["null"]: value = None
 		# prepare the output
@@ -48,7 +44,6 @@ def keys(key):
 	db = connect()
 	log.debug("keys "+key)
 	return db.keys(key)
-
 
 # save a value to the db (both with and without timestamp)
 def set(key,value,timestamp):
@@ -75,13 +70,13 @@ def get(key):
 def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,milliseconds=False):
 	db = connect()
 	log.debug("zrangebyscore "+key+" "+str(start)+" "+str(end))
-	return normalize(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds)
+	return normalize_dataset(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds)
 	
 # get a range of values from the db
 def range(key,start=-1,end=-1,withscores=True,milliseconds=False):
         db = connect()
         log.debug("zrange "+key+" "+str(start)+" "+str(end))
-        return normalize(db.zrange(key,start,end,withscores=True),withscores,milliseconds)
+        return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds)
 
 # delete a key
 def delete(key):
@@ -107,7 +102,6 @@ def flushdb():
         log.debug("flushdb")
         return db.flushdb()
 
-
 # initialize an empty database
 def init():
 	db = connect()
@@ -116,4 +110,19 @@ def init():
 	if not exists(version_key): set(version_key,conf["constants"]["version"],None)
 	else:
 		version = float(get(version_key))
-		if version != conf["constants"]["version"]: log.error("database version mismatch (expecting v"+str(conf["constants"]["version"])+" but found v"+str(version)+")")
+		if version != conf["constants"]["version"]: log.warning("database version mismatch (expecting v"+str(conf["constants"]["version"])+" but found v"+str(version)+")")
+
+# main
+if __name__ == '__main__':
+	connect()
+	print "Connection: "+str(db)
+	print "\nDatabase info:"
+	info = db.info()
+	for key in info:
+		print "\t- "+key+": "+str(info[key])
+	print "\nDatabase key size:"
+	keys = keys("*")
+	for key in sorted(keys):
+		if db.type(key) != "zset": continue
+		print "\t- "+key+": "+str(db.zcard(key))
+	

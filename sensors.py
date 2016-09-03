@@ -2,7 +2,9 @@
 import sys
 import os
 import datetime
+import json
 import base64
+from time import sleep
 
 import utils
 import db
@@ -28,6 +30,8 @@ def poll(plugin,sensor):
         try: 
 		# retrieve the raw data 
 		data = plugin.poll(sensor)
+                # delete from the cache the previous value
+                db.delete(sensor['db_cache'])
 	        # store it in the cache
 	        db.set(sensor["db_cache"],data,utils.now())
 	except Exception,e: 
@@ -43,7 +47,11 @@ def parse(plugin,sensor):
 		# parse the cached data
 		measures = plugin.parse(sensor,data)
 		# format each values
-		for i in range(len(measures)): measures[i]["value"] = utils.normalize(measures[i]["value"])
+		for i in range(len(measures)): 
+			# normalize the measures
+			if sensor["format"] == "temperature": measures[i]["value"] = utils.temperature_unit(measures[i]["value"])
+			if sensor["format"] == "length": measures[i]["value"] = utils.length_unit(measures[i]["value"])
+			measures[i]["value"] = utils.normalize(measures[i]["value"],conf["constants"]["formats"][sensor["format"]]["formatter"])
 		log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
 		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to parse "+str(data)+": "+utils.get_exception(e))
@@ -80,7 +88,7 @@ def save(plugin,sensor):
 			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
 			continue
 		# store the value into the database
-		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"])))
+		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"]))+conf["constants"]["formats"][sensor["format"]]["suffix"])
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
 		if sensor["calculate_avg"]:
@@ -131,24 +139,31 @@ def expire(sensor):
 def run(module_id,group_id,sensor_id,action):
 	# ensure the group and sensor exist
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	if sensor is None: log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not configured")
+	if sensor is None: 
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found, skipping it")
+		return
+	# add group and module if not there yet
+	sensor['module_id'] = module_id
+        sensor['group_id'] = group_id
         # determine the plugin to use 
-        elif sensor["plugin"]["name"] == "wunderground": plugin = plugin_wunderground
+        if sensor["plugin"]["name"] == "wunderground": plugin = plugin_wunderground
 	elif sensor["plugin"]["name"] == "weatherchannel": plugin = plugin_weatherchannel
 	elif sensor["plugin"]["name"] == "linux": plugin = plugin_linux
 	elif sensor["plugin"]["name"] == "http": plugin = plugin_http
 	elif sensor["plugin"]["name"] == "wirelessthings": plugin = plugin_wirelessthings
-	else: log.error("Plugin "+sensor["plugin"]+" not supported")
+	else:
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] plugin "+sensor["plugin"]+" not supported")
+		return
 	# define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
 	sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
-	if plugin.cache_schema(sensor) is None: log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")	
-        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":__cache__:"+sensor["group_id"]+":"+sensor["plugin"]["name"]+"_"+plugin.cache_schema(sensor)
+	if plugin.cache_schema(sensor) is None: 
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")
+		return
+        sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+plugin.cache_schema(sensor)
 	# execute the action
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
 	if action == "poll":
-		# delete from the cache the previous value 
-		db.delete(sensor['db_cache'])
 		# read the measure (will be stored into the cache)
 		poll(plugin,sensor)
 	elif action == "parse":
@@ -205,31 +220,28 @@ def web_get_current(module_id,group_id,sensor_id):
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True)
-	return data
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	# if an image, decode it and return it
+	if sensor["format"] == "image": return base64.b64decode(data[0])
+	else: return json.dumps(data)
 
 # return the latest image of a sensor for a web request
-def web_get_image(module_id,group_id,sensor_id):
-        data = []
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
-        # return the latest measure
-        data = db.range(key,withscores=False,milliseconds=True)
-        if len(data) == 1:
-                image = base64.b64decode(data[0])
-                if "<html" in image.lower() or image == "":
-                        with open('../web/images/image_unavailable.png','r') as content_file:
-                                return content_file.read()
-                else: return image
-        else:
-                with open('../web/images/image_unavailable.png','r') as content_file:
-                        return content_file.read()
+def web_get_current_image(module_id,group_id,sensor_id):
+	data = json.loads(web_get_current(module_id,group_id,sensor_id))
+	if len(data) == 0: return ""
+	filename = "nt_"+data[0] if utils.is_night() else data[0]
+	with open(conf["constants"]["web_dir"]+"/images/"+filename+".png",'r') as file:
+                data = file.read()
+        file.close()
+	return data
 
 # return the time difference between now and the latest measure
 def web_get_current_timestamp(module_id,group_id,sensor_id):
         data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
-	if len(data) > 0: return [utils.timestamp_difference(utils.now(),data[0][0]/1000)]
-	else: return data
+	if len(data) > 0: return json.dumps([utils.timestamp_difference(utils.now(),data[0][0]/1000)])
+	else: return json.dumps(data)
 
 # return the data of a requested sensor based on the timeframe and stat requested
 def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
@@ -281,10 +293,17 @@ def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
                         if i < len(data_max):
                                 if (isinstance(item,list)): data[i].append(data_max[i])
                                 else: data.append(data_max[i])
-        return data
+        return json.dumps(data)
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
-	if (len(sys.argv) != 5): print "Usage: sensors.py <module_id> <group_id> <sensor_id> <action>"
-	else: run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
+	if len(sys.argv) != 5: 
+		# no arguments provided, schedule all sensors
+		schedule.start()
+		schedule_all()
+	        while True:
+	                sleep(1)
+	else: 
+		# run the command for the given sensor
+		run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
 
