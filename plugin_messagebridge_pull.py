@@ -12,7 +12,7 @@ conf = config.get_config()
 # poll the sensor
 def poll(sensor):
 	# read and return the content of file (in json)
-	with open(conf['plugins']['wirelessthings']['csv_file']) as file:
+	with open(conf['plugins']['messagebridge_pull']['csv_file']) as file:
 		data = json.dumps(file.readlines())
 	file.close()
 	return data
@@ -45,5 +45,5 @@ def parse(sensor,data):
 # return the cache schema
 def cache_schema(sensor):
 	# cache the entire file
-	return conf['plugins']['wirelessthings']['csv_file']
+	return conf['plugins']['messagebridge_pull']['csv_file']
 
