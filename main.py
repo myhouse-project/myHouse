@@ -1,4 +1,4 @@
-from time import sleep
+import time
 import datetime
 
 import utils
@@ -22,7 +22,7 @@ def run():
 	# start the web server
 	if conf['web']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	while True:
-		sleep(1)
+		time.sleep(1)
  
 # allow running it both as a module and when called directly
 if __name__ == "__main__":
