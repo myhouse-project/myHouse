@@ -59,7 +59,7 @@ def run():
 				# strip out the measure from the value
 		                measure["value"] = float(value.replace(request,""))
 		                measures.append(measure)
-			sensors.store(sensor,measures)
+				sensors.store(sensor,measures)
 
 
 						
