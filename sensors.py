@@ -5,6 +5,7 @@ import datetime
 import json
 import base64
 import time
+import copy
 
 import utils
 import db
@@ -38,13 +39,13 @@ def get_plugin(name):
 	return plugin
 
 # read data out of a sensor and store the output in the cache
-def poll(plugin,sensor):
+def poll(sensor):
 	# poll the data
 	data = None
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
         try: 
 		# retrieve the raw data 
-		data = plugin.poll(sensor)
+		data = sensor["plugin_module"].poll(sensor)
                 # delete from the cache the previous value
                 db.delete(sensor['db_cache'])
 	        # store it in the cache
@@ -54,13 +55,13 @@ def poll(plugin,sensor):
 	return data
 
 # parse the data of a sensor from the cache and return the value read
-def parse(plugin,sensor):
+def parse(sensor):
 	# retrieve the raw data from the cache
 	data = db.range(sensor["db_cache"],withscores=False)[0]
 	measures = None
         try:
 		# parse the cached data
-		measures = plugin.parse(sensor,data)
+		measures = sensor["plugin_module"].parse(sensor,data)
 		# format each values
 		for i in range(len(measures)): 
 			# normalize the measures
@@ -74,7 +75,7 @@ def parse(plugin,sensor):
 	return measures
 
 # save the data of a sensor into the database
-def save(plugin,sensor):
+def save(sensor):
 	cache_timestamp = 0
 	# get the raw data from the cache
 	if db.exists(sensor["db_cache"]):
@@ -83,9 +84,9 @@ def save(plugin,sensor):
 	# if too old, refresh it
 	if utils.now() - cache_timestamp > conf['constants']['cache_expire_min']*conf["constants"]["1_minute"]:
 		# if an exception occurred, skip this sensor
-		if poll(plugin,sensor) is None: return
+		if poll(sensor) is None: return
 	# get the parsed data
-	measures = parse(plugin,sensor)
+	measures = parse(sensor)
 	# store it into the database
 	store(sensor,measures)
 
@@ -157,29 +158,31 @@ def expire(sensor):
 
 # initialize a sensor data structure
 def init_sensor(sensor,module_id,group_id):
+	sensor = copy.deepcopy(sensor)
         # add group and module if not there yet
         sensor['module_id'] = module_id
         sensor['group_id'] = group_id
         # determine the plugin to use
-        plugin = get_plugin(sensor["plugin"]["name"])
-        if plugin is None:
-                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] plugin "+sensor["plugin"]+" not supported")
+        sensor["plugin_module"] = get_plugin(sensor["plugin"]["name"])
+        if sensor["plugin_module"] is None:
+                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] plugin "+sensor["plugin"]["name"]+" not supported")
                 return None
         # define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
         sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
         # define the cache location if cache is in use by the plugin
-	if hasattr(plugin, 'cache_schema'):
-                if plugin.cache_schema(sensor) is None:
+	if hasattr(sensor["plugin_module"], 'cache_schema'):
+                if sensor["plugin_module"].cache_schema(sensor) is None:
                         log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")
                         return None
-                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+plugin.cache_schema(sensor)
+                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+sensor["plugin_module"].cache_schema(sensor)
 	return sensor
 
 # read or save the measure of a given sensor
 def run(module_id,group_id,sensor_id,action):
 	# ensure the group and sensor exist
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	sensor = init_sensor(sensor,module_id,group_id)
 	if sensor is None: 
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found, skipping it")
 		return
@@ -187,13 +190,13 @@ def run(module_id,group_id,sensor_id,action):
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
 	if action == "poll":
 		# read the measure (will be stored into the cache)
-		poll(plugin,sensor)
+		poll(sensor)
 	elif action == "parse":
 		# just parse the output
-		parse(plugin,sensor)
+		parse(sensor)
 	elif action == "save":
 		# save the parsed output into the database
-		save(plugin,sensor)
+		save(sensor)
 	elif action == "summarize_hour": 
 		# every hour calculate and save min,max,avg of the previous hour
 		summarize(sensor,'hour',utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
@@ -212,14 +215,14 @@ def init_push_plugins():
                 # skip pull plugins
                 if plugin_conf["type"] != "push": continue
                 # get the plugin and store it
-                plugin = get_plugin(plugin_name)
-                if plugin is None:
+                plugin_module = get_plugin(plugin_name)
+                if plugin_module is None:
                         log.error("push plugin "+plugin_name+" not supported")
                         continue
-                push_plugins[plugin_name] = plugin
+                push_plugins[plugin_name] = plugin_module
                 # start the plugin
                 log.info("starting push plugin "+plugin_name)
-		schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
+		schedule.add_job(plugin_module.run,'date',run_date=datetime.datetime.now())
 
 # schedule each sensor
 def schedule_all():
@@ -258,16 +261,16 @@ def schedule_all():
 					if sensor["refresh_interval_min"] == 0: continue
 					log.info("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 					# run it now first
-#					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
 	                                # then schedule it for each refresh interval
-#	       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+	       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                	# schedule an expire job every day
                                 schedule.add_job(run,'cron',day="*",args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
 				# schedule a summarize job every hour and every day if needed
                                 if sensor["calculate_avg"]:
                	                        log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
-#                      	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
-#                              	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
+                      	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
+                              	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 
 # return the latest read of a sensor for a web request
 def web_get_current(module_id,group_id,sensor_id):

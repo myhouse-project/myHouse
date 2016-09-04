@@ -21,9 +21,9 @@ history = {
 	'home:weather:outdoor:temperature:day:min': 'myHouse:outdoor::sensors:temperature:external:day:min',
 	'home:weather:outdoor:temperature:day': 'myHouse:outdoor::sensors:temperature:external:day:avg',
 
-        'home:weather:indoor:temperature:day:max': 'myHouse:indoor:sensors:temperature:first_floor:day:max',
-        'home:weather:indoor:temperature:day:min': 'myHouse:indoor:sensors:temperature:first_floor:day:min',
-        'home:weather:indoor:temperature:day': 'myHouse:indoor:sensors:temperature:first_floor:day:avg',
+        'home:weather:indoor:temperature:day:max': 'myHouse:indoor:sensors:temperature:living_room:day:max',
+        'home:weather:indoor:temperature:day:min': 'myHouse:indoor:sensors:temperature:living_room:day:min',
+        'home:weather:indoor:temperature:day': 'myHouse:indoor:sensors:temperature:living_room:day:avg',
 
 	'home:weather:almanac:record:min': 'myHouse:outdoor:sensors:temperature:record:day:min',
 	'home:weather:almanac:record:max': 'myHouse:outdoor:sensors:temperature:record:day:max',
@@ -37,7 +37,7 @@ history = {
 # keys to migrate recent data (from key -> to key)
 recent = {
 	'home:weather:outdoor:temperature:measure': 'myHouse:outdoor:sensors:temperature:external',
-	'home:weather:indoor:temperature:measure': 'myHouse:indoor:sensors:temperature:first_floor',
+	'home:weather:indoor:temperature:measure': 'myHouse:indoor:sensors:temperature:living_room',
 	'home:weather:outdoor:condition:measure': 'myHouse:outdoor:sensors:temperature:condition',
 }
 
