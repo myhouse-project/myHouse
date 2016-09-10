@@ -69,7 +69,7 @@ def run():
 	# configure logging
 	logger_name = "web"
 	web_logger = logging.getLogger('werkzeug')
-	web_logger.setLevel(conf["logging"][logger_name]["level"])
+	web_logger.setLevel(logger.get_level(conf["logging"][logger_name]["level"]))
 	web_logger.addHandler(logger.get_file_logger(logger_name))
 	# run the application
 	log.info("Starting web server on port "+str(conf["web"]["port"]))

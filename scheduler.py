@@ -13,7 +13,7 @@ scheduler = BackgroundScheduler()
 # configure logging
 logger_name = "scheduler"
 scheduler_logger = logging.getLogger('apscheduler.executors.default')
-scheduler_logger.setLevel(conf["logging"][logger_name]["level"])
+scheduler_logger.setLevel(logger.get_level(conf["logging"][logger_name]["level"]))
 scheduler_logger.addHandler(logger.get_console_logger(logger_name))
 scheduler_logger.addHandler(logger.get_file_logger(logger_name))
 
