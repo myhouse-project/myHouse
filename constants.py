@@ -19,6 +19,7 @@ constants = {
 	'base_dir': base_dir,
 	'log_dir': base_dir+"/logs",
 	'tmp_dir': base_dir+"/tmp",
+	'config_file': base_dir+"/config.yml",
 	'email_template': base_dir+"/template_email.html",
 	'service_template': base_dir+"/template_service.sh",
 	'service_location': '/etc/init.d/myhouse',
@@ -249,12 +250,5 @@ for chart_id in constants['charts']:
 	constants['charts'][chart_id] = new_chart
 
 # return all the configuration settings as an object
-def get_constants(conf):
-	# adapt the units if needed
-	if conf["general"]["imperial_units"]:
-		constants["formats"]["length"]["suffix"] = "in"
-		constants["formats"]["length"]["formatter"] = "float_2"
-        if conf["general"]["fahrenheit_temperature"]:
-                constants["formats"]["temperature"]["suffix"] = u'\u00B0F'
-                constants["formats"]["temperature"]["formatter"] = "int"
+def get_constants():
 	return constants
