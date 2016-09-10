@@ -10,6 +10,7 @@ import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
+import alerter
 
 # define the web application
 app = Flask(__name__,template_folder=conf["constants"]["base_dir"])
@@ -24,22 +25,12 @@ def web_root():
 def web_static(filename):
         return send_from_directory(conf["constants"]["web_dir"], filename)
 
-# shutdown the server
-def shutdown_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    func()
-
-@app.route('/shutdown')
-def shutdown():
-	return "OK"
-	log.info('webserver shutting down...')
-	shutdown_server()
-
 # return the json config
 @app.route('/config')
 def get_config():
 	return config.get_json_config()
 
+# return the internet status
 @app.route('/internet_status')
 def get_internet_status():
 	return utils.web_get("http://ipinfo.io")
@@ -63,6 +54,11 @@ def sensor_get_current_timestamp(module_id,group_id,sensor_id):
 @app.route('/<module_id>/sensors/<group_id>/<sensor_id>/<timeframe>/<stat>')
 def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	return sensors.web_get_data(module_id,group_id,sensor_id,timeframe,stat)
+
+# return the alerts
+@app.route('/alerts')
+def alerts_get_data():
+	return alerter.web_get_data()
 
 # run the web server
 def run():
