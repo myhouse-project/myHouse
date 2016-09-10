@@ -58,13 +58,26 @@
 			</a>
 
 			<nav class="navbar navbar-static-top" role="navigation">
-				<a href="" class="sidebar-toggle" data-toggle="offcanvas"
-					role="button"> <span class="sr-only">Toggle navigation</span> <span
-					class="icon-bar"></span> <span class="icon-bar"></span> <span
-					class="icon-bar"></span>
+				<a href="" class="sidebar-toggle" data-toggle="offcanvas" role="button"> 
+					<span class="sr-only">Toggle navigation</span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span>
 				</a>
 				<div class="navbar-custom-menu">
 					<ul class="nav navbar-nav">
+						<li class="dropdown notifications-menu">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+								<i class="fa fa-bell-o"></i>
+							</a>
+							<ul class="dropdown-menu">
+								<li>
+									<ul class="menu" id="alerts">
+									</ul>
+								</li>
+								<li class="footer"><a href="#">View all</a></li>
+							</ul>
+						</li>					
 					</ul>
 				</div>
 			</nav>
@@ -132,6 +145,8 @@
 			load_status();
 			// load the side menu
 			load_menu();
+			// load the alerts
+			load_alerts();
 			// load the given module
 			current_module = conf['general']['default_module'];
 			if (location.hash) current_module = location.hash.replace('#','');
@@ -179,7 +194,28 @@
 	function load_version() {
 		log("info","setting version to "+conf['constants']['version_string']);
 		$("#version").html(conf['constants']['version_string']);
-	}	
+	}
+	
+	// load alerts
+	function load_alerts() {
+		log("info","loading alerts");
+		// empty the menu
+		$("#alerts").empty()
+		var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+		$.getJSON(hostname+"alerts",function(data) {
+			for (var i = 0; i < data.length; i++) {
+				timestamp = new Date(data[i][0]);
+				timestamp = days[timestamp.getDay()]
+				text = data[i][1].split(':')
+				severity = text[0]
+				message = "["+timestamp+"] "+text[1]
+				if (severity == "info") icon = "fa-info text-blue"
+				else if (severity == "warning") icon = "fa-warning text-yellow"
+				else if (severity == "alert") icon = "fa-alert text-red"
+				$("#alerts").prepend('<li><a href="#" title="'+message+'"><i class="fa '+icon+'"></i>'+message+'</a></li>')
+			}
+		});
+	}
 	
 	// load module
 	function load_module(module_id) {
