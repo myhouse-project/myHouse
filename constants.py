@@ -238,7 +238,23 @@ constants = {
 			'rangeSelector': {
 				'enabled': False,
 			},
-		},		
+		},
+		'chart_group_timeline_realtime': {	
+                        'template': 'master',
+                        'chart': {
+                                'type': 'spline',
+                                'zoomType': 'x',
+                        },
+                        'xAxis': {
+                                'type': 'datetime',
+                                'tickInterval': 1*3600*1000,
+                                'tickWidth': 0,
+                                'gridLineWidth': 1,
+                        },
+                        'rangeSelector': {
+                                'enabled': False,
+                        },
+		},
 	},
 }
 # merge the chart template with the deltas
