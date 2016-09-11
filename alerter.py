@@ -43,6 +43,11 @@ def is_true(a,operator,b):
 	# return the evaluation
 	return evaluation
 
+# determine if a statament is involving a sensor
+def is_sensor(statement):
+	if ',' in statement: return True
+	return False
+
 # evaluate if the given alert has to trigger
 def run(module_id,alert_id):
 	module = utils.get_module(module_id)
@@ -52,21 +57,26 @@ def run(module_id,alert_id):
 		# for each statement retrieve the data
 		statements = {}
 		for statement in alert["statements"]:
-			statements[statement] = get_data(module_id,alert["statements"][statement]) if ',' in alert["statements"][statement] else alert["statements"][statement]
+			statements[statement] = get_data(module_id,alert["statements"][statement]) if is_sensor(alert["statements"][statement]) else alert["statements"][statement]
 		# for each condition check if it is true
 		evaluation = True
 		for condition in alert["conditions"]:
 			a,operator,b = condition.split(' ')
 			sub_evaluation = is_true(statements[a],operator,statements[b])
-			log.info("["+module_id+"]["+alert_id+"] evaluating "+a+" ("+str(statements[a])+") "+operator+" "+b+" ("+str(statements[b])+"): "+str(sub_evaluation))
+			log.debug("["+module_id+"]["+alert_id+"] evaluating "+a+" ("+str(statements[a])+") "+operator+" "+b+" ("+str(statements[b])+"): "+str(sub_evaluation))
 			if not sub_evaluation: evaluation = False
-		log.info("["+module_id+"]["+alert_id+"] evaluates to "+str(evaluation))
+		log.debug("["+module_id+"]["+alert_id+"] evaluates to "+str(evaluation))
 		# evaluate the conditions
 		if not evaluation: continue
 		# prepare the alert text
 		alert_text = alert["display_name"]
 		for statement in alert["statements"]:
 			value = statements[statement][0] if isinstance(statements[statement],list) else statements[statement]
+			# add the suffix
+			if is_sensor(alert["statements"][statement]):
+				key_split = alert["statements"][statement].split(":")
+				sensor = utils.get_sensor(module_id,key_split[0],key_split[1])
+				value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
 		# store the alert
 		db.set(db_alerts+":"+alert["severity"],alert_text,utils.now())

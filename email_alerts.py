@@ -1,38 +1,37 @@
 #!/usr/bin/python
 import sys
 import datetime
+import json
 
 import utils
 import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
-import generate_charts
 import smtp
+import alerter
 
 # variables
 run_generate_charts = True
 
 # return the HTML template of the widget
-def get_widget_template(tag,title):
+def get_widget_template(title,body):
 	template = '<tr class="total" style="font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; \
 	box-sizing: border-box; font-size: 14px; margin: 0;"><td class="alignright" width="80%" style="font-family: \'Helvetica \
 	Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; border-top-width: 2px; \
 	border-top-color: #333; border-top-style: solid; border-bottom-color: #333; border-bottom-width: 2px; border-bottom-style: solid; font-weight: 700; \
 	margin: 0; padding: 5px 0;" valign="top">#title# \
-	<br><img src="cid:#tag#"/> \
+	<br>#body# \
 	</td></tr>'
-	template = template.replace("#tag#",tag)
+	template = template.replace("#body#",body)
 	template = template.replace("#title#",title)
 	return template
 
 # send out the email notification
-def run(module_id):
-	module = utils.get_module(module_id)
-	images = []
-	if run_generate_charts: generate_charts.run(module_id)
+def run():
+	alerts = ['alert','warning','info']
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
-	title = module['display_name']+" Report "+date
+	title = "Alerts "+date
 	# load and prepare the template
         with open(conf['constants']['email_template'], 'r') as file:
                 template = file.read()
@@ -40,22 +39,19 @@ def run(module_id):
         template = template.replace("#url#",conf['web']['url'])
 	template = template.replace("#version#",conf['constants']['version_string'])
 	template = template.replace("#title#",title)
-        if 'sensor_groups' in module:
-	        # for each group
-	        for i in range(len(module["sensor_groups"])):
-	        	group = module["sensor_groups"][i]
-	               	for j in range(len(group["widgets"])):
-				# for each widget add it to the template
-	                        widget = group["widgets"][j];
-				tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"]
-				template = template.replace("<!-- widgets -->",get_widget_template(tag,'')+"\n<!-- widgets -->")
-				# add the image to the queue
-				images.append({'filename': conf['constants']['tmp_dir']+'/daily_report_'+tag+'.png' , 'id': tag,})
+        for severity in alerts:
+		# for each severity
+		text = ""
+		data = json.loads(alerter.web_get_data(severity))
+		if len(data) == 0: continue
+		# merge the alerts together
+		for alert in data: 
+			text = "<small>* "+alert+" *</small><br>"+text 
+		template = template.replace("<!-- widgets -->",get_widget_template(severity.capitalize(),text)+"\n<!-- widgets -->")
         # send the email
-	smtp.send("[myHouse] "+module['display_name']+" Report "+date,template,images)
+	smtp.send("[myHouse] Alerts "+date,template.encode('utf-8'),[])
 
 # main
 if __name__ == '__main__':
-        if (len(sys.argv) != 2): print "Usage: email_report.py <module_id>"
-        else: run(sys.argv[1])
+	run()
 
