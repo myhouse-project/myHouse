@@ -68,16 +68,37 @@
 					<ul class="nav navbar-nav">
 						<li class="dropdown notifications-menu">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-								<i class="fa fa-bell-o"></i>
+								<i class="fa fa-bullhorn"></i>
+								<span class="label label-danger" id="notification_alert_count"></span>
 							</a>
 							<ul class="dropdown-menu">
 								<li>
-									<ul class="menu" id="alerts">
-									</ul>
+									<ul class="menu" id="notification_alert"></ul>
 								</li>
-								<li class="footer"><a href="#">View all</a></li>
 							</ul>
-						</li>					
+						</li>
+						<li class="dropdown notifications-menu">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+								<i class="fa fa-bell-o"></i>
+								<span class="label label-warning" id="notification_warning_count"></span>
+							</a>
+							<ul class="dropdown-menu">
+								<li>
+									<ul class="menu" id="notification_warning"></ul>
+								</li>
+							</ul>
+						</li>
+						<li class="dropdown notifications-menu">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+								<i class="fa fa-comment-o"></i>
+								<span class="label label-success" id="notification_info_count"></span>
+							</a>
+							<ul class="dropdown-menu">
+								<li>
+									<ul class="menu" id="notification_info"></ul>
+								</li>
+							</ul>
+						</li>
 					</ul>
 				</div>
 			</nav>
@@ -199,22 +220,23 @@
 	// load alerts
 	function load_alerts() {
 		log("info","loading alerts");
-		// empty the menu
-		$("#alerts").empty()
-		var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-		$.getJSON(hostname+"alerts",function(data) {
-			for (var i = 0; i < data.length; i++) {
-				timestamp = new Date(data[i][0]);
-				timestamp = days[timestamp.getDay()]
-				text = data[i][1].split(':')
-				severity = text[0]
-				message = "["+timestamp+"] "+text[1]
-				if (severity == "info") icon = "fa-info text-blue"
-				else if (severity == "warning") icon = "fa-warning text-yellow"
-				else if (severity == "alert") icon = "fa-alert text-red"
-				$("#alerts").prepend('<li><a href="#" title="'+message+'"><i class="fa '+icon+'"></i>'+message+'</a></li>')
-			}
-		});
+		alerts = ['alert','warning','info']
+		for (var i = 0; i < alerts.length; i++) {
+			var widget = "#notification_"+alerts[i];
+			var widget_counter = "#notification_"+alerts[i]+"_count"
+			// empty the widget
+			$(widget).empty()
+			$(widget_counter).html("")
+			// retrieve the alerts
+			$.getJSON(hostname+"alerts/"+alerts[i],function(data) {
+				// set the counter
+				if (data.length > 0) $(widget_counter).html(data.length)
+				for (var j = 0; j < data.length; j++) {
+					// for each alert, add it to the list
+					$(widget).prepend('<li><a title="'+data[j]+'">'+data[j]+'</a></li>')
+				}
+			});
+		}
 	}
 	
 	// load module
@@ -519,6 +541,7 @@
 		if (refresher) clearInterval(refresher);
 		refresher = setInterval(function(){
 			load_module(current_module);
+			load_alerts();
 		}, minutes*60*1000);
 	}
 	
