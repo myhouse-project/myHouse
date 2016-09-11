@@ -11,6 +11,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
+import email_alerts
 
 # variables
 db_alerts = conf["constants"]["db_schema"]["root"]+":alerts"
@@ -99,6 +100,7 @@ def schedule_all():
 	log.info("starting alerter module...")
 	schedule.add_job(run_schedule,'cron',hour="*",minute=utils.randint(2,5),args=["hour"])
 	schedule.add_job(run_schedule,'cron',day="*",minute=utils.randint(2,5),args=["day"])
+	schedule.add_job(email_alerts.run,'cron',hour="0",minute="55",args=[])
 
 # return the latest alerts for a web request
 def web_get_data(severity):

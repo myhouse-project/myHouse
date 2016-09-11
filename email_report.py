@@ -28,7 +28,9 @@ def get_widget_template(tag,title):
 
 # send out the email notification
 def run(module_id):
+	log.info("generating email report for module "+module_id)
 	module = utils.get_module(module_id)
+	if module is None: return
 	images = []
 	if run_generate_charts: generate_charts.run(module_id)
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
