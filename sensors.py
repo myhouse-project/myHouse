@@ -305,44 +305,51 @@ def web_get_current_timestamp(module_id,group_id,sensor_id):
 def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
         data = []
         # get the parameters for the requested timeframe
-        if timeframe == "recent":
+        if timeframe == "realtime":
                 # recent hourly measures up to now
-                range = "hour"
+                range = ""
+                start = utils.realtime()
+                end = utils.now()
+                withscores = True
+        elif timeframe == "recent":
+                # recent hourly measures up to now
+                range = ":hour"
                 start = utils.recent()
                 end = utils.now()
                 withscores = True
         elif timeframe == "history":
                 # historical daily measures up to new
-                range = "day"
+                range = ":day"
                 start = utils.history()
                 end = utils.now()
                 withscores = True
         elif timeframe == "today":
                 # today's measure
-                range = "day"
+                range = ":day"
                 start = utils.day_start(utils.now())
                 end = utils.day_end(utils.now())
                 withscores = False
         elif timeframe == "yesterday":
                 # yesterday's measure
-                range = "day"
+                range = ":day"
                 start = utils.day_start(utils.yesterday())
                 end = utils.day_end(utils.yesterday())
                 withscores = False
 	elif timeframe == "forecast":
 		# next days measures
-                range = "day"
+                range = ":day"
                 start = utils.day_start(utils.now())
                 end = utils.day_start(utils.now()+(conf["web"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
                 withscores = True
         else: return data
         # define the key to request
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id+":"+range
-        requested_stat = stat
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id+range
+        requested_stat = ":"+stat
         # if a range is requested, start asking for the min
-        if stat == "range": requested_stat = "min"
+        if stat == "range": requested_stat = ":min"
+	if timeframe == "realtime": requested_stat = ""
         # requeste the data
-        data = db.rangebyscore(key+":"+requested_stat,start,end,withscores=withscores,milliseconds=True)
+        data = db.rangebyscore(key+requested_stat,start,end,withscores=withscores,milliseconds=True)
         if stat == "range" and len(data) > 0:
                 # if a range is requested, ask for the max and combine the results
                 data_max = db.rangebyscore(key+":max",start,end,withscores=False,milliseconds=True)

@@ -71,6 +71,10 @@ def hour_end(timestamp):
         date = datetime.datetime.fromtimestamp(utc(timestamp))
         return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
+# return the realtime timestamp
+def realtime():
+	return now()-conf["web"]["realtime_timeframe_hours"]*conf["constants"]["1_hour"]
+
 # return the recent timestamp
 def recent():
 	return now()-conf["web"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
