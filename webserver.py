@@ -56,9 +56,9 @@ def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	return sensors.web_get_data(module_id,group_id,sensor_id,timeframe,stat)
 
 # return the alerts
-@app.route('/alerts/<severity>')
-def alerts_get_data(severity):
-	return alerter.web_get_data(severity)
+@app.route('/alerts/<severity>/<timeframe>')
+def alerts_get_data(severity,timeframe):
+	return alerter.web_get_data(severity,timeframe)
 
 # run the web server
 def run():
