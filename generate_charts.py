@@ -34,6 +34,7 @@ def generate_chart(options,filename,is_stock_chart=False):
         r = requests.post(export_url, data=data)
 	save_to_file(r,filename)
 
+# apply the format to the value
 def apply_format(series,format):
 	if 'tooltip' not in series: series['tooltip'] = {} 
 	if 'dataLabels' not in series: series['dataLabels'] = {}
@@ -137,11 +138,13 @@ def add_image_widget(row,widget,module_id,group):
 	# retrieve the sensor referenced by the widget
 	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
 	sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
-	r = requests.get(hostname+sensor_url+"/image")
+	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,tag)
 
+# load all the widgets of the given module
 def load_widgets(module_id):
 	module = utils.get_module(module_id)
+	if module is None: return
 	row = ''
 	if 'sensor_groups' not in module: return
 	# for each group
