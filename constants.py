@@ -23,7 +23,7 @@ constants = {
 	'email_template': base_dir+"/template_email.html",
 	'service_template': base_dir+"/template_service.sh",
 	'service_location': '/etc/init.d/myhouse',
-	'data_expire_days': 7,
+	'data_expire_days': 5,
 	'cache_expire_min': 1,
 	'log_formatter': logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"),
 	'image_unavailable': base_dir+"/web/images/image_unavailable.png",
@@ -168,20 +168,20 @@ constants = {
                         },
                 },
 		'chart_short_inverted': {
-			'template': 'chart_short',
-			'chart': {
+                        'template': 'master',
+                        'chart': {
+                                'height': 194,
 				'inverted': True,
-				'height': 194,
-			},
-			'xAxis': {
-				'type': 'datetime',
-				'tickInterval': 24* 3600 * 1000,
-				'tickWidth': 0,
-				'gridLineWidth': 0,
-            			'dateTimeLabelFormats': {
-		        		'day': '%A',
-			        },
-			},
+                        },
+                        'xAxis': {
+                                'tickInterval': 24* 3600 * 1000,
+                                'tickWidth': 0,
+                                'gridLineWidth': 0,
+                                'type': 'datetime',
+                                'dateTimeLabelFormats': {
+                                        'day': '%A',
+                                },
+                        },
 		},
 		'chart_group_summary': {
 			'template': 'master',

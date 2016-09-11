@@ -29,6 +29,7 @@ def get_widget_template(title,body):
 
 # send out the email notification
 def run():
+	log.info("generating alerts email report")
 	alerts = ['alert','warning','info']
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
 	title = "Alerts "+date
@@ -46,7 +47,7 @@ def run():
 		if len(data) == 0: continue
 		# merge the alerts together
 		for alert in data: 
-			text = "<small>* "+alert+" *</small><br>"+text 
+			text = "<small>* "+alert[1]+" *</small><br>"+text 
 		template = template.replace("<!-- widgets -->",get_widget_template(severity.capitalize(),text)+"\n<!-- widgets -->")
         # send the email
 	smtp.send("[myHouse] Alerts "+date,template.encode('utf-8'),[])

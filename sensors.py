@@ -102,12 +102,14 @@ def store(sensor,measures):
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if needed
 		if sensor["format"] == "image": db.delete(key)
-		# check if the same value is already stored
+		# check if there is already a alue stored at the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
 			# same value and same timestamp, do not store
 			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
 			continue
+		# apply the bias of the sensor if configured
+		if "bias" in sensor: measure["value"] = measure["value"]+sensor["bias"]
 		# store the value into the database
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"]))+conf["constants"]["formats"][sensor["format"]]["suffix"])
 		db.set(key,measure["value"],measure["timestamp"])

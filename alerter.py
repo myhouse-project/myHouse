@@ -97,14 +97,17 @@ def run_schedule(run_every):
 
 # schedule both hourly and daily alerts
 def schedule_all():
+	if not conf["alerter"]["enabled"]: return
 	log.info("starting alerter module...")
 	schedule.add_job(run_schedule,'cron',hour="*",minute=utils.randint(2,5),args=["hour"])
 	schedule.add_job(run_schedule,'cron',day="*",minute=utils.randint(2,5),args=["day"])
-	schedule.add_job(email_alerts.run,'cron',hour="0",minute="55",args=[])
+	if conf["alerter"]["email_report"]: schedule.add_job(email_alerts.run,'cron',hour="0",minute="55",args=[])
 
 # return the latest alerts for a web request
-def web_get_data(severity):
-	return json.dumps(db.rangebyscore(db_alerts+":"+severity,utils.yesterday(),utils.now(),withscores=False))
+def web_get_data(severity,timeframe):
+	start = utils.recent()
+	if timeframe == "history": start = utils.history()
+	return json.dumps(db.rangebyscore(db_alerts+":"+severity,start,utils.now(),withscores=True,milliseconds=True))
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':

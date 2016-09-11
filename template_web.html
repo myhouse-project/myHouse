@@ -28,6 +28,11 @@
 <!--  PNotify -->
 <script src="web/pnotify/pnotify.custom.js"></script>
 <link rel="stylesheet" href="web/pnotify/pnotify.custom.min.css" />
+
+<!--  Datatables -->
+<script src="web/datatables/datatables.min.js"></script>
+<link rel="stylesheet" href="web/datatables/datatables.min.css" />
+<link rel="stylesheet" href="web/datatables-plugins/dataTables.fontAwesome.css" />
 	
 <!--  Highstock -->
 <script src="web/highstock/highstock.js"></script>
@@ -75,6 +80,7 @@
 								<li>
 									<ul class="menu" id="notification_alert"></ul>
 								</li>
+								<li class="footer"><a href="#alerts">View all</a></li>
 							</ul>
 						</li>
 						<li class="dropdown notifications-menu">
@@ -86,6 +92,7 @@
 								<li>
 									<ul class="menu" id="notification_warning"></ul>
 								</li>
+								<li class="footer"><a href="#alerts">View all</a></li>
 							</ul>
 						</li>
 						<li class="dropdown notifications-menu">
@@ -97,6 +104,7 @@
 								<li>
 									<ul class="menu" id="notification_info"></ul>
 								</li>
+								<li class="footer"><a href="#alerts">View all</a></li>
 							</ul>
 						</li>
 					</ul>
@@ -122,6 +130,9 @@
 		<!-- =============================================== -->
 
 		<div class="content-wrapper">
+			<section class="content-header">
+				<h1 id="title"></h1>
+			</section>
 			<section class="content">
 				<div id="body"></div>
 				<div style="padding: 10px 0px; text-align: center;">
@@ -223,20 +234,20 @@
 	// load alerts
 	function load_alerts() {
 		log("info","loading alerts");
-		alerts = ['alert','warning','info']
-		for (var i = 0; i < alerts.length; i++) {
-			var widget = "#notification_"+alerts[i];
-			var widget_counter = "#notification_"+alerts[i]+"_count"
+		severity = ['alert','warning','info']
+		for (var i = 0; i < severity.length; i++) {
+			var widget = "#notification_"+severity[i];
+			var widget_counter = "#notification_"+severity[i]+"_count"
 			// empty the widget
 			$(widget).empty()
 			$(widget_counter).html("")
 			// retrieve the alerts
-			$.getJSON(hostname+"alerts/"+alerts[i],function(data) {
+			$.getJSON(hostname+"alerts/"+severity[i]+"/recent",function(data) {
 				// set the counter
 				if (data.length > 0) $(widget_counter).html(data.length)
 				for (var j = 0; j < data.length; j++) {
 					// for each alert, add it to the list
-					$(widget).prepend('<li><a title="'+data[j]+'">'+data[j]+'</a></li>')
+					$(widget).prepend('<li><a title="'+data[j][1]+'">'+data[j][1]+'</a></li>')
 				}
 			});
 		}
@@ -255,33 +266,39 @@
 	function load_widgets(module_id) {
 		$("#body").append('<div id="widgets"></div>');
 		var module = get_module(module_id);
+		$("#title").text(module["display_name"]);
 		if (module == null) return;
-		if (! ('sensor_groups' in module)) return;
-		if ('sensor_groups' in module) {
-			// for each group
-			for (var i = 0; i < module["sensor_groups"].length; i++) {
-				var group = module["sensor_groups"][i];
-				// start a new row
-				var row = group["group_id"]+"_row";
-				$("#widgets").append('<div class="row" id="'+row+'">');
-				if (! ('widgets' in group)) continue;
-				for (var j = 0; j < group["widgets"].length; j++) {
-					// add each configured widget
-					widget = group["widgets"][j];
-					log("info","["+module_id+"]["+group["group_id"]+"] loading widget "+widget["widget_id"]);
-					if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);
-					else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
+		if (module["type"] == "sensors") {
+			if (! ('sensor_groups' in module)) return;
+			if ('sensor_groups' in module) {
+				// for each group
+				for (var i = 0; i < module["sensor_groups"].length; i++) {
+					var group = module["sensor_groups"][i];
+					// start a new row
+					var row = group["group_id"]+"_row";
+					$("#widgets").append('<div class="row" id="'+row+'">');
+					if (! ('widgets' in group)) continue;
+					for (var j = 0; j < group["widgets"].length; j++) {
+						// add each configured widget
+						widget = group["widgets"][j];
+						log("info","["+module_id+"]["+group["group_id"]+"] loading widget "+widget["widget_id"]);
+						if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);
+						else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
 					else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
-					else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
-				}
-				// end of the row
-				$("#"+row).append('</div>');
-			} // end for each group
+						else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
+					}
+					// end of the row
+					$("#"+row).append('</div>');
+				} // end for each group
+			}
+		}
+		if (module["type"] == "alerts") {
+			add_alerts_widget();
 		}
 	}
 	
 	/**
-		LOAD WIDGETS
+		SENSOR WIDGETS
 	**/
 
 	// add a sensor summary widget
@@ -401,6 +418,72 @@
 		tag = "#"+tag;
 		// add the image to the widget
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
+	}
+	
+	/**
+		ALERTS WIDGETS
+	**/
+	
+	// add an alert widget
+	function add_alerts_widget() {
+		// define the alerts table
+		var table_html = '<table id="alerts_table" class="table table-bordered table-striped">\
+							<thead>\
+								<tr>\
+									<th>Severity</th>\
+									<th>Time</th>\
+									<th>Message</th>\
+								</tr>\
+							</thead>\
+							<tbody></tbody>\
+						  </table>';
+		// define datatables options
+		var options = {
+			"paging": true,
+			"lengthChange": false,
+			"searching": true,
+			"ordering": true,
+			"info": true,
+			"autoWidth": true,
+			"columnDefs": [
+				{
+					"targets": 0,
+					"width": "10%",
+				},
+				{
+					"targets": 1,
+					"width": "10%",
+					"render": function ( data, type, row ) {
+						a = new Date(data)
+						return a.getFullYear()+"-"+(a.getMonth()+1)+"-"+a.getDate()+" "+a.getHours()+":"+a.getMinutes();
+					},
+				},
+				{
+					"targets": 2,
+					"width": "80%",
+				},
+			],
+		};
+		// create the widget and the table
+		$("#widgets").append(get_widget_template("alerts_widget","History",12));
+		$("#alerts_widget").append(table_html);
+		$("#alerts_table").DataTable(options);
+		var table = $("#alerts_table").DataTable();
+		// add alerts to the table
+		var severity = ['alert','warning','info']
+		for (var i = 0; i < severity.length; i++) {
+			// retrieve the alerts
+			$.getJSON(hostname+"alerts/"+severity[i]+"/history",function(severity) {
+				return function (data) {
+					for (var j = 0; j < data.length; j++) {
+						// for each alert, add it to the table
+						table.row.add([severity,data[j][0],data[j][1]]).draw(false);
+					}
+					// reorder the data
+					table.order( [ 1, 'desc' ] ).draw();
+				};
+			}(severity[i]));
+		}
 	}
 	
 	/**
