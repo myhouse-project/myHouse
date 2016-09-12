@@ -11,16 +11,25 @@ import scheduler
 schedule = scheduler.get_scheduler()
 import webserver
 import db
+import alerter
+import notification
 
 # run the main application
 def run():
 	log.info("Welcome to myHouse v"+conf["constants"]["version_string"])
+	# initialize the database
 	db.init()
-	# schedule each sensor 
+	# start the scheduler
 	schedule.start()
+	# schedule all sensors
 	sensors.schedule_all()
+	# schedule all alerts
+	alerter.schedule_all()
+        # schedule all notifications
+        notification.schedule_all()
 	# start the web server
 	if conf['web']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
+	# run as a deamon
 	while True:
 		time.sleep(1)
  

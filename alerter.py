@@ -11,10 +11,9 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
-import email_alerts
+import notification
 
 # variables
-db_alerts = conf["constants"]["db_schema"]["root"]+":alerts"
 max_alerts = 5
 
 # retrieve for the database the requested data
@@ -79,13 +78,15 @@ def run(module_id,alert_id):
 				sensor = utils.get_sensor(module_id,key_split[0],key_split[1])
 				value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
-		# store the alert
-		db.set(db_alerts+":"+alert["severity"],alert_text,utils.now())
+		# fire the alert
+		db.set(conf["constants"]["db_schema"]["alerts"]+":"+alert["severity"],alert_text,utils.now())
 		log.info("["+module_id+"]["+alert_id+"]["+alert["severity"]+"] "+alert_text)
+		notification.notify(alert_text)	
 		
 # run the given schedule
 def run_schedule(run_every):
 	# for each module
+	log.debug("run alert configured by "+run_every)
         for module in conf["modules"]:
                 if not module["enabled"]: continue
                 if "alerts" not in module: continue
@@ -97,17 +98,16 @@ def run_schedule(run_every):
 
 # schedule both hourly and daily alerts
 def schedule_all():
-	if not conf["alerter"]["enabled"]: return
 	log.info("starting alerter module...")
-	schedule.add_job(run_schedule,'cron',hour="*",minute=utils.randint(2,5),args=["hour"])
-	schedule.add_job(run_schedule,'cron',day="*",minute=utils.randint(2,5),args=["day"])
-	if conf["alerter"]["email_report"]: schedule.add_job(email_alerts.run,'cron',hour="0",minute="55",args=[])
+	schedule.add_job(run_schedule,'cron',minute="1",args=["hour"])
+	schedule.add_job(run_schedule,'cron',hour="1",args=["day"])
 
 # return the latest alerts for a web request
 def web_get_data(severity,timeframe):
 	start = utils.recent()
+	if timeframe == "recent": start = utils.recent()
 	if timeframe == "history": start = utils.history()
-	return json.dumps(db.rangebyscore(db_alerts+":"+severity,start,utils.now(),withscores=True,milliseconds=True))
+	return json.dumps(db.rangebyscore(conf["constants"]["db_schema"]["alerts"]+":"+severity,start,utils.now(),withscores=True,milliseconds=True))
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 while True:
                         time.sleep(1)
         else:
-                # run the command for the given alert
+                # <module_id> <alert_id>
                 run(sys.argv[1],sys.argv[2])
 
 

@@ -236,20 +236,22 @@
 		log("info","loading alerts");
 		severity = ['alert','warning','info']
 		for (var i = 0; i < severity.length; i++) {
-			var widget = "#notification_"+severity[i];
-			var widget_counter = "#notification_"+severity[i]+"_count"
-			// empty the widget
-			$(widget).empty()
-			$(widget_counter).html("")
 			// retrieve the alerts
-			$.getJSON(hostname+"alerts/"+severity[i]+"/recent",function(data) {
-				// set the counter
-				if (data.length > 0) $(widget_counter).html(data.length)
-				for (var j = 0; j < data.length; j++) {
-					// for each alert, add it to the list
-					$(widget).prepend('<li><a title="'+data[j][1]+'">'+data[j][1]+'</a></li>')
-				}
-			});
+			$.getJSON(hostname+"alerts/"+severity[i]+"/recent",function(severity) {
+				return function (data) {
+					var widget = "#notification_"+severity;
+					var widget_counter = "#notification_"+severity+"_count"
+					// empty the widget
+					$(widget).empty()
+					$(widget_counter).html("")
+					// set the counter
+					if (data.length > 0) $(widget_counter).html(data.length)
+					for (var j = 0; j < data.length; j++) {
+						// for each alert, add it to the list
+						$(widget).prepend('<li><a title="'+data[j][1]+'">'+data[j][1]+'</a></li>')
+					}
+				};
+			}(severity[i]));			
 		}
 	}
 	
@@ -633,7 +635,7 @@
 	
 	// log to console a message
 	function log(level,message) {
-		console.log(level.toUpperCase()+": "+message);
+		if (conf["web"]["debug_console"]) console.log(level.toUpperCase()+": "+message);
 	}
 	</script>
 

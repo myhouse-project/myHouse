@@ -15,7 +15,6 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
-import email_report
 
 import plugin_wunderground
 import plugin_weatherchannel
@@ -233,10 +232,7 @@ def schedule_all():
         # for each module
         for module in conf["modules"]:
 		if not module["enabled"]: continue
-		# schedule email reports
-		if module["email_report"]: 
-			schedule.add_job(email_report.run,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
-			log.info("["+module['module_id']+"] scheduling daily email report")
+		if module["type"] != "sensors": continue
 		# skip modules without sensor groups
 		if "sensor_groups" not in module: continue
 	        # for each group of sensors
@@ -267,12 +263,12 @@ def schedule_all():
 	                                # then schedule it for each refresh interval
 	       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                	# schedule an expire job every day
-                                schedule.add_job(run,'cron',day="*",args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
+                                schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
 				# schedule a summarize job every hour and every day if needed
                                 if sensor["calculate_avg"]:
                	                        log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
-                      	                schedule.add_job(run,'cron',hour="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
-                              	        schedule.add_job(run,'cron',day="*",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
+                      	                schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
+                              	        schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 
 # return the latest read of a sensor for a web request
 def web_get_current(module_id,group_id,sensor_id):
