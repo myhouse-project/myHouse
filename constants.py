@@ -32,6 +32,7 @@ constants = {
 	'web_template': "template_web.html",
 	'web_timeout': 10,
 	'web_use_reloader': True,
+	'bot_brain_file': base_dir+"/bot.txt",
 	'formats': {
 		'int': { 
 			'formatter': 'int', 

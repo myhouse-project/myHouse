@@ -49,7 +49,7 @@ def is_sensor(statement):
 	return False
 
 # evaluate if the given alert has to trigger
-def run(module_id,alert_id):
+def run(module_id,alert_id,fire=True):
 	module = utils.get_module(module_id)
 	for alert in module["alerts"]:
 		# retrive the alert for the given alert_id
@@ -79,9 +79,11 @@ def run(module_id,alert_id):
 				value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
 		# fire the alert
-		db.set(conf["constants"]["db_schema"]["alerts"]+":"+alert["severity"],alert_text,utils.now())
-		log.info("["+module_id+"]["+alert_id+"]["+alert["severity"]+"] "+alert_text)
-		notification.notify(alert_text)	
+		if fire:
+			db.set(conf["constants"]["db_schema"]["alerts"]+":"+alert["severity"],alert_text,utils.now())
+			log.info("["+module_id+"]["+alert_id+"]["+alert["severity"]+"] "+alert_text)
+			notification.notify(alert_text)	
+		return alert_text
 		
 # run the given schedule
 def run_schedule(run_every):

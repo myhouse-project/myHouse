@@ -8,6 +8,7 @@ import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
+import oracle
 
 # variables
 initialized = False
@@ -75,7 +76,6 @@ def init():
 
 # attach the bot to the channel
 def run():
-	if not conf["notification"]["slack"]["interactive_bot"]: return
 	init()
 	if not initialized: return
 	# connect to the RTM API
@@ -86,12 +86,19 @@ def run():
 			output_list = slack.rtm_read()
 			if output_list and len(output_list) > 0:
 				for output in output_list:
+					if not output or 'text' not in output: continue
+					if output['user'] == bot_id: continue
 					# for each output
-					if output and 'text' in output and (bot_id in output['text'] or bot_name in output['text']):
+					if bot_id in output['text'] or bot_name in output['text'] or output['channel'].startswith("D"):
 						# if the message is to the bot
-						request = output['text'].split(bot_id)[1].strip().lower()
+						request = output['text']
+						request = request.replace(bot_name,'')
+						request = request.replace(bot_id,'')
+						request = request.lower()
 						channel = output['channel']
-			time.sleep(2)
+						response = oracle.ask(request)
+						slack.api_call("chat.postMessage", channel=channel,text=response, as_user=True)
+			time.sleep(1)
 	else:
 		log.error("unable to connect to the slack server")
 

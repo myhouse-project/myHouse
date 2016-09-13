@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import sys
 import time
+import datetime
 
 import utils
 import logger
@@ -25,6 +26,8 @@ def schedule_all():
 	if conf["notification"]["email"]["alerts_digest"]: 
 		log.info("scheduling daily alert digest")
 		schedule.add_job(output_email.alerts_digest,'cron',hour="0",minute="55",args=[])
+	# run slack bot
+	if conf["notification"]["slack"]["interactive_bot"]: schedule.add_job(output_slack.run,'date',run_date=datetime.datetime.now())
 
 
 # notify all the registered plugins
