@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import datetime
 import time
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 import utils
 import logger
@@ -87,3 +90,4 @@ def alert(text):
 	template = template.replace("<!-- widgets -->",get_email_widget("Alert",text))
         # send the email
         smtp.send(title,template.encode('utf-8'),[])
+

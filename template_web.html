@@ -248,7 +248,7 @@
 					if (data.length > 0) $(widget_counter).html(data.length)
 					for (var j = 0; j < data.length; j++) {
 						// for each alert, add it to the list
-						$(widget).prepend('<li><a title="'+data[j][1]+'">'+data[j][1]+'</a></li>')
+						$(widget).prepend('<li><a href="#alerts" title="'+data[j][1]+'">'+data[j][1]+'</a></li>')
 					}
 				};
 			}(severity[i]));			
@@ -286,7 +286,7 @@
 						log("info","["+module_id+"]["+group["group_id"]+"] loading widget "+widget["widget_id"]);
 						if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);
 						else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
-					else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
+						else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
 						else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
 					}
 					// end of the row

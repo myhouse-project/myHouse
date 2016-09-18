@@ -134,7 +134,9 @@ def avg(data):
 
 # return the exception as a string
 def get_exception(e):
-	return traceback.format_exc(e)
+	etype, value, tb = sys.exc_info()
+	error = ''.join(traceback.format_exception(etype, value, tb,None))
+	return error.replace('\n',' ')
 
 # return a random int between min and max
 def randint(min,max):
