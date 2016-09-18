@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import time
 import json
 
@@ -45,6 +47,7 @@ def is_true(a,operator,b):
 
 # determine if a statament is involving a sensor
 def is_sensor(statement):
+	if utils.is_number(statement): return False
 	if ',' in statement: return True
 	return False
 
@@ -74,8 +77,12 @@ def run(module_id,alert_id,fire=True):
 			value = statements[statement][0] if isinstance(statements[statement],list) else statements[statement]
 			# add the suffix
 			if is_sensor(alert["statements"][statement]):
-				key_split = alert["statements"][statement].split(":")
+				key,start,end =  alert["statements"][statement].split(',')
+				key_split = key.split(":")
 				sensor = utils.get_sensor(module_id,key_split[0],key_split[1])
+				if sensor is None:
+					log.error("invalid sensor "+module_id+":"+key_split[0]+":"+key_split[1])
+					return
 				value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
 		# fire the alert
