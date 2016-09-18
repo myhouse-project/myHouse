@@ -42,18 +42,7 @@ def load_brain():
 def learn_config():
 	r = {}
         for module in conf["modules"]:
-		r["module"] = [module["module_id"],module["type"],module["display_name"]]
-		if "sensor_groups" in module:
-			for group in module["sensor_groups"]:
-				r["group"] = copy.deepcopy(r["module"])
-				r["group"].extend([group["group_id"]])
-				if "widgets" in group:
-					for widget in group["widgets"]:
-						r["widget"] = copy.deepcopy(r["group"])
-						r["widget"].extend([widget["widget_id"],widget["display_name"],widget["type"],"chart","trend"])
-						context = module["module_id"]+"|"+group["group_id"]+"|"+widget["widget_id"]
-						# user requesting for a widget
-						#kb[" ".join(r["widget"])] = "widget,"+context
+		r["module"] = [module["module_id"],module["display_name"]]
 		if "alerts" in module:
 			for alert in module["alerts"]:
 				if len(alert["conditions"]) != 0: continue

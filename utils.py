@@ -174,6 +174,7 @@ def merge(template,delta):
 
 # return a given module
 def get_module(module_id):
+	if "modules" not in conf: return None
 	for i in range(len(conf["modules"])):
 		module = conf["modules"][i]
 		if module["module_id"] == module_id: return module
@@ -181,6 +182,8 @@ def get_module(module_id):
 # return a given sensor group
 def get_group(module_id,group_id):
 	module = get_module(module_id)
+	if module is None: return None
+	if "sensor_groups" not in module: return None
 	for i in range(len(module["sensor_groups"])):
 		group = module["sensor_groups"][i]
 		if group["group_id"] == group_id: return group
@@ -188,6 +191,8 @@ def get_group(module_id,group_id):
 # returna given sensor
 def get_sensor(module_id,group_id,sensor_id):
 	group = get_group(module_id,group_id)
+	if group is None: return None
+	if "sensors" not in group: return None
 	for j in range (len(group["sensors"])):
 		sensor = group["sensors"][j]
 		if sensor["sensor_id"] == sensor_id: return sensor

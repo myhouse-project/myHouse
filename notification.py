@@ -18,8 +18,8 @@ def schedule_all():
 	# schedule module summary report
         for module in conf["modules"]:
 		if not module["enabled"]: continue
-               	if module["type"] != "sensors": continue
-                if conf["notification"]["email"]["module_digest"] and module["email_report"]:
+		if "daily_digest" not in module: continue
+                if conf["notification"]["email"]["module_digest"] and module["daily_digest"]:
                         schedule.add_job(output_email.module_digest,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
                         log.info("["+module['module_id']+"] scheduling daily module digest")
 	# schedule alert summary report
