@@ -265,37 +265,38 @@
 	}	
 
 	// load data the widgets of the current module
-	function load_widgets(module_id) {
+	function load_widgets(requested_module) {
 		$("#body").append('<div id="widgets"></div>');
-		var module = get_module(module_id);
+		var module_id = requested_module;
+		var module = get_module(requested_module);
 		$("#title").text(module["display_name"]);
 		if (module == null) return;
-		if (module["type"] == "sensors") {
-			if (! ('sensor_groups' in module)) return;
-			if ('sensor_groups' in module) {
-				// for each group
-				for (var i = 0; i < module["sensor_groups"].length; i++) {
-					var group = module["sensor_groups"][i];
-					// start a new row
-					var row = group["group_id"]+"_row";
-					$("#widgets").append('<div class="row" id="'+row+'">');
-					if (! ('widgets' in group)) continue;
-					for (var j = 0; j < group["widgets"].length; j++) {
-						// add each configured widget
-						widget = group["widgets"][j];
-						log("info","["+module_id+"]["+group["group_id"]+"] loading widget "+widget["widget_id"]);
-						if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);
-						else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
-						else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
-						else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
-					}
-					// end of the row
-					$("#"+row).append('</div>');
-				} // end for each group
+		if (! ('widgets' in module)) return;
+		for (var i = 0; i < module["widgets"].length; i++) {
+			// for each row
+			var row = requested_module+"_"+i;
+			$("#widgets").append('<div class="row" id="'+row+'">');
+			for (var j = 0; j < module["widgets"][i].length; j++) {
+				// for each widget
+				widget = module["widgets"][i][j];
+				log("info","["+requested_module+"] loading widget "+widget["widget_id"]);
+				// setup the widget
+				if (widget["size"] == 0) continue;
+				if ("module" in widget) module_id = widget["module"];
+				var group = get_group(module_id,widget["sensor_group"]);
+				if (widget["type"] != "alerts" && group == null) {
+					log("warning","["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
+					continue;
+				}
+				// load the requested widget
+				if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);				
+				else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
+				else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
+				else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
+				else if (widget["type"] == "alerts") add_alerts_widget(row,widget,module_id,group);
 			}
-		}
-		if (module["type"] == "alerts") {
-			add_alerts_widget();
+			// end of the row
+			$("#"+row).append('</div>');
 		}
 	}
 	
@@ -305,10 +306,7 @@
 
 	// add a sensor summary widget
 	function add_group_summary_widget(row,widget,module_id,group) {
-		if (widget["size"] == 0) return;
-		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-		if ("module" in widget) module_id = widget["module"];
-		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
+		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];
 		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
 		if (sensor == null) return;
 		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
@@ -357,10 +355,7 @@
 	
 	// add a sensor timeline widget
 	function add_group_timeline_widget(row,widget,module_id,group,timeframe) {
-		if (widget["size"] == 0) return;
-		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-		if ("module" in widget) module_id = widget["module"];
-		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
+		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];	
 		// append a new empty widget
 		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
 		tag = "#"+tag;
@@ -383,12 +378,9 @@
 	
 	// add a generic sensor chart widget
 	function add_chart_widget(row,widget,module_id,group) {
-		if (widget["size"] == 0) return;
-		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-		if ("module" in widget) module_id = widget["module"];
-		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
-		// retrieve the sensor referenced by the widget
-		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"]);
+		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];	
+		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
+		if (sensor == null) return;
 		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		// append an empty widget
 		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
@@ -408,12 +400,9 @@
 	
 	// add an image widget
 	function add_image_widget(row,widget,module_id,group) {
-		if (widget["size"] == 0) return;
-		var tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-		if ("module" in widget) module_id = widget["module"];
-		if ("sensor_group" in widget) group = get_group(module_id,widget["sensor_group"]);
-		// retrieve the sensor referenced by the widget
-		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"]);
+		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];	
+		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
+		if (sensor == null) return;
 		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
 		// append an empty widget
 		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
@@ -427,7 +416,8 @@
 	**/
 	
 	// add an alert widget
-	function add_alerts_widget() {
+	function add_alerts_widget(row,widget,module_id,group) {
+		if (widget["size"] == 0) return;
 		// define the alerts table
 		var table_html = '<table id="alerts_table" class="table table-bordered table-striped">\
 							<thead>\
@@ -467,7 +457,7 @@
 			],
 		};
 		// create the widget and the table
-		$("#widgets").append(get_widget_template("alerts_widget","History",12));
+		$("#"+row).append(get_widget_template("alerts_widget",widget["display_name"],widget["size"]));
 		$("#alerts_widget").append(table_html);
 		$("#alerts_table").DataTable(options);
 		var table = $("#alerts_table").DataTable();
@@ -585,6 +575,8 @@
 	// return a sensor group data
 	function get_group(module_id,group_id) {
 		module = get_module(module_id);
+		if (module == null) return null;
+		if (!("sensor_groups" in module)) return null;
 		for (var i = 0; i < module["sensor_groups"].length; i++) {
 			var group = module["sensor_groups"][i];
 			if (group["group_id"] == group_id) return group;
@@ -594,6 +586,8 @@
 	// return a sensor data
 	function get_sensor(module_id,group_id,sensor_id) {
 		group = get_group(module_id,group_id);
+		if (group == null) return null;
+		if (!("sensors" in group)) return null;
 		for (var j = 0; j < group["sensors"].length; j++) {
 			var sensor = group["sensors"][j];
 			if (sensor["sensor_id"] == sensor_id) return sensor;
@@ -635,7 +629,7 @@
 	
 	// log to console a message
 	function log(level,message) {
-		if (conf["web"]["debug_console"]) console.log(level.toUpperCase()+": "+message);
+		if (conf["web"]["debug_console"] || level != "info") console.log(level.toUpperCase()+": "+message);
 	}
 	</script>
 

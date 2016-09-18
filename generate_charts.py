@@ -21,7 +21,7 @@ def capitalizeFirst(string):
 
 # save the image to disk
 def save_to_file(r,filename):
-	with open(conf['constants']['tmp_dir']+'/daily_report_'+filename+'.'+extension,'wb') as file:
+	with open(conf['constants']['tmp_dir']+'/daily_digest_'+filename+'.'+extension,'wb') as file:
         	for chunk in r.iter_content(1000):
                 	file.write(chunk)
 	file.close()
@@ -72,10 +72,7 @@ def add_series(chart,url,sensor,series_index):
 
 # add a sensor summary widget
 def add_group_summary_widget(row,widget,module_id,group):
-	if widget["size"] == 0: return
-	tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-	if "module" in widget: module_id = widget["module"]
-	if "sensor_group" in widget: group = utils.get_group(module_id,widget["sensor_group"])
+	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_group_summary"])
 	for i in range(len(group["sensors"])):
 		sensor = group["sensors"][i];
@@ -93,10 +90,7 @@ def add_group_summary_widget(row,widget,module_id,group):
 
 # add a sensor timeline widget
 def add_group_timeline_widget(row,widget,module_id,group,timeframe):
-	if widget["size"] == 0: return
-	tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-	if "module" in widget: module_id = widget["module"]
-	if "sensor_group" in widget: group = utils.get_group(module_id,widget["sensor_group"])
+	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]])
 	# for each sensor
 	for i in range(len(group["sensors"])):
@@ -112,12 +106,10 @@ def add_group_timeline_widget(row,widget,module_id,group,timeframe):
 
 # add a generic sensor chart widget
 def add_chart_widget(row,widget,module_id,group):
-        if widget["size"] == 0: return
-	tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-        if "module" in widget: module_id = widget["module"]
-        if "sensor_group" in widget: group = utils.get_group(module_id,widget["sensor_group"])
+	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
 	# retrieve the sensor referenced by the widget
 	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
+	if sensor is None: return
 	sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
 	chart = copy.deepcopy(conf["constants"]["charts"][widget["type"]])
 	if sensor["format"] == "percentage": chart["yAxis"]["max"] = 100
@@ -131,33 +123,39 @@ def add_chart_widget(row,widget,module_id,group):
 
 # add an image widget
 def add_image_widget(row,widget,module_id,group):
-	if widget["size"] == 0: return
-	tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"];
-        if "module" in widget: module_id = widget["module"]
-        if "sensor_group" in widget: group = utils.get_group(module_id,widget["sensor_group"])
+	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
 	# retrieve the sensor referenced by the widget
 	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
+	if sensor is None: return
 	sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
 	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,tag)
 
 # load all the widgets of the given module
-def load_widgets(module_id):
-	module = utils.get_module(module_id)
+def load_widgets(requested_module):
+	module_id = requested_module
+	module = utils.get_module(requested_module)
 	if module is None: return
-	row = ''
-	if 'sensor_groups' not in module: return
-	# for each group
-	for i in range(len(module["sensor_groups"])):
-		group = module["sensor_groups"][i]
-		if 'widgets' not in group: continue
-		for j in range(len(group["widgets"])):
-			widget = group["widgets"][j];
-			log.info("["+module_id+"]["+group["group_id"]+"] generating widget "+widget["widget_id"])
+	if 'widgets' not in module: return
+	for i in range(len(module["widgets"])):
+		# for each row
+		row = requested_module+"_"+str(i)
+		for j in range(len(module["widgets"][i])):
+			# for each widget
+			widget = module["widgets"][i][j]
+		        if widget["size"] == 0: continue
+		        if "module" in widget: module_id = widget["module"]
+		        group = utils.get_group(module_id,widget["sensor_group"])
+			log.info("["+requested_module+"] generating widget "+widget["widget_id"])
+		        if widget["type"] != "alerts" and group is None:
+				log.warning("["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
+				continue
+			# generate the widget
 			if widget["type"] == "group_summary": add_group_summary_widget(row,widget,module_id,group)
 			elif widget["type"] == "image": add_image_widget(row,widget,module_id,group)
 			elif widget["type"] == "group_timeline": add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"])
 			elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(row,widget,module_id,group)
+			elif widget["type"] == "alerts": continue
 
 # load all the widgets of the requested module	
 def run(module_id):

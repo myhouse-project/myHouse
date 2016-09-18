@@ -232,7 +232,6 @@ def schedule_all():
         # for each module
         for module in conf["modules"]:
 		if not module["enabled"]: continue
-		if module["type"] != "sensors": continue
 		# skip modules without sensor groups
 		if "sensor_groups" not in module: continue
 	        # for each group of sensors

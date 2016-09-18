@@ -40,7 +40,8 @@ def get_email_body(title):
 	return template
 
 # email module digest
-def module_digest(module_id):
+def module_digest(requested_module):
+	module_id = requested_module
 	log.info("generating module summary email report for module "+module_id)
 	module = utils.get_module(module_id)
 	if module is None: return
@@ -49,17 +50,20 @@ def module_digest(module_id):
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
 	title = module['display_name']+" Report "+date
 	template = get_email_body(title)
-        if 'sensor_groups' in module:
-	        # for each group
-	        for i in range(len(module["sensor_groups"])):
-	        	group = module["sensor_groups"][i]
-	               	for j in range(len(group["widgets"])):
-				# for each widget add it to the template
-	                        widget = group["widgets"][j];
-				tag = module_id+"_"+group["group_id"]+"_"+widget["widget_id"]
-				template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+tag+'"/>')+"\n<!-- widgets -->")
-				# add the image to the queue
-				images.append({'filename': conf['constants']['tmp_dir']+'/daily_report_'+tag+'.png' , 'id': tag,})
+	if 'widgets' not in module: return
+	# for each widget
+        for i in range(len(module["widgets"])):
+		for j in range(len(module["widgets"][i])):
+			widget = module["widgets"][i][j]
+			if "module" in widget: module_id = widget["module"]
+	        	group = utils.get_group(module_id,widget["sensor_group"])
+                        if group is None:
+                                log.warning("["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
+                                continue
+			tag = requested_module+"_"+str(i)+"_"+group["group_id"]+"_"+widget["widget_id"]
+			template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+tag+'"/>')+"\n<!-- widgets -->")
+			# add the image to the queue
+			images.append({'filename': conf['constants']['tmp_dir']+'/daily_digest_'+tag+'.png' , 'id': tag,})
         # send the email
 	smtp.send(title,template,images)
 
