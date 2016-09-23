@@ -188,7 +188,7 @@ def get_group(module_id,group_id):
 		group = module["sensor_groups"][i]
 		if group["group_id"] == group_id: return group
 
-# returna given sensor
+# return a given sensor
 def get_sensor(module_id,group_id,sensor_id):
 	group = get_group(module_id,group_id)
 	if group is None: return None
@@ -196,8 +196,7 @@ def get_sensor(module_id,group_id,sensor_id):
 	for j in range (len(group["sensors"])):
 		sensor = group["sensors"][j]
 		if sensor["sensor_id"] == sensor_id: return sensor
-	
-	
+
 # run a command and return the output
 def run_command(command):
         log.debug("Executing "+command)
@@ -224,3 +223,6 @@ def length_unit(length):
         if conf["general"]["imperial_units"]: return length*0.039370
         else: return length
 
+# return the file path of a given widget id
+def get_widget_chart(widget_id):
+	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']

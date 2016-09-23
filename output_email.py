@@ -60,10 +60,9 @@ def module_digest(requested_module):
                         if group is None:
                                 log.warning("["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
                                 continue
-			tag = requested_module+"_"+str(i)+"_"+group["group_id"]+"_"+widget["widget_id"]
-			template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+tag+'"/>')+"\n<!-- widgets -->")
+			template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+widget["widget_id"]+'"/>')+"\n<!-- widgets -->")
 			# add the image to the queue
-			images.append({'filename': conf['constants']['tmp_dir']+'/daily_digest_'+tag+'.png' , 'id': tag,})
+			images.append({'filename': utils.get_widget_chart(widget["widget_id"]) , 'id': widget["widget_id"],})
         # send the email
 	smtp.send(title,template,images)
 

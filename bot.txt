@@ -1,5 +1,6 @@
 %not_understood%=>I don't know what you are saying|what are you saying?|I don't understand|I don't get it|does it matter?|what's that?|I don't think so|maybe|sometimes|not sure I've understood|I thought I got it but I'm not sure what you just said|say it again?
 %prefix%=>Oh right,|Ok,|Let me tell you,|Listen,|Sure,|Here I am,|Let me see...|One second please,|Give me a sec,|Let me check,|Hold on...|I know this one:|I'll tell you,
+%wait%=>Hold on...|Wait a second...|Give me a few seconds|Let me put the information together|I'm working on it right now
 good morning evening hey hi hello=>hey!|hey there|good to see you
 bye ciao see you=>see you soon|bye bye|take care
 how are you doing feel=>I'm doing ok|I'm a bot - I always feel good|I'm doing alright|I'm ok|fine thanks|not too bad

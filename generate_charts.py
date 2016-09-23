@@ -12,8 +12,7 @@ conf = config.get_config()
 
 hostname = 'http://127.0.0.1:'+str(conf['web']['port'])+'/'
 export_url = 'https://export.highcharts.com/'
-extension = 'png'
-export_data = {"width": 500, "async" : False, "type": extension}
+export_data = {"width": 500, "async" : False, "type": conf['constants']['chart_extension']}
 
 # capitalize the first letter
 def capitalizeFirst(string):
@@ -21,7 +20,7 @@ def capitalizeFirst(string):
 
 # save the image to disk
 def save_to_file(r,filename):
-	with open(conf['constants']['tmp_dir']+'/daily_digest_'+filename+'.'+extension,'wb') as file:
+	with open(utils.get_widget_chart(filename),'wb') as file:
         	for chunk in r.iter_content(1000):
                 	file.write(chunk)
 	file.close()
@@ -64,15 +63,15 @@ def add_series(chart,url,sensor,series_index):
 		flags = []
 		for i in range(len(data)):
 			if data[i][1] == None: continue
-			flags.append({'x': int(data[i][0]), 'shape': 'url(https://icons.wxug.com/i/c/k/)', 'title': '<img width="'+str(series['width'])+'" heigth="'+str(series['heigth'])+'" src="https://icons.wxug.com/i/c/k/'+str(data[i][1])+'.gif">'})
+#			flags.append({'x': int(data[i][0]), 'shape': 'url(https://icons.wxug.com/i/c/k/'+str(data[i][1])+'.gif)', 'title': '<img width="'+str(series['width'])+'" heigth="'+str(series['heigth'])+'" src="https://icons.wxug.com/i/c/k/'+str(data[i][1])+'.gif">'})
+			flags.append({'x': int(data[i][0]), 'shape': 'circlepin', 'title': str(data[i][1])})
 			series['data'] = flags
 	# attach the series to the chart
 	if 'series' not in chart: chart['series'] = []
 	chart['series'].append(series)
 
 # add a sensor summary widget
-def add_group_summary_widget(row,widget,module_id,group):
-	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
+def add_group_summary_widget(widget,module_id,group):
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_group_summary"])
 	for i in range(len(group["sensors"])):
 		sensor = group["sensors"][i];
@@ -86,11 +85,10 @@ def add_group_summary_widget(row,widget,module_id,group):
 		# add the point for today's range
 		add_point(chart,sensor_url+"/today/range",1);
 	chart['title']['text'] = widget["display_name"]
-	generate_chart(chart,tag)
+	generate_chart(chart,widget["widget_id"])
 
 # add a sensor timeline widget
-def add_group_timeline_widget(row,widget,module_id,group,timeframe):
-	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
+def add_group_timeline_widget(widget,module_id,group,timeframe):
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]])
 	# for each sensor
 	for i in range(len(group["sensors"])):
@@ -102,11 +100,10 @@ def add_group_timeline_widget(row,widget,module_id,group,timeframe):
 			series = sensor["series"][j]
 			add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,j)
 	chart['title']['text'] = widget["display_name"]
-        generate_chart(chart,tag)
+        generate_chart(chart,widget["widget_id"])
 
 # add a generic sensor chart widget
-def add_chart_widget(row,widget,module_id,group):
-	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
+def add_chart_widget(widget,module_id,group):
 	# retrieve the sensor referenced by the widget
 	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
 	if sensor is None: return
@@ -119,30 +116,28 @@ def add_chart_widget(row,widget,module_id,group):
 		series = sensor["series"][i]
 		add_series(chart,sensor_url+"/"+widget["timeframe"]+"/"+series["series_id"],sensor,i)
 	chart['title']['text'] = widget["display_name"]
-        generate_chart(chart,tag)
+        generate_chart(chart,widget["widget_id"])
 
 # add an image widget
-def add_image_widget(row,widget,module_id,group):
-	tag = row+"_"+group["group_id"]+"_"+widget["widget_id"]
+def add_image_widget(widget,module_id,group):
 	# retrieve the sensor referenced by the widget
 	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
 	if sensor is None: return
 	sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
 	r = requests.get(hostname+sensor_url+"/current")
-	save_to_file(r,tag)
+	save_to_file(r,widget["widget_id"])
 
 # load all the widgets of the given module
-def load_widgets(requested_module):
+def run(requested_module,requested_widget=None):
 	module_id = requested_module
 	module = utils.get_module(requested_module)
 	if module is None: return
 	if 'widgets' not in module: return
 	for i in range(len(module["widgets"])):
-		# for each row
-		row = requested_module+"_"+str(i)
 		for j in range(len(module["widgets"][i])):
 			# for each widget
 			widget = module["widgets"][i][j]
+			if requested_widget is not None and widget["widget_id"] != requested_widget: continue
 		        if widget["size"] == 0: continue
 		        if "module" in widget: module_id = widget["module"]
 		        group = utils.get_group(module_id,widget["sensor_group"])
@@ -151,17 +146,14 @@ def load_widgets(requested_module):
 				log.warning("["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
 				continue
 			# generate the widget
-			if widget["type"] == "group_summary": add_group_summary_widget(row,widget,module_id,group)
-			elif widget["type"] == "image": add_image_widget(row,widget,module_id,group)
-			elif widget["type"] == "group_timeline": add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"])
-			elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(row,widget,module_id,group)
+			if widget["type"] == "group_summary": add_group_summary_widget(widget,module_id,group)
+			elif widget["type"] == "image": add_image_widget(widget,module_id,group)
+			elif widget["type"] == "group_timeline": add_group_timeline_widget(widget,module_id,group,widget["timeframe"])
+			elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(widget,module_id,group)
 			elif widget["type"] == "alerts": continue
-
-# load all the widgets of the requested module	
-def run(module_id):
-	load_widgets(module_id)
 
 # main
 if __name__ == '__main__':
-        if (len(sys.argv) != 2): print "Usage: generate_charts.py <module_id>"
-        else: run(sys.argv[1])
+	if len(sys.argv) == 2: run(sys.argv[1])
+	elif len(sys.argv) == 3: run(sys.argv[1],sys.argv[2])
+	else: print "Usage: generate_charts.py <module_id> [widget_id]"

@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="web/datatables-plugins/dataTables.fontAwesome.css" />
 	
 <!--  Highstock -->
-<script src="web/highstock/highstock.js"></script>
+<script src="web/highstock/highstock-all.js"></script>
 <script src="web/highstock/highcharts-more.js"></script>
 
 <!--  AdminLTE -->
@@ -49,6 +49,7 @@
     <![endif]-->
 </head>
 <style>
+th.dt-center, td.dt-center { text-align: center; }
 </style>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -73,7 +74,7 @@
 					<ul class="nav navbar-nav">
 						<li class="dropdown notifications-menu">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-								<i class="fa fa-bullhorn"></i>
+								<i class="fa fa-ban"></i>
 								<span class="label label-danger" id="notification_alert_count"></span>
 							</a>
 							<ul class="dropdown-menu">
@@ -85,7 +86,7 @@
 						</li>
 						<li class="dropdown notifications-menu">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-								<i class="fa fa-bell-o"></i>
+								<i class="fa fa-warning"></i>
 								<span class="label label-warning" id="notification_warning_count"></span>
 							</a>
 							<ul class="dropdown-menu">
@@ -97,7 +98,7 @@
 						</li>
 						<li class="dropdown notifications-menu">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-								<i class="fa fa-comment-o"></i>
+								<i class="fa fa-info"></i>
 								<span class="label label-success" id="notification_info_count"></span>
 							</a>
 							<ul class="dropdown-menu">
@@ -441,14 +442,18 @@
 				{
 					"targets": 0,
 					"width": "10%",
+					"render": function ( data, type, row ) {
+						if (data == "alert") { icon = "ban"; color = "#dd4b39" }
+						else if (data == "warning") { icon = "warning"; color = "#f39c12" }
+						else if (data == "info") { icon = "info"; color = "#0073b7" }
+						return '<i class="icon fa fa-'+icon+'" style="color:'+color+'"></i>'
+					},
+					"className": "dt-center",
 				},
 				{
 					"targets": 1,
 					"width": "10%",
-					"render": function ( data, type, row ) {
-						a = new Date(data)
-						return a.getFullYear()+"-"+(a.getMonth()+1)+"-"+a.getDate()+" "+a.getHours()+":"+a.getMinutes();
-					},
+					"className": "dt-center",
 				},
 				{
 					"targets": 2,

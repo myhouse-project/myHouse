@@ -229,6 +229,7 @@ def init_push_plugins():
 def schedule_all():
 	# init push plugins
 	init_push_plugins()
+	log.info("scheduling polling for every configured sensor")
         # for each module
         for module in conf["modules"]:
 		if not module["enabled"]: continue
@@ -250,13 +251,13 @@ def schedule_all():
 				# handle push plugin
 				if conf['plugins'][sensor['plugin']['name']]['type'] == "push":
 					# register the sensor
-					log.info("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with push service "+sensor['plugin']['name'])
+					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with push service "+sensor['plugin']['name'])
 					push_plugins[sensor['plugin']['name']].register_sensor(sensor)
 				# handle pull plugin
                                 else: 
 					# schedule polling
 					if sensor["refresh_interval_min"] == 0: continue
-					log.info("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
+					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 					# run it now first
 					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
 	                                # then schedule it for each refresh interval
