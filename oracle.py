@@ -21,12 +21,14 @@ scorer = fuzz.token_set_ratio
 not_understood = "%not_understood%"
 not_understood_score = 50
 prefix = "%prefix%"
+wait = "%wait%"
 cleanup = re.compile('[^a-zA-Z ]')
 
 # load the oracle's basic knowledge
 def load_brain():
 	global not_understood
 	global prefix
+	global wait
 	with open(conf["constants"]["bot_brain_file"], 'r') as file:
         	for line in file:
 			request,response  = line.rstrip().split("=>")
@@ -34,7 +36,8 @@ def load_brain():
 			response = response.lower()
 			# load default messages
 			if request == not_understood: not_understood = "text|"+response
-			if request == prefix: prefix = "text|"+response
+			if request == prefix: prefix = response.split("|")
+			if request == wait: wait = response.split("|")
 			# populate the knowledge base
 			else: kb[request] = "text|"+response
 
@@ -43,15 +46,24 @@ def learn_config():
 	r = {}
         for module in conf["modules"]:
 		r["module"] = [module["module_id"],module["display_name"]]
-		if "alerts" in module:
-			for alert in module["alerts"]:
-				if len(alert["conditions"]) != 0: continue
-				r["alert"] = copy.deepcopy(r["module"])
-				r["alert"].extend([alert["alert_id"],alert["display_name"]])
-				context = module["module_id"]+"|"+alert["alert_id"]
+		if "rules" in module:
+			for rule in module["rules"]:
+				if len(rule["conditions"]) != 0: continue
+				r["rule"] = copy.deepcopy(r["module"])
+				r["rule"].extend([rule["rule_id"],rule["display_name"]])
+				context = module["module_id"]+"|"+rule["rule_id"]
 				# user requesting for an alert
-				kb[cleanup.sub(' '," ".join(r["alert"])).lower()] = "alert|"+context
-	
+				kb[cleanup.sub(' '," ".join(r["rule"])).lower()] = "rule|"+context
+		if "widgets" in module:
+			for i in range(len(module["widgets"])):
+				for j in range(len(module["widgets"][i])):
+					widget = module["widgets"][i][j]
+                			r["widget"] = copy.deepcopy(r["module"])
+		                        r["widget"].extend(["chart","widget",widget["widget_id"],widget["display_name"],widget["type"]])
+					context = module["module_id"]+"|"+widget["widget_id"]
+					# user requesting for a widget
+					kb[cleanup.sub(' '," ".join(r["widget"])).lower()] = "chart|"+context
+					
 # initialize the oracle		
 def init():
         if initialized: return
@@ -60,14 +72,30 @@ def init():
 	# learn from the configuration
 	learn_config()
 
+# add a random prefix
+def add_prefix(text):
+	add_prefix_rnd = utils.randint(0,100)
+	if add_prefix_rnd < 50:
+		return prefix[utils.randint(0,len(prefix)-1)]+" "+text[0].lower() + text[1:]
+	return text
+
+# return a random wait message
+def get_wait_message():
+	return wait[utils.randint(0,len(wait)-1)]	
+
 # translate the action to take in a human readable response
 def translate_response(action):
-	response = action.split("|")
-	what = response.pop(0)
+	response = {'type':'text', 'content': ''}
+	request = action.split("|")
+	what = request.pop(0)
 	if what == "text":
-		return response[utils.randint(0,len(response)-1)]
-	if what == "alert":
-		return alerter.run(response[0],response[1],False)		
+		response["content"] = request[utils.randint(0,len(request)-1)]
+	elif what == "rule":
+		response["content"] = add_prefix(alerter.run(request[0],request[1],False))
+	elif what == "chart":
+		response["type"] = "chart"
+		response["content"] = request[0]+","+request[1]
+	return response
 	
 # ask the oracle a question
 def ask(request):
@@ -82,13 +110,8 @@ def ask(request):
 	if score < not_understood_score: action = not_understood
 	# translate the action into a response
 	response = translate_response(action)
-	# add some randomness in the response
-	if not action.startswith("text|"):
-		add_prefix = utils.randint(0,100)
-		if add_prefix < 50: 
-			response = translate_response(prefix)+" "+response[0].lower() + response[1:]
 	# send it back
-	log.info("I am "+str(score)+"% sure to responde with: "+response)
+	log.info("I am "+str(score)+"% sure so I would respond with: "+str(response))
 	return response
 
 # main

@@ -22,12 +22,13 @@ def connect():
 	return db
 
 # normalize the output
-def normalize_dataset(data,withscores,milliseconds):
+def normalize_dataset(data,withscores,milliseconds,format_date):
 	output = []
-	timestamp_multiplier = 1000 if milliseconds else 1
 	for entry in data:
 		# get the timestamp 
-		timestamp = int(entry[1])*timestamp_multiplier
+		timestamp = int(entry[1])
+		if format_date: timestamp = utils.timestamp2date(timestamp)
+		elif milliseconds: timestamp = timestamp*1000
 		# normalize the value (entry is timetime:value)
 		value_string = entry[0].split(":",1)[1];
 		# cut the float if a number of make it string
@@ -67,16 +68,16 @@ def get(key):
 	return db.get(key)
 
 # get a range of values from the db based on the timestamp
-def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,milliseconds=False):
+def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,milliseconds=False,format_date=False):
 	db = connect()
 	log.debug("zrangebyscore "+key+" "+str(start)+" "+str(end))
-	return normalize_dataset(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds)
+	return normalize_dataset(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds,format_date)
 	
 # get a range of values from the db
-def range(key,start=-1,end=-1,withscores=True,milliseconds=False):
+def range(key,start=-1,end=-1,withscores=True,milliseconds=False,format_date=False):
         db = connect()
         log.debug("zrange "+key+" "+str(start)+" "+str(end))
-        return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds)
+        return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds,format_date)
 
 # delete a key
 def delete(key):

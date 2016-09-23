@@ -9,6 +9,7 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import oracle
+import generate_charts
 
 # variables
 initialized = False
@@ -96,8 +97,21 @@ def run():
 						request = request.replace(bot_id,'')
 						request = request.lower()
 						channel = output['channel']
+						# ask the oracle what to respond
 						response = oracle.ask(request)
-						slack.api_call("chat.postMessage", channel=channel,text=response, as_user=True)
+						if response["type"] == "text":
+							# post the text response
+							slack.api_call("chat.postMessage",channel=channel,text=response["content"], as_user=True)
+						elif response["type"] == "chart":
+							# post a waiting message
+							slack.api_call("chat.postMessage",channel=channel,text=oracle.get_wait_message(), as_user=True)
+							# generate the chart
+							module_id,widget_id = response["content"].split(",")
+							generate_charts.run(module_id,widget_id)
+							# upload the chart to the channel
+							filename = utils.get_widget_chart(widget_id)
+							log.debug("uploading "+filename)
+							a = slack.api_call("files.upload",channels=channel,filename=filename,file=open(filename,'rb'))
 			time.sleep(1)
 	else:
 		log.error("unable to connect to the slack server")
@@ -105,5 +119,6 @@ def run():
 # main
 if __name__ == '__main__':
 	run()
+	
 
 
