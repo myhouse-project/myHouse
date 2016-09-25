@@ -14,7 +14,8 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 
-# variables
+# registered_sensors[<node_id>][<request>] = sensor
+# e.g. registered_sensors["HA"]["TEMP"]
 registered_sensors = {}
 
 # register a new sensor against this plugin
@@ -60,8 +61,4 @@ def run():
 		                measure["value"] = float(value.replace(request,""))
 		                measures.append(measure)
 				sensors.store(sensor,measures)
-
-
-						
-
 
