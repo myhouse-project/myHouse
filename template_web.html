@@ -29,6 +29,9 @@
 <script src="web/pnotify/pnotify.custom.js"></script>
 <link rel="stylesheet" href="web/pnotify/pnotify.custom.min.css" />
 
+<!-- TitaToggle -->
+<link rel="stylesheet" href="web/titatoggle/titatoggle.min.css" />
+
 <!--  Datatables -->
 <script src="web/datatables/datatables.min.js"></script>
 <link rel="stylesheet" href="web/datatables/datatables.min.css" />
@@ -266,35 +269,34 @@ th.dt-center, td.dt-center { text-align: center; }
 	}	
 
 	// load data the widgets of the current module
-	function load_widgets(requested_module) {
+	function load_widgets(module_id) {
 		$("#body").append('<div id="widgets"></div>');
-		var module_id = requested_module;
-		var module = get_module(requested_module);
+		var module = get_module(module_id);
 		$("#title").text(module["display_name"]);
 		if (module == null) return;
 		if (! ('widgets' in module)) return;
 		for (var i = 0; i < module["widgets"].length; i++) {
 			// for each row
-			var row = requested_module+"_"+i;
+			var row = module_id+"_"+i;
 			$("#widgets").append('<div class="row" id="'+row+'">');
 			for (var j = 0; j < module["widgets"][i].length; j++) {
 				// for each widget
 				widget = module["widgets"][i][j];
-				log("info","["+requested_module+"] loading widget "+widget["widget_id"]);
-				// setup the widget
+				log("info","["+module_id+"] loading widget "+widget["widget_id"]);
 				if (widget["size"] == 0) continue;
-				if ("module" in widget) module_id = widget["module"];
-				var group = get_group(module_id,widget["sensor_group"]);
-				if (widget["type"] != "alerts" && group == null) {
-					log("warning","["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
-					continue;
-				}
+				// add an empty widget template
+				tag = "#"+widget["widget_id"];
+				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
+				// add the current measure header if requested
+				if ("current" in widget) add_current_measure_header(tag,widget)
+				else add_empty_header(tag)
 				// load the requested widget
-				if (widget["type"] == "group_summary") add_group_summary_widget(row,widget,module_id,group);				
-				else if (widget["type"] == "image") add_image_widget(row,widget,module_id,group);
-				else if (widget["type"] == "group_timeline") add_group_timeline_widget(row,widget,module_id,group,widget["timeframe"]);
-				else if (widget["type"] in conf["constants"]["charts"]) add_chart_widget(row,widget,module_id,group);
-				else if (widget["type"] == "alerts") add_alerts_widget(row,widget,module_id,group);
+				if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget);				
+				else if (widget["type"] == "image") add_sensor_image(tag+"_body",widget);
+				else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget);
+				else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget);
+				else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget);
+				else if (widget["type"] == "on_off") add_on_off_widget(tag+"_body",widget);
 			}
 			// end of the row
 			$("#"+row).append('</div>');
@@ -302,43 +304,20 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	/**
-		SENSOR WIDGETS
+		WIDGETS
 	**/
-
+	
 	// add a sensor summary widget
-	function add_group_summary_widget(row,widget,module_id,group) {
-		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];
-		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
-		if (sensor == null) return;
-		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
-		var summary_body = '\
-			<div class="box-profile">\
-				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
-					<h3 class="profile-username text-center"><span id="'+tag+'_current">N/A</span><span id="'+tag+'_current_suffix"></span></h3>\
-					<p class="text-muted text-center" id="'+tag+'_timestamp">N/A</p>\
-					<ul class="list-group list-group-unbordered">\
-						<li class="list-group-item" id="'+tag+'_chart">\
-						</li>\
-					</ul>\
-				<div>';
-		//a add an empty widget
-		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
-		tag = "#"+tag;
-		// add the summary body to it
-		$(tag).html(summary_body);
-		// add the summary icon
-		$(tag+"_icon").attr('src',widget["icon_url"]);
-		
-		// set the current measure
-		set_html(tag+"_current",sensor_url+"/current");
-		$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
-		// set the timestamp
-		set_html(tag+"_timestamp",sensor_url+"/timestamp");
-		
-		// add the summary chart
-		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_group_summary"]);
-		$(tag+"_chart").highcharts(options);
-		var chart = $(tag+"_chart").highcharts();
+	function add_sensor_group_summary_chart(tag,widget) {
+		split = split_sensor_key(widget,"group")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1]; 
+		group = get_group(module_id,group_id)
+		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_sensor_group_summary"]);
+		if ("current" in widget) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		$(tag).highcharts(options);
+		var chart = $(tag).highcharts();
 		// for each sensor	
 		for (var i = 0; i < group["sensors"].length; i++) {
 			var sensor = group["sensors"][i];
@@ -355,13 +334,14 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add a sensor timeline widget
-	function add_group_timeline_widget(row,widget,module_id,group,timeframe) {
-		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];	
-		// append a new empty widget
-		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
-		tag = "#"+tag;
-		// add the chart
+	function add_sensor_group_timeline_chart(tag,widget) {
+		split = split_sensor_key(widget,"group")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1];
+		group = get_group(module_id,group_id)
 		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]]);
+		if ("current" in widget) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts('StockChart',options);
 		var chart = $(tag).highcharts();
 		// for each sensor
@@ -372,22 +352,23 @@ th.dt-center, td.dt-center { text-align: center; }
 			// add each series, to the chart
 			for (var j = 0; j < sensor["series"].length; j++) {
 				series = sensor["series"][j]
-				add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,j);
+				add_series(chart,sensor_url+"/"+widget["timeframe"]+"/"+series["series_id"],sensor,j);
 			}
 		}
 	}	
 	
 	// add a generic sensor chart widget
-	function add_chart_widget(row,widget,module_id,group) {
-		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];	
-		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
-		if (sensor == null) return;
-		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
-		// append an empty widget
-		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
-		tag = "#"+tag;
+	function add_sensor_chart(tag,widget) {
+		split = split_sensor_key(widget,"sensor")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1]
+		sensor_id = split[2];
+		var sensor = get_sensor(module_id,group_id,sensor_id)
+		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
+		if ("current" in widget) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		if (sensor["format"] == "percentage") options["yAxis"]["max"] = 100;
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
@@ -400,25 +381,21 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add an image widget
-	function add_image_widget(row,widget,module_id,group) {
-		var tag = row+"_"+group["group_id"]+"_"+widget["widget_id"];	
-		var sensor = get_sensor(module_id,group["group_id"],widget["sensor"])
+	function add_sensor_image(tag,widget) {
+		split = split_sensor_key(widget,"sensor")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1]
+		sensor_id = split[2];
+		var sensor = get_sensor(module_id,group_id,sensor_id)
 		if (sensor == null) return;
-		var sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
-		// append an empty widget
-		$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
-		tag = "#"+tag;
+		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 		// add the image to the widget
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
 	}
 	
-	/**
-		ALERTS WIDGETS
-	**/
-	
 	// add an alert widget
-	function add_alerts_widget(row,widget,module_id,group) {
-		if (widget["size"] == 0) return;
+	function add_alerts_widget(tag,widget) {
 		// define the alerts table
 		var table_html = '<table id="alerts_table" class="table table-bordered table-striped">\
 							<thead>\
@@ -462,8 +439,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			],
 		};
 		// create the widget and the table
-		$("#"+row).append(get_widget_template("alerts_widget",widget["display_name"],widget["size"]));
-		$("#alerts_widget").append(table_html);
+		$(tag).append(table_html);
 		$("#alerts_table").DataTable(options);
 		var table = $("#alerts_table").DataTable();
 		// add alerts to the table
@@ -481,6 +457,112 @@ th.dt-center, td.dt-center { text-align: center; }
 				};
 			}(severity[i]));
 		}
+	}
+	
+	// add an on/off control widget
+	function add_on_off_widget(tag,widget) {
+		// add the checkbox to the widget
+		$(tag).html('<div class="checkbox checkbox-slider--b checkbox-slider-lg"><label><input type="checkbox" id="'+control+'"><span></span></label></div>');
+		control = "#"+control;
+		$(control).change(function() {
+			console.log($(this).is(':checked'))
+		});
+	}
+	
+	/**
+		WIDGET HELPER FUNCTIONS
+	**/	
+	
+	// return an empty HTML widget template
+	function get_widget_template(tag,title,size) {
+		tag = tag.replace("#","")
+		// define the widget HTML
+		var html = '\
+					<div class="col-md-#size#">\
+							<div class="box box-solid box-primary">\
+								<div class="box-header">\
+									<h3 class="box-title">#title#</h3>\
+								</div>\
+								<div class="box-body no-padding box-primary">\
+								    <div class="box-body" id="#tag#" align="center">\
+									</div>\
+								</div>\
+							</div>\
+					</div>\
+				';		
+		// replace the placeholders with the provided input
+		html = html.replaceAll("#size#",size);
+		html = html.replaceAll("#title#",title);
+		html = html.replaceAll("#tag#",tag);
+		return html;
+	}
+	
+	// add the current measure widget
+	function add_current_measure_header(tag,widget) {
+		tag = tag.replace("#","")
+		split = split_sensor_key(widget,"current")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1]
+		sensor_id = split[2];
+		var sensor = get_sensor(module_id,group_id,sensor_id)
+		if (sensor == null) return;
+		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		var summary_body = '\
+			<div class="box-profile">\
+				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
+					<h3 class="profile-username text-center"><span id="'+tag+'_current">N/A</span><span id="'+tag+'_current_suffix"></span></h3>\
+					<p class="text-muted text-center" id="'+tag+'_timestamp">N/A</p>\
+					<ul class="list-group list-group-unbordered">\
+						<li class="list-group-item" id="'+tag+'_body">\
+						</li>\
+					</ul>\
+				<div>';
+		tag = "#"+tag;
+		// add the summary body to it
+		$(tag).html(summary_body);
+		// add the summary icon
+		$(tag+"_icon").attr('src',widget["current_icon"]);
+		// set the current measure
+		set_html(tag+"_current",sensor_url+"/current");
+		$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
+		// set the timestamp
+		set_html(tag+"_timestamp",sensor_url+"/timestamp");
+	}
+	
+	// add an empty widget header
+	function add_empty_header(tag) {
+		tag = tag.replace("#","")
+		$("#"+tag).append('<div id="'+tag+'_body"></div>')
+	}
+	
+	// split a given sensor key
+	function split_sensor_key(widget,key) {
+		// ensure the key is in widget
+		if (!(key in widget)) {
+			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
+			return null
+		}
+		// split it
+		split = widget[key].split(":")
+		if (split.length == 2) {
+			// ensure the group exists
+			group = get_group(split[0],split[1])
+			if (group == null) {
+				log("warning","Unable to find group "+key+" for widget "+widget["widget_id"])
+				return null
+			}
+		}
+		else if (split.length == 3) {
+			// ensure the sensor exists
+			sensor = get_sensor(split[0],split[1],split[2])
+			if (sensor == null) {
+				log("warning","Unable to find sensor "+key+" for widget "+widget["widget_id"])
+				return null
+			}
+		}
+		else return null
+		return split
 	}
 	
 	/**
@@ -597,29 +679,6 @@ th.dt-center, td.dt-center { text-align: center; }
 			var sensor = group["sensors"][j];
 			if (sensor["sensor_id"] == sensor_id) return sensor;
 		}
-	}
-	
-	// return an empty HTML widget template
-	function get_widget_template(tag,title,size) {
-		// define the widget HTML
-		var html = '\
-					<div class="col-md-#size#">\
-							<div class="box box-solid box-primary">\
-								<div class="box-header">\
-									<h3 class="box-title">#title#</h3>\
-								</div>\
-								<div class="box-body no-padding box-primary">\
-								    <div class="box-body" id="#tag#" align="center">\
-									</div>\
-								</div>\
-							</div>\
-					</div>\
-				';		
-		// replace the placeholders with the provided input
-		html = html.replaceAll("#size#",size);
-		html = html.replaceAll("#title#",title);
-		html = html.replaceAll("#tag#",tag);
-		return html;
 	}
 
 	// auto refresh the page

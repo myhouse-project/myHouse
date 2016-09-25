@@ -34,6 +34,7 @@ constants = {
 	'web_use_reloader': True,
 	'bot_brain_file': base_dir+"/bot.txt",
 	'chart_extension': 'png',
+	'chart_short_height': 194,
 	'formats': {
 		'int': { 
 			'formatter': 'int', 
@@ -186,12 +187,11 @@ constants = {
                                 },
                         },
 		},
-		'chart_group_summary': {
+		'chart_sensor_group_summary': {
 			'template': 'master',
 			'chart': {
 				'type': 'columnrange',
 				'inverted': True,
-				'height': 194,
 			},
 			'xAxis': {
 				'type': 'datetime',
@@ -213,7 +213,7 @@ constants = {
 				},
 			],
 		},
-		'chart_group_timeline_history': {
+		'chart_sensor_group_timeline_history': {
 			'template': 'master',
 			'chart': {
 				'type': 'spline',
@@ -226,7 +226,7 @@ constants = {
 				'gridLineWidth': 1,
 			},
 		},
-		'chart_group_timeline_recent': {
+		'chart_sensor_group_timeline_recent': {
 			'template': 'master',
                         'chart': {
                                 'type': 'spline',
@@ -242,7 +242,7 @@ constants = {
 				'enabled': False,
 			},
 		},
-		'chart_group_timeline_realtime': {	
+		'chart_sensor_group_timeline_realtime': {	
                         'template': 'master',
                         'chart': {
                                 'type': 'spline',

@@ -113,7 +113,7 @@ def store(sensor,measures):
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"]))+conf["constants"]["formats"][sensor["format"]]["suffix"])
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
-		if sensor["calculate_avg"]:
+		if "calculate_avg" in sensor and sensor["calculate_avg"]:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
 	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
@@ -130,12 +130,12 @@ def summarize(sensor,timeframe,start,end):
 	data = db.rangebyscore(key_to_read,start,end,withscores=False)
 	timestamp = start
 	min = avg = max = "-"
-	if sensor["calculate_avg"]:
+	if "calculate_avg" in sensor and sensor["calculate_avg"]:
 		# calculate avg
 		avg = utils.avg(data)
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
-	if sensor["calculate_min_max"]:
+	if "calculate_min_max" in sensor and sensor["calculate_min_max"]:
 		# calculate min
 		min = utils.min(data)
 		db.deletebyscore(key_to_write+":min",start,end)
@@ -213,7 +213,7 @@ def run(module_id,group_id,sensor_id,action):
 def init_push_plugins():
         # for each push plugin
         for plugin_name,plugin_conf in conf["plugins"].iteritems():
-                # skip pull plugins
+                # skip other plugins
                 if plugin_conf["type"] != "push": continue
                 # get the plugin and store it
                 plugin_module = get_plugin(plugin_name)
@@ -248,12 +248,12 @@ def schedule_all():
 				if sensor['plugin']['name'] not in conf['plugins']:
 					log.error("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] invalid plugin "+sensor['plugin']['name'])
 					continue
-				# handle push plugin
+				# handle push plugins
 				if conf['plugins'][sensor['plugin']['name']]['type'] == "push":
 					# register the sensor
 					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with push service "+sensor['plugin']['name'])
 					push_plugins[sensor['plugin']['name']].register_sensor(sensor)
-				# handle pull plugin
+				# handle pull plugins
                                 else: 
 					# schedule polling
 					if sensor["refresh_interval_min"] == 0: continue
@@ -265,7 +265,7 @@ def schedule_all():
                                	# schedule an expire job every day
                                 schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
 				# schedule a summarize job every hour and every day if needed
-                                if sensor["calculate_avg"]:
+                                if "calculate_avg" in sensor and sensor["calculate_avg"]:
                	                        log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
                       	                schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
                               	        schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])

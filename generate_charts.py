@@ -70,12 +70,40 @@ def add_series(chart,url,sensor,series_index):
 	if 'series' not in chart: chart['series'] = []
 	chart['series'].append(series)
 
+# split a given sensor key
+def split_sensor_key(widget,key):
+	# ensure the key is in widget
+	if key not in widget: 
+		log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
+		return None
+	# split it
+	split = widget[key].split(":")
+	if len(split) == 2:
+		# ensure the group exists
+		group = utils.get_group(split[0],split[1])
+		if group is None: 
+			log.warning("Unable to find group "+key+" for widget "+widget["widget_id"])
+			return None
+        elif len(split) == 3:
+                # ensure the sensor exists
+                sensor = utils.get_sensor(split[0],split[1],split[2])
+                if sensor is None:
+                        log.warning("Unable to find sensor "+key+" for widget "+widget["widget_id"])
+                        return None
+	else: return None
+	return split
+
 # add a sensor summary widget
-def add_group_summary_widget(widget,module_id,group):
-	chart = copy.deepcopy(conf["constants"]["charts"]["chart_group_summary"])
+def add_sensor_group_summary_chart(widget):
+	split = split_sensor_key(widget,"group")
+	if split is None: return
+	module_id = split[0]
+	group_id = split[1] 
+	group = utils.get_group(module_id,group_id)
+	chart = copy.deepcopy(conf["constants"]["charts"]["chart_sensor_group_summary"])
 	for i in range(len(group["sensors"])):
 		sensor = group["sensors"][i];
-		sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"];
+		sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
 		# skip flags
 		if sensor['format'] == 'string': continue
 		# add the sensor to the xAxis
@@ -88,7 +116,12 @@ def add_group_summary_widget(widget,module_id,group):
 	generate_chart(chart,widget["widget_id"])
 
 # add a sensor timeline widget
-def add_group_timeline_widget(widget,module_id,group,timeframe):
+def add_sensor_group_timeline_chart(widget):
+        split = split_sensor_key(widget,"group")
+        if split is None: return
+        module_id = split[0]
+        group_id = split[1]
+        group = utils.get_group(module_id,group_id)
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]])
 	# for each sensor
 	for i in range(len(group["sensors"])):
@@ -98,16 +131,19 @@ def add_group_timeline_widget(widget,module_id,group,timeframe):
 		# add each series, to the chart
 		for j in range(len(sensor["series"])):
 			series = sensor["series"][j]
-			add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,j)
+			add_series(chart,sensor_url+"/"+widget["timeframe"]+"/"+series["series_id"],sensor,j)
 	chart['title']['text'] = widget["display_name"]
         generate_chart(chart,widget["widget_id"])
 
 # add a generic sensor chart widget
-def add_chart_widget(widget,module_id,group):
-	# retrieve the sensor referenced by the widget
-	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
-	if sensor is None: return
-	sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
+def add_sensor_chart(widget):
+	split = split_sensor_key(widget,"sensor")
+        if split is None: return
+        module_id = split[0]
+        group_id = split[1]
+	sensor_id = split[2]		
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id
 	chart = copy.deepcopy(conf["constants"]["charts"][widget["type"]])
 	if sensor["format"] == "percentage": chart["yAxis"]["max"] = 100
 	# add each series to the chart
@@ -119,18 +155,20 @@ def add_chart_widget(widget,module_id,group):
         generate_chart(chart,widget["widget_id"])
 
 # add an image widget
-def add_image_widget(widget,module_id,group):
-	# retrieve the sensor referenced by the widget
-	sensor = utils.get_sensor(module_id,group["group_id"],widget["sensor"])
-	if sensor is None: return
-	sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
+def add_sensor_image(widget):
+        split = split_sensor_key(widget,"sensor")
+        if split is None: return
+        module_id = split[0]
+        group_id = split[1]
+        sensor_id = split[2]
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id
 	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,widget["widget_id"])
 
 # load all the widgets of the given module
-def run(requested_module,requested_widget=None):
-	module_id = requested_module
-	module = utils.get_module(requested_module)
+def run(module_id,requested_widget=None):
+	module = utils.get_module(module_id)
 	if module is None: return
 	if 'widgets' not in module: return
 	for i in range(len(module["widgets"])):
@@ -139,18 +177,12 @@ def run(requested_module,requested_widget=None):
 			widget = module["widgets"][i][j]
 			if requested_widget is not None and widget["widget_id"] != requested_widget: continue
 		        if widget["size"] == 0: continue
-		        if "module" in widget: module_id = widget["module"]
-		        group = utils.get_group(module_id,widget["sensor_group"])
-			log.info("["+requested_module+"] generating widget "+widget["widget_id"])
-		        if widget["type"] != "alerts" and group is None:
-				log.warning("["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
-				continue
 			# generate the widget
-			if widget["type"] == "group_summary": add_group_summary_widget(widget,module_id,group)
-			elif widget["type"] == "image": add_image_widget(widget,module_id,group)
-			elif widget["type"] == "group_timeline": add_group_timeline_widget(widget,module_id,group,widget["timeframe"])
-			elif widget["type"] in conf["constants"]["charts"]: add_chart_widget(widget,module_id,group)
-			elif widget["type"] == "alerts": continue
+			if widget["type"] == "sensor_group_summary": add_sensor_group_summary_chart(widget)
+			elif widget["type"] == "image": add_sensor_image(widget)
+			elif widget["type"] == "sensor_group_timeline": add_sensor_group_timeline_chart(widget)
+			elif widget["type"] in conf["constants"]["charts"]: add_sensor_chart(widget)
+			else: continue
 
 # main
 if __name__ == '__main__':

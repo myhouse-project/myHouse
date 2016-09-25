@@ -40,8 +40,7 @@ def get_email_body(title):
 	return template
 
 # email module digest
-def module_digest(requested_module):
-	module_id = requested_module
+def module_digest(module_id):
 	log.info("generating module summary email report for module "+module_id)
 	module = utils.get_module(module_id)
 	if module is None: return
@@ -55,11 +54,6 @@ def module_digest(requested_module):
         for i in range(len(module["widgets"])):
 		for j in range(len(module["widgets"][i])):
 			widget = module["widgets"][i][j]
-			if "module" in widget: module_id = widget["module"]
-	        	group = utils.get_group(module_id,widget["sensor_group"])
-                        if group is None:
-                                log.warning("["+requested_module+"] invalid group "+widget["sensor_group"]+" for widget "+widget["widget_id"])
-                                continue
 			template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+widget["widget_id"]+'"/>')+"\n<!-- widgets -->")
 			# add the image to the queue
 			images.append({'filename': utils.get_widget_chart(widget["widget_id"]) , 'id': widget["widget_id"],})
