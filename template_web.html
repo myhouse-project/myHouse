@@ -462,6 +462,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	// add an on/off control widget
 	function add_on_off_widget(tag,widget) {
 		// add the checkbox to the widget
+		control="ok"
 		$(tag).html('<div class="checkbox checkbox-slider--b checkbox-slider-lg"><label><input type="checkbox" id="'+control+'"><span></span></label></div>');
 		control = "#"+control;
 		$(control).change(function() {

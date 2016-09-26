@@ -11,15 +11,16 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-# define constants
+# variables
 url = 'https://api.weather.com/v1/geocode/'
+plugin_conf = conf['plugins']['sensors']['weatherchannel']
 
 # poll the sensor
 def poll(sensor):
 	request = sensor['plugin']['request']
 	if request == "alerts":
 		# request the web page
-		return utils.web_get(url+str(conf['plugins']['weatherchannel']['latitude'])+'/'+str(conf['plugins']['weatherchannel']['longitude'])+'/'+get_request_type(sensor['plugin']['request'])+'/wwir.json?apiKey='+conf['plugins']['weatherchannel']['api_key']+'&units=m&language=en')
+		return utils.web_get(url+str(plugin_conf['latitude'])+'/'+str(plugin_conf['longitude'])+'/'+get_request_type(sensor['plugin']['request'])+'/wwir.json?apiKey='+plugin_conf['api_key']+'&units=m&language=en')
 
 # parse the data
 def parse(sensor,data):
@@ -44,5 +45,5 @@ def get_request_type(request):
 
 # return the cache schema
 def cache_schema(sensor):
-	location = str(conf['plugins']['wunderground']['latitude'])+"_"+str(conf['plugins']['wunderground']['longitude'])+"_"
+	location = str(plugin_conf['latitude'])+"_"+str(plugin_conf['longitude'])+"_"
 	return location+get_request_type(sensor['plugin']['request'])

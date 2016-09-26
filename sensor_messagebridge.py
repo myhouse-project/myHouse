@@ -17,10 +17,11 @@ import sensors
 # registered_sensors[<node_id>][<request>] = sensor
 # e.g. registered_sensors["HA"]["TEMP"]
 registered_sensors = {}
+plugin_conf = conf['plugins']['sensors']['messagebridge']
 
 # register a new sensor against this plugin
 def register_sensor(sensor):
-	if sensor['plugin']['name'] != 'messagebridge_push': return
+	if sensor['plugin']['name'] != 'messagebridge': return
 	if sensor['plugin']['node_id'] not in registered_sensors: registered_sensors[sensor['plugin']['node_id']] = {}
 	registered_sensor = registered_sensors[sensor['plugin']['node_id']]
 	if sensor['plugin']['request'] not in registered_sensor: registered_sensor[sensor['plugin']['request']] = {}
@@ -30,12 +31,12 @@ def register_sensor(sensor):
 
 # run the push service
 def run():
-	log.debug("["+__name__+"] listening for UDP datagrams on port "+str(conf['plugins']['messagebridge_push']['port_from']))
+	log.debug("["+__name__+"] listening for UDP datagrams on port "+str(plugin_conf['port']))
 	# bind to the network
 	sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-	sock.bind(("",conf['plugins']['messagebridge_push']['port_from']))
+	sock.bind(("",plugin_conf['port']))
 	while True:
 		# new data arrives	
 		data, addr = sock.recvfrom(1024)
