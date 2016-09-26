@@ -14,11 +14,12 @@ conf = config.get_config()
 # variables
 url = 'http://api.wunderground.com/api'
 forecast_max_entries = 5
+plugin_conf = conf['plugins']['sensors']['wunderground']
 
 # poll the sensor
 def poll(sensor):
 	# request the web page
-	return utils.web_get(url+"/"+conf['plugins']['wunderground']['api_key']+"/"+get_request_type(sensor['plugin']['request'])+"/q/"+str(conf['plugins']['wunderground']['latitude'])+","+str(conf['plugins']['wunderground']['longitude'])+".json")
+	return utils.web_get(url+"/"+plugin_conf['api_key']+"/"+get_request_type(sensor['plugin']['request'])+"/q/"+str(plugin_conf['latitude'])+","+str(plugin_conf['longitude'])+".json")
 
 # parse the data
 def parse(sensor,data):
@@ -111,5 +112,5 @@ def get_request_type(request):
 
 # return the cache schema
 def cache_schema(sensor):
-	location = str(conf['plugins']['wunderground']['latitude'])+"_"+str(conf['plugins']['wunderground']['longitude'])+"_"
+	location = str(plugin_conf['latitude'])+"_"+str(plugin_conf['longitude'])+"_"
 	return location+get_request_type(sensor['plugin']['request'])

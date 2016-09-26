@@ -16,12 +16,12 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 
-import plugin_wunderground
-import plugin_weatherchannel
-import plugin_linux
-import plugin_http
-import plugin_messagebridge_pull
-import plugin_messagebridge_push
+import sensor_wunderground
+import sensor_weatherchannel
+import sensor_linux
+import sensor_http
+import sensor_csv
+import sensor_messagebridge
 
 # variables
 push_plugins = {}
@@ -29,12 +29,12 @@ push_plugins = {}
 # return the appropriate plugin
 def get_plugin(name):
 	plugin = None
-        if name == "wunderground": plugin = plugin_wunderground
-        elif name == "weatherchannel": plugin = plugin_weatherchannel
-        elif name == "linux": plugin = plugin_linux
-        elif name == "http": plugin = plugin_http
-        elif name == "messagebridge_pull": plugin = plugin_messagebridge_pull
-	elif name == "messagebridge_push": plugin = plugin_messagebridge_push
+        if name == "wunderground": plugin = sensor_wunderground
+        elif name == "weatherchannel": plugin = sensor_weatherchannel
+        elif name == "linux": plugin = sensor_linux
+        elif name == "http": plugin = sensor_http
+        elif name == "csv": plugin = sensor_csv
+	elif name == "messagebridge": plugin = sensor_messagebridge
 	return plugin
 
 # read data out of a sensor and store the output in the cache
@@ -212,7 +212,7 @@ def run(module_id,group_id,sensor_id,action):
 # initialize configured push plugins
 def init_push_plugins():
         # for each push plugin
-        for plugin_name,plugin_conf in conf["plugins"].iteritems():
+        for plugin_name,plugin_conf in conf["plugins"]["sensors"].iteritems():
                 # skip other plugins
                 if plugin_conf["type"] != "push": continue
                 # get the plugin and store it
@@ -245,11 +245,11 @@ def schedule_all():
 				if sensor is None: continue
 				# skip sensors wihtout a plugin
 				if 'plugin' not in sensor: continue
-				if sensor['plugin']['name'] not in conf['plugins']:
+				if sensor['plugin']['name'] not in conf['plugins']['sensors']:
 					log.error("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] invalid plugin "+sensor['plugin']['name'])
 					continue
 				# handle push plugins
-				if conf['plugins'][sensor['plugin']['name']]['type'] == "push":
+				if conf['plugins']['sensors'][sensor['plugin']['name']]['type'] == "push":
 					# register the sensor
 					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with push service "+sensor['plugin']['name'])
 					push_plugins[sensor['plugin']['name']].register_sensor(sensor)
