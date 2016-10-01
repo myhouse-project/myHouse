@@ -91,6 +91,16 @@ def parse(sensor,data):
 		measure["value"] =  int(parsed_json['almanac']['temp_high']['record']['C'])
 		measure["timestamp"] = utils.day_start(utils.now())
 		measures.append(measure)
+        elif request == "record_temperature_year":
+                measure["key"] = sensor["sensor_id"]+":day:min"
+                measure["value"] =  int(parsed_json['almanac']['temp_low']['recordyear'])
+                measure["timestamp"] = utils.day_start(utils.now())
+                measures.append(measure)
+                measure = {}
+                measure["key"] = sensor["sensor_id"]+":day:max"
+                measure["value"] =  int(parsed_json['almanac']['temp_high']['recordyear'])
+                measure["timestamp"] = utils.day_start(utils.now())
+                measures.append(measure)
 	elif request == "normal_temperature":
                 measure["key"] = sensor["sensor_id"]+":day:min"
                 measure["value"] =  int(parsed_json['almanac']['temp_low']['normal']['C'])
@@ -108,7 +118,7 @@ def parse(sensor,data):
 def get_request_type(request):
         if request == "temperature" or request == "condition" or request == "humidity": return "conditions"
         elif request.startswith("forecast_"): return "forecast10day"
-        elif request == "record_temperature" or request == "normal_temperature": return "almanac"
+        elif request == "record_temperature" or request == "record_temperature_year" or request == "normal_temperature": return "almanac"
 
 # return the cache schema
 def cache_schema(sensor):

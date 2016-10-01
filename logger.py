@@ -10,6 +10,7 @@ def get_level(level):
 	elif level == "debug": return logging.DEBUG
 	elif level == "warning": return logging.WARNING
 	elif level == "error": return logging.ERROR
+	elif level == "critical": return logging.CRITICAL
 	else: return logging.INFO
 
 # return the logger object

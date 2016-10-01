@@ -58,6 +58,7 @@ def learn_config():
 			for i in range(len(module["widgets"])):
 				for j in range(len(module["widgets"][i])):
 					widget = module["widgets"][i][j]
+					if widget["type"] != "image" and not widget["type"].startswith("chart_") and not widget["type"].startswith("sensor_"): continue
                 			r["widget"] = copy.deepcopy(r["module"])
 		                        r["widget"].extend(["chart","widget",widget["widget_id"],widget["display_name"],widget["type"]])
 					context = module["module_id"]+"|"+widget["widget_id"]

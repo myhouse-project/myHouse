@@ -13,7 +13,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
-import notification
+import notifications
 
 # variables
 rules = {
@@ -93,7 +93,7 @@ def run(module_id,rule_id,fire=True):
 		if fire:
 			db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
 			log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
-			notification.notify(alert_text)	
+			notifications.notify(alert_text)	
 		return alert_text
 		
 # run the given schedule

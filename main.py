@@ -7,12 +7,13 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
+import actuators
 import scheduler
 schedule = scheduler.get_scheduler()
 import webserver
 import db
 import alerter
-import notification
+import notifications
 
 # run the main application
 def run():
@@ -23,10 +24,12 @@ def run():
 	schedule.start()
 	# schedule all sensors
 	sensors.schedule_all()
+	# schedule all actuators
+	actuators.schedule_all()
 	# schedule all alerts
 	alerter.schedule_all()
         # schedule all notifications
-        notification.schedule_all()
+        notifications.schedule_all()
 	# start the web server
 	if conf['web']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	# run as a deamon

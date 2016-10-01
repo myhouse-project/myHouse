@@ -70,32 +70,9 @@ def add_series(chart,url,sensor,series_index):
 	if 'series' not in chart: chart['series'] = []
 	chart['series'].append(series)
 
-# split a given sensor key
-def split_sensor_key(widget,key):
-	# ensure the key is in widget
-	if key not in widget: 
-		log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
-		return None
-	# split it
-	split = widget[key].split(":")
-	if len(split) == 2:
-		# ensure the group exists
-		group = utils.get_group(split[0],split[1])
-		if group is None: 
-			log.warning("Unable to find group "+key+" for widget "+widget["widget_id"])
-			return None
-        elif len(split) == 3:
-                # ensure the sensor exists
-                sensor = utils.get_sensor(split[0],split[1],split[2])
-                if sensor is None:
-                        log.warning("Unable to find sensor "+key+" for widget "+widget["widget_id"])
-                        return None
-	else: return None
-	return split
-
 # add a sensor summary widget
 def add_sensor_group_summary_chart(widget):
-	split = split_sensor_key(widget,"group")
+	split = utils.split_group(widget,"group")
 	if split is None: return
 	module_id = split[0]
 	group_id = split[1] 
@@ -117,7 +94,7 @@ def add_sensor_group_summary_chart(widget):
 
 # add a sensor timeline widget
 def add_sensor_group_timeline_chart(widget):
-        split = split_sensor_key(widget,"group")
+        split = utils.split_group(widget,"group")
         if split is None: return
         module_id = split[0]
         group_id = split[1]
@@ -137,7 +114,7 @@ def add_sensor_group_timeline_chart(widget):
 
 # add a generic sensor chart widget
 def add_sensor_chart(widget):
-	split = split_sensor_key(widget,"sensor")
+	split = utils.split_sensor(widget,"sensor")
         if split is None: return
         module_id = split[0]
         group_id = split[1]
@@ -156,7 +133,7 @@ def add_sensor_chart(widget):
 
 # add an image widget
 def add_sensor_image(widget):
-        split = split_sensor_key(widget,"sensor")
+        split = utils.split_sensor(widget,"sensor")
         if split is None: return
         module_id = split[0]
         group_id = split[1]
