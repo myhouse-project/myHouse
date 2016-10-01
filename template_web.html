@@ -296,7 +296,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget);
 				else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget);
 				else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget);
-				else if (widget["type"] == "on_off") add_on_off_widget(tag+"_body",widget);
+				else if (widget["type"] == "control_on_off") add_control_on_off_widget(tag+"_body",widget);
 			}
 			// end of the row
 			$("#"+row).append('</div>');
@@ -309,7 +309,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor summary widget
 	function add_sensor_group_summary_chart(tag,widget) {
-		split = split_sensor_key(widget,"group")
+		split = split_group(widget,"group")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]; 
@@ -335,7 +335,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor timeline widget
 	function add_sensor_group_timeline_chart(tag,widget) {
-		split = split_sensor_key(widget,"group")
+		split = split_group(widget,"group")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1];
@@ -359,7 +359,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a generic sensor chart widget
 	function add_sensor_chart(tag,widget) {
-		split = split_sensor_key(widget,"sensor")
+		split = split_sensor(widget,"sensor")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]
@@ -382,13 +382,12 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add an image widget
 	function add_sensor_image(tag,widget) {
-		split = split_sensor_key(widget,"sensor")
+		split = split_sensor(widget,"sensor")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]
 		sensor_id = split[2];
 		var sensor = get_sensor(module_id,group_id,sensor_id)
-		if (sensor == null) return;
 		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 		// add the image to the widget
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
@@ -460,12 +459,19 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add an on/off control widget
-	function add_on_off_widget(tag,widget) {
+	function add_control_on_off_widget(tag,widget) {
+		tag = tag.replace("#","")
 		// add the checkbox to the widget
-		control="ok"
-		$(tag).html('<div class="checkbox checkbox-slider--b checkbox-slider-lg"><label><input type="checkbox" id="'+control+'"><span></span></label></div>');
-		control = "#"+control;
-		$(control).change(function() {
+		split = split_actuator(widget,"actuator")
+		if (split == null) return;
+		module_id = split[0]
+		actuator_id = split[1];
+		//var sensor = get_sensor(module_id,actuator_id)
+		//var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		control_html = '<div class="checkbox checkbox-slider--b checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_control"><span></span></label></div>'
+		tag = "#"+tag
+		$(tag).html(control_html);
+		$(tag+"_control").change(function() {
 			console.log($(this).is(':checked'))
 		});
 	}
@@ -501,7 +507,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	// add the current measure widget
 	function add_current_measure_header(tag,widget) {
 		tag = tag.replace("#","")
-		split = split_sensor_key(widget,"current")
+		split = split_sensor(widget,"current")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]
@@ -512,8 +518,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		var summary_body = '\
 			<div class="box-profile">\
 				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
-					<h3 class="profile-username text-center"><span id="'+tag+'_current">N/A</span><span id="'+tag+'_current_suffix"></span></h3>\
-					<p class="text-muted text-center" id="'+tag+'_timestamp">N/A</p>\
+					<h3 class="profile-username text-center"><span id="'+tag+'_current"></span><span id="'+tag+'_current_suffix"></span></h3>\
+					<p class="text-muted text-center" id="'+tag+'_timestamp"></p>\
 					<ul class="list-group list-group-unbordered">\
 						<li class="list-group-item" id="'+tag+'_body">\
 						</li>\
@@ -537,34 +543,6 @@ th.dt-center, td.dt-center { text-align: center; }
 		$("#"+tag).append('<div id="'+tag+'_body"></div>')
 	}
 	
-	// split a given sensor key
-	function split_sensor_key(widget,key) {
-		// ensure the key is in widget
-		if (!(key in widget)) {
-			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
-			return null
-		}
-		// split it
-		split = widget[key].split(":")
-		if (split.length == 2) {
-			// ensure the group exists
-			group = get_group(split[0],split[1])
-			if (group == null) {
-				log("warning","Unable to find group "+key+" for widget "+widget["widget_id"])
-				return null
-			}
-		}
-		else if (split.length == 3) {
-			// ensure the sensor exists
-			sensor = get_sensor(split[0],split[1],split[2])
-			if (sensor == null) {
-				log("warning","Unable to find sensor "+key+" for widget "+widget["widget_id"])
-				return null
-			}
-		}
-		else return null
-		return split
-	}
 	
 	/**
 		CHART HELPER FUNCTIONS
@@ -627,7 +605,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	function set_html(tag,url) {
 		$.getJSON(hostname+url, function(tag) {
 				return function (data) {
-					if (data.length != 1) $(tag).html("N/A");
+					if (data.length != 1) $(tag).html("");
 					$(tag).html(data[0]);
 				};
 		}(tag));
@@ -681,6 +659,71 @@ th.dt-center, td.dt-center { text-align: center; }
 			if (sensor["sensor_id"] == sensor_id) return sensor;
 		}
 	}
+	
+	// return a actuator data
+	function get_actuator(module_id,actuator_id) {
+		module = get_module(module_id);
+		if (module == null) return null;
+		if (!("actuators" in module)) return null;
+		for (var i = 0; i < module["actuators"].length; i++) {
+			var actuator = module["actuators"][i];
+			if (actuator["actuator_id"] == actuator_id) return actuator;
+		}
+	}
+	
+	// split group
+	function split_group(widget,key) {
+		// ensure the key is in widget
+		if (!(key in widget)) {
+			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
+			return null
+		}
+		// split it
+		split = widget[key].split(":")
+		// ensure the group exists
+		group = get_group(split[0],split[1])
+		if (group == null) {
+			log("warning","Unable to find group "+key+" for widget "+widget["widget_id"])
+			return null
+		}
+		return split
+	}
+	
+	// split sensor
+	function split_sensor(widget,key) {
+		// ensure the key is in widget
+		if (!(key in widget)) {
+			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
+			return null
+		}
+		// split it
+		split = widget[key].split(":")
+		// ensure the sensor exists
+		sensor = get_sensor(split[0],split[1],split[2])
+		if (sensor == null) {
+			log("warning","Unable to find sensor "+key+" for widget "+widget["widget_id"])
+			return null
+		}
+		return split
+	}
+
+	// split actuator
+	function split_actuator(widget,key) {
+		// ensure the key is in widget
+		if (!(key in widget)) {
+			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
+			return null
+		}
+		// split it
+		split = widget[key].split(":")
+		// ensure the actuator exists
+		actuator = get_actuator(split[0],split[1])
+		if (actuator == null) {
+			log("warning","Unable to find actuator "+key+" for widget "+widget["widget_id"])
+			return null
+		}
+		return split
+	}	
 
 	// auto refresh the page
 	function auto_refresh(minutes) {

@@ -136,7 +136,7 @@ def avg(data):
 def get_exception(e):
 	etype, value, tb = sys.exc_info()
 	error = ''.join(traceback.format_exception(etype, value, tb,None))
-	return error.replace('\n',' ')
+	return error.replace('\n','|')
 
 # return a random int between min and max
 def randint(min,max):
@@ -197,6 +197,60 @@ def get_sensor(module_id,group_id,sensor_id):
 		sensor = group["sensors"][j]
 		if sensor["sensor_id"] == sensor_id: return sensor
 
+# return a given actuator
+def get_actuator(module_id,actuator_id):
+        module = get_module(module_id)
+        if module is None: return None
+        if "actuators" not in module: return None
+        for i in range(len(module["actuators"])):
+                actuator = module["actuators"][i]
+                if actuator["actuator_id"] == actuator_id: return actuator
+
+# split a given group string
+def split_group(widget,key):
+        # ensure the key is in widget
+        if key not in widget:
+                log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
+                return None
+        # split it
+        split = widget[key].split(":")
+        # ensure the group exists
+        group = get_group(split[0],split[1])
+	if group is None:
+        	log.warning("Unable to find group "+key+" for widget "+widget["widget_id"])
+                return None
+	return split
+
+# split a given sensor string
+def split_sensor(widget,key):
+        # ensure the key is in widget
+        if key not in widget:
+                log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
+                return None
+        # split it
+	split = widget[key].split(":")
+        # ensure the sensor exists
+        sensor = get_sensor(split[0],split[1],split[2])
+        if sensor is None:
+        	log.warning("Unable to find sensor "+key+" for widget "+widget["widget_id"])
+                return None
+        return split
+
+# split a given actuator string
+def split_actuator(widget,key):
+        # ensure the key is in widget
+        if key not in widget:
+                log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
+                return None
+        # split it
+        split = widget[key].split(":")
+	# ensure the actuator exists
+        actuator = get_actuator(split[0],split[1])
+        if actuator is None:
+        	log.warning("Unable to find actuator "+key+" for widget "+widget["widget_id"])
+                return None
+        return split
+
 # run a command and return the output
 def run_command(command):
         log.debug("Executing "+command)
@@ -226,3 +280,4 @@ def length_unit(length):
 # return the file path of a given widget id
 def get_widget_chart(widget_id):
 	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']
+

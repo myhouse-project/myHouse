@@ -56,7 +56,11 @@ def poll(sensor):
 # parse the data of a sensor from the cache and return the value read
 def parse(sensor):
 	# retrieve the raw data from the cache
-	data = db.range(sensor["db_cache"],withscores=False)[0]
+	data = db.range(sensor["db_cache"],withscores=False)
+	if len(data) == 0: 
+		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"]: no data to parse")
+		return None
+	data = data[0]
 	measures = None
         try:
 		# parse the cached data
@@ -368,5 +372,6 @@ if __name__ == '__main__':
 	                time.sleep(1)
 	else: 
 		# run the command for the given sensor
+		# <module_id> <group_id> <sensor_id> <action>
 		run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
 
