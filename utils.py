@@ -277,6 +277,11 @@ def length_unit(length):
         if conf["general"]["imperial_units"]: return length*0.039370
         else: return length
 
+# convert a pressure if neeeded
+def pressure_unit(pressure):
+        if conf["general"]["imperial_units"]: return pressure*0.0295301
+        else: return pressure
+
 # return the file path of a given widget id
 def get_widget_chart(widget_id):
 	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']

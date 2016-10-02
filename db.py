@@ -22,7 +22,7 @@ def connect():
 	return db
 
 # normalize the output
-def normalize_dataset(data,withscores,milliseconds,format_date):
+def normalize_dataset(data,withscores,milliseconds,format_date,formatter):
 	output = []
 	for entry in data:
 		# get the timestamp 
@@ -31,8 +31,12 @@ def normalize_dataset(data,withscores,milliseconds,format_date):
 		elif milliseconds: timestamp = timestamp*1000
 		# normalize the value (entry is timetime:value)
 		value_string = entry[0].split(":",1)[1];
-		# cut the float if a number of make it string
-		value = float(value_string) if utils.is_number(value_string) else str(value_string)
+		if formatter is None:
+			# no formatter provided, guess the type
+			value = float(value_string) if utils.is_number(value_string) else str(value_string)
+		else:
+			# formatter provided, normalize the value
+			value = utils.normalize(value_string,formatter)
 		# normalize "None" in null
 		if value == conf["constants"]["null"]: value = None
 		# prepare the output
@@ -68,16 +72,16 @@ def get(key):
 	return db.get(key)
 
 # get a range of values from the db based on the timestamp
-def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,milliseconds=False,format_date=False):
+def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,milliseconds=False,format_date=False,formatter=None):
 	db = connect()
 	log.debug("zrangebyscore "+key+" "+str(start)+" "+str(end))
-	return normalize_dataset(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds,format_date)
+	return normalize_dataset(db.zrangebyscore(key,start,end,withscores=True),withscores,milliseconds,format_date,formatter)
 	
 # get a range of values from the db
-def range(key,start=-1,end=-1,withscores=True,milliseconds=False,format_date=False):
+def range(key,start=-1,end=-1,withscores=True,milliseconds=False,format_date=False,formatter=None):
         db = connect()
         log.debug("zrange "+key+" "+str(start)+" "+str(end))
-        return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds,format_date)
+        return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds,format_date,formatter)
 
 # delete a key
 def delete(key):

@@ -74,7 +74,7 @@ constants = {
 		},
                 'pressure': {
                         'formatter': 'int',
-                        'suffix': 'bar',
+                        'suffix': 'mb',
                 },
 		'image': { 
 			'formatter': "", 

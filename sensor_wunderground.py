@@ -37,6 +37,10 @@ def parse(sensor,data):
                 measure["value"] = int(parsed_json['current_observation']['relative_humidity'].replace('%',''))
                 measure["timestamp"] = utils.timezone(int(parsed_json['current_observation']['observation_epoch']))
                 measures.append(measure)
+        if request == "pressure":
+                measure["value"] = float(parsed_json['current_observation']['pressure_mb'])
+                measure["timestamp"] = utils.timezone(int(parsed_json['current_observation']['observation_epoch']))
+                measures.append(measure)
 	elif request == "condition": 
 		measure["value"] = parsed_json['current_observation']['icon']
 		measure["timestamp"] = utils.timezone(int(parsed_json['current_observation']['observation_epoch']))
@@ -116,7 +120,7 @@ def parse(sensor,data):
 
 # return the plugin request type
 def get_request_type(request):
-        if request == "temperature" or request == "condition" or request == "humidity": return "conditions"
+        if request == "temperature" or request == "pressure" or request == "condition" or request == "humidity": return "conditions"
         elif request.startswith("forecast_"): return "forecast10day"
         elif request == "record_temperature" or request == "record_temperature_year" or request == "normal_temperature": return "almanac"
 
