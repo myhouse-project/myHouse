@@ -29,6 +29,10 @@
 <script src="web/pnotify/pnotify.custom.js"></script>
 <link rel="stylesheet" href="web/pnotify/pnotify.custom.min.css" />
 
+<!--  Touchspin -->
+<script src="web/touchspin/touchspin.min.js"></script>
+<link rel="stylesheet" href="web/touchspin/touchspin.min.css" />
+
 <!-- TitaToggle -->
 <link rel="stylesheet" href="web/titatoggle/titatoggle.min.css" />
 
@@ -288,7 +292,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				tag = "#"+widget["widget_id"];
 				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
 				// add the current measure header if requested
-				if ("current" in widget) add_current_measure_header(tag,widget)
+				if ("current" in widget || "current_icon" in widget) add_current_measure_header(tag,widget)
 				else add_empty_header(tag)
 				// load the requested widget
 				if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget);				
@@ -296,7 +300,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget);
 				else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget);
 				else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget);
-				else if (widget["type"] == "control_on_off") add_control_on_off_widget(tag+"_body",widget);
+				else if (widget["type"] == "input_on_off") add_input_on_off_widget(tag+"_body",widget);
 			}
 			// end of the row
 			$("#"+row).append('</div>');
@@ -458,22 +462,13 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 	}
 	
-	// add an on/off control widget
-	function add_control_on_off_widget(tag,widget) {
-		tag = tag.replace("#","")
-		// add the checkbox to the widget
-		split = split_actuator(widget,"actuator")
-		if (split == null) return;
-		module_id = split[0]
-		actuator_id = split[1];
-		//var sensor = get_sensor(module_id,actuator_id)
-		//var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
-		control_html = '<div class="checkbox checkbox-slider--b checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_control"><span></span></label></div>'
-		tag = "#"+tag
-		$(tag).html(control_html);
-		$(tag+"_control").change(function() {
-			console.log($(this).is(':checked'))
-		});
+	// add an on/off input widget
+	function add_input_on_off_widget(tag,widget) {
+		$(tag).html("")
+		$(tag).append('<div class="container">')
+		if ("checkbox" in widget) bind_html_control(tag,widget,"checkbox")
+		if ("input" in widget) bind_html_control(tag,widget,"input")
+		$(tag).append('</div>')
 	}
 	
 	/**
@@ -529,18 +524,84 @@ th.dt-center, td.dt-center { text-align: center; }
 		// add the summary body to it
 		$(tag).html(summary_body);
 		// add the summary icon
-		$(tag+"_icon").attr('src',widget["current_icon"]);
+		if ("current_icon" in widget) {
+			$(tag+"_icon").attr('src',widget["current_icon"]);
+		}
 		// set the current measure
-		set_html(tag+"_current",sensor_url+"/current");
-		$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
-		// set the timestamp
-		set_html(tag+"_timestamp",sensor_url+"/timestamp");
+		if ("current" in widget) {
+			set_html(tag+"_current",sensor_url+"/current");
+			$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
+			// set the timestamp
+			set_html(tag+"_timestamp",sensor_url+"/timestamp");
+		}
 	}
 	
 	// add an empty widget header
 	function add_empty_header(tag) {
 		tag = tag.replace("#","")
 		$("#"+tag).append('<div id="'+tag+'_body"></div>')
+	}
+	
+	// add and bind a html input
+	function bind_html_control(tag,widget,type) {
+		tag = tag.replace("#","")
+		// define the HTML inputs
+		checkbox_html = '<div class="row"><div class="col-sm-6 col-sm-offset-4"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
+		input_html = '<div class="row"><div class="col-sm-12"><div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div></div></div>'
+		tag = "#"+tag
+		// add the HTML of the requested input
+		if (type == "input") {
+			// add the input box
+			$(tag).append(input_html);
+			$(tag+"_"+type).TouchSpin({
+					min: 0,
+					max: 100,
+					step: 0.1,
+					decimals: 1,
+					boostat: 5,
+					maxboostedstep: 10,
+			});
+		} 
+		else if (type == "checkbox") {
+			// add the checkbox
+			$(tag).append(checkbox_html);	
+		}
+		// retrieve the sensor to control
+		split = split_sensor(widget,type)
+		if (split == null) return;
+		var module_id = split[0]
+		var group_id = split[1]
+		var sensor_id = split[2];
+		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		// set the current value
+		$.getJSON(hostname+sensor_url+"/current",function(tag) {
+			return function (data) {
+				if (data.length > 0) {
+					if (type == "input") $(tag).val(data[0])
+					if (type == "checkbox") {
+						if (data[0] == "on") $(tag).prop("checked",1);
+						if (data[0] == "off") $(tag).prop("checked",0);
+					}
+				}
+			};
+		}(tag+"_"+type));
+		// listen for changes
+		$(tag+"_"+type).change(function(tag,sensor_url,type) {
+			return function () {
+				// set the new value
+				if (type == "input") var new_value = $(tag).val();
+				if (type == "checkbox") var new_value = $(tag).is(':checked') ? "on" : "off";
+				$.getJSON(hostname+sensor_url+"/set/"+new_value,function(tag,new_value,type) {
+					return function (data) {
+						if (data != "OK") {
+							// handle errors
+							if (type == "input") log.warning("error setting value "+new_value+" to "+sensor_url);
+							if (type == "checkbox") $(tag).prop("checked", !$(tag).prop("checked"));
+						}
+					};
+				}(tag,new_value,type));
+			};
+		}(tag+"_"+type,sensor_url,type));
 	}
 	
 	
@@ -566,7 +627,7 @@ th.dt-center, td.dt-center { text-align: center; }
 						flags = [];
 						for (var i = 0; i < data.length; i++) {
 							if (data[i][1] == null) continue;
-							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="'+series['width']+'" heigth="'+series['heigth']+'" src="web/images/'+data[i][1]+'.png">'};
+							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="'+series['width']+'" heigth="'+series['heigth']+'" src="web/images/'+sensor['sensor_id']+"_"+data[i][1]+'.png">'};
 						}
 						series['data'] = flags;
 					}

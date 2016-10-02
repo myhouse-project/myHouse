@@ -85,7 +85,7 @@ def connect():
 	global connected
 	if connected: return
         if slack.rtm_connect():
-                log.info("bot "+bot_name+" online")
+                log.info("slack bot online ("+bot_name+")")
 		connected = True
 		return
 	log.error("unable to connect to slack")

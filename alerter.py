@@ -4,6 +4,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 import time
 import json
+import re
 
 import utils
 import db
@@ -14,6 +15,8 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 import notifications
+import actuators
+import sensors
 
 # variables
 rules = {
@@ -23,9 +26,12 @@ rules = {
 }
 
 # retrieve for the database the requested data
-def get_data(module_id,request):
+def get_data(request):
 	key,start,end = request.split(',')
-	key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+key
+	key_split = key.split(":")
+	# remove the module from the key
+	key = key.replace(key_split[0]+":","",1)	
+	key = conf["constants"]["db_schema"]["root"]+":"+key_split[0]+":sensors:"+key
 	return db.range(key,start=start,end=end,withscores=False)
 
 # evaluate if a condition is met
@@ -56,7 +62,7 @@ def is_sensor(statement):
 	return False
 
 # evaluate if the given alert has to trigger
-def run(module_id,rule_id,fire=True):
+def run(module_id,rule_id,notify=True):
 	module = utils.get_module(module_id)
 	for rule in module["rules"]:
 		# retrive the rule for the given rule_id
@@ -64,10 +70,22 @@ def run(module_id,rule_id,fire=True):
 		# for each statement retrieve the data
 		statements = {}
 		for statement in rule["statements"]:
-			statements[statement] = get_data(module_id,rule["statements"][statement]) if is_sensor(rule["statements"][statement]) else rule["statements"][statement]
+			if is_sensor(rule["statements"][statement]):
+				# check if the sensor exists
+				key,start,end =  rule["statements"][statement].split(',')
+	                        key_split = key.split(":")
+	                        sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
+	                        if sensor is None:
+	                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
+	                                continue
+				# retrieve and store the data
+				statements[statement] = get_data(rule["statements"][statement])
+			else: 
+				statements[statement] = rule["statements"][statement]
 		# for each condition check if it is true
 		evaluation = True
 		for condition in rule["conditions"]:
+			condition = re.sub(' +',' ',condition)
 			a,operator,b = condition.split(' ')
 			sub_evaluation = is_true(statements[a],operator,statements[b])
 			log.debug("["+module_id+"]["+rule_id+"] evaluating "+a+" ("+str(statements[a])+") "+operator+" "+b+" ("+str(statements[b])+"): "+str(sub_evaluation))
@@ -80,17 +98,20 @@ def run(module_id,rule_id,fire=True):
 		for statement in rule["statements"]:
 			value = statements[statement][0] if isinstance(statements[statement],list) else statements[statement]
 			# add the suffix
-			if is_sensor(rule["statements"][statement]):
-				key,start,end =  rule["statements"][statement].split(',')
-				key_split = key.split(":")
-				sensor = utils.get_sensor(module_id,key_split[0],key_split[1])
-				if sensor is None:
-					log.error("invalid sensor "+module_id+":"+key_split[0]+":"+key_split[1])
-					return
-				value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
+			if is_sensor(rule["statements"][statement]): value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
-		# fire the alert
-		if fire:
+		# run the action with an actuator
+		if "actuator" in rule:
+			actuator = utils.get_actuator(module_id,rule["actuator"])
+			if actuator is not None: actuators.run(module_id,actuator["actuator_id"],rule["actuator_value"])
+                # run the action with the sensor
+                if "sensor" in rule:
+		        split = rule["sensor"].split(":")
+		        # ensure the sensor exists
+		        sensor = get_sensor(split[0],split[1],split[2])
+			if sensor is not None: sensors.web_set(split[0],split[1],split[2],rule["sensor_value"])
+		# notify the alert
+		if notify:
 			db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
 			log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
 			notifications.notify(alert_text)	

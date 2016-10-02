@@ -59,7 +59,7 @@ def run():
 		                measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
 				measure["key"] = sensor["sensor_id"]
 				# strip out the measure from the value
-		                measure["value"] = float(value.replace(request,""))
+		                measure["value"] = utils.normalize(value.replace(request,""),conf["constants"]["formats"][sensor["format"]]["formatter"])
 		                measures.append(measure)
 				sensors.store(sensor,measures)
 

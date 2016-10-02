@@ -5,7 +5,6 @@ import json
 
 import utils
 import sensors
-import actuators
 import db
 import logger
 import config
@@ -56,10 +55,10 @@ def sensor_get_current_timestamp(module_id,group_id,sensor_id):
 def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	return sensors.web_get_data(module_id,group_id,sensor_id,timeframe,stat)
 
-# send a message to an actuator
-@app.route('/<module_id>/actuators/<actuator_id>/<message>')
-def actuator_send(module_id,actuator_id,message):
-        return actuators.web_send(module_id,actuator_id,message)
+# set the value of an input sensor
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/set/<value>')
+def sensor_set(module_id,group_id,sensor_id,value):
+        return sensors.web_set(module_id,group_id,sensor_id,value)
 
 # return the alerts
 @app.route('/alerts/<severity>/<timeframe>')

@@ -70,6 +70,7 @@ def parse(sensor):
 			# normalize the measures
 			if sensor["format"] == "temperature": measures[i]["value"] = utils.temperature_unit(measures[i]["value"])
 			if sensor["format"] == "length": measures[i]["value"] = utils.length_unit(measures[i]["value"])
+			if sensor["format"] == "pressure": measures[i]["value"] = utils.pressure_unit(measures[i]["value"])
 			measures[i]["value"] = utils.normalize(measures[i]["value"],conf["constants"]["formats"][sensor["format"]]["formatter"])
 		log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
@@ -167,20 +168,21 @@ def init_sensor(sensor,module_id,group_id):
         # add group and module if not there yet
         sensor['module_id'] = module_id
         sensor['group_id'] = group_id
-        # determine the plugin to use
-        sensor["plugin_module"] = get_plugin(sensor["plugin"]["name"])
-        if sensor["plugin_module"] is None:
-                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] plugin "+sensor["plugin"]["name"]+" not supported")
-                return None
         # define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
         sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
-        # define the cache location if cache is in use by the plugin
-	if hasattr(sensor["plugin_module"], 'cache_schema'):
-                if sensor["plugin_module"].cache_schema(sensor) is None:
-                        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")
-                        return None
-                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+sensor["plugin_module"].cache_schema(sensor)
+	if "plugin" in sensor:
+	        # determine the plugin to use
+	        sensor["plugin_module"] = get_plugin(sensor["plugin"]["name"])
+	        if sensor["plugin_module"] is None:
+	                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] plugin "+sensor["plugin"]["name"]+" not supported")
+	                return None
+	        # define the cache location if cache is in use by the plugin
+		if hasattr(sensor["plugin_module"], 'cache_schema'):
+	                if sensor["plugin_module"].cache_schema(sensor) is None:
+	                        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")
+	                        return None
+	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+sensor["plugin_module"].cache_schema(sensor)
 	return sensor
 
 # read or save the measure of a given sensor
@@ -263,7 +265,7 @@ def schedule_all():
 					if sensor["refresh_interval_min"] == 0: continue
 					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 					# run it now first
-					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+#					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
 	                                # then schedule it for each refresh interval
 	       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                	# schedule an expire job every day
@@ -276,11 +278,11 @@ def schedule_all():
 
 # return the latest read of a sensor for a web request
 def web_get_current(module_id,group_id,sensor_id):
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
         # return the latest measure
-        data = db.range(key,withscores=False,milliseconds=True)
-	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 	# if an image, decode it and return it
 	if sensor["format"] == "image": return base64.b64decode(data[0])
 	else: return json.dumps(data)
@@ -290,7 +292,7 @@ def web_get_current_image(module_id,group_id,sensor_id):
 	data = json.loads(web_get_current(module_id,group_id,sensor_id))
 	if len(data) == 0: return ""
 	filename = "nt_"+data[0] if utils.is_night() else data[0]
-	with open(conf["constants"]["web_dir"]+"/images/"+filename+".png",'r') as file:
+	with open(conf["constants"]["web_dir"]+"/images/"+sensor_id+"_"+str(filename)+".png",'r') as file:
                 data = file.read()
         file.close()
 	return data
@@ -305,6 +307,7 @@ def web_get_current_timestamp(module_id,group_id,sensor_id):
 
 # return the data of a requested sensor based on the timeframe and stat requested
 def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         data = []
         # get the parameters for the requested timeframe
         if timeframe == "realtime":
@@ -351,16 +354,35 @@ def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
         if stat == "range": requested_stat = ":min"
 	if timeframe == "realtime": requested_stat = ""
         # requeste the data
-        data = db.rangebyscore(key+requested_stat,start,end,withscores=withscores,milliseconds=True)
+        data = db.rangebyscore(key+requested_stat,start,end,withscores=withscores,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
         if stat == "range" and len(data) > 0:
                 # if a range is requested, ask for the max and combine the results
-                data_max = db.rangebyscore(key+":max",start,end,withscores=False,milliseconds=True)
+                data_max = db.rangebyscore(key+":max",start,end,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
                 for i, item in enumerate(data):
                         # ensure data_max has a correspondent value
                         if i < len(data_max):
                                 if (isinstance(item,list)): data[i].append(data_max[i])
                                 else: data.append(data_max[i])
         return json.dumps(data)
+
+# set a sensor value
+def web_set(module_id,group_id,sensor_id,value):
+	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
+        # ensure the group and sensor exist
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        sensor = init_sensor(sensor,module_id,group_id)
+        if sensor is None:
+                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
+                return json.dumps("KO")
+	# prepare the measure
+	measures = []
+	measure = {}
+	measure["key"] = sensor["sensor_id"]
+	measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
+	measures.append(measure)
+	# store it
+	store(sensor,measures)
+        return json.dumps("OK")
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':

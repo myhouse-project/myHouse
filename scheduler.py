@@ -13,7 +13,7 @@ conf = config.get_config()
 scheduler = BackgroundScheduler()
 
 # handle scheduler errors
-def error_listener(event):
+def scheduler_error(event):
 	job = scheduler.get_job(event.job_id)
 	msg = "unable to run scheduled task "+str(job.func_ref)+str(job.args)+": "
 	if event.exception:
@@ -38,7 +38,7 @@ scheduler_logger.addHandler(logger.get_console_logger(logger_name))
 scheduler_logger.addHandler(logger.get_file_logger(logger_name))
 
 # handle errors and exceptions
-scheduler.add_listener(error_listener, apscheduler.events.EVENT_JOB_MISSED | apscheduler.events.EVENT_JOB_ERROR)
+scheduler.add_listener(scheduler_error, apscheduler.events.EVENT_JOB_MISSED | apscheduler.events.EVENT_JOB_ERROR)
 
 # return the scheduler object
 def get_scheduler():

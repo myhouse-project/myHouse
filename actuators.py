@@ -91,11 +91,6 @@ def schedule_all():
 			log.debug("["+actuator['module_id']+"]["+actuator['actuator_id']+"] registering with push service "+actuator['plugin']['name'])
 			push_plugins[actuator['plugin']['name']].register_actuator(actuator)
 
-# send a message to an actuator from a web request
-def web_send(module_id,actuator_id,message):
-	run(module_id,actuator_id,message)
-	return json.dumps("OK")
-
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
 	if len(sys.argv) != 4: 
