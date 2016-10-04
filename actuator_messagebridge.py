@@ -61,7 +61,8 @@ def tx(actuator,data,service_message=False):
 
 # send an actuator to sleep
 def sleep(actuator):
-	tx(actuator,"SLEEP"+str(actuator["plugin"]["sleep_min"]).zfill(3)+"M",True)
+	time.sleep(2)
+	tx(actuator,"SLEEP"+str(actuator["plugin"]["sleep_min"]).zfill(3)+"M",False)
 
 # run the push service
 def run():
