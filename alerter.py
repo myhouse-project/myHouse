@@ -108,7 +108,7 @@ def run(module_id,rule_id,notify=True):
                 if "sensor" in rule:
 		        split = rule["sensor"].split(":")
 		        # ensure the sensor exists
-		        sensor = get_sensor(split[0],split[1],split[2])
+		        sensor = utils.get_sensor(split[0],split[1],split[2])
 			if sensor is not None: sensors.web_set(split[0],split[1],split[2],rule["sensor_value"])
 		# notify the alert
 		if notify:

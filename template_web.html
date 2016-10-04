@@ -578,10 +578,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			return function (data) {
 				if (data.length > 0) {
 					if (type == "input") $(tag).val(data[0])
-					if (type == "checkbox") {
-						if (data[0] == "on") $(tag).prop("checked",1);
-						if (data[0] == "off") $(tag).prop("checked",0);
-					}
+					if (type == "checkbox") $(tag).prop("checked",data[0]);
 				}
 			};
 		}(tag+"_"+type));
@@ -590,7 +587,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			return function () {
 				// set the new value
 				if (type == "input") var new_value = $(tag).val();
-				if (type == "checkbox") var new_value = $(tag).is(':checked') ? "on" : "off";
+				if (type == "checkbox") var new_value = $(tag).is(':checked') ? 1 : 0;
 				$.getJSON(hostname+sensor_url+"/set/"+new_value,function(tag,new_value,type) {
 					return function (data) {
 						if (data != "OK") {

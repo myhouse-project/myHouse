@@ -93,9 +93,10 @@ def is_number(s):
 
 # normalize the value. If the input is a number, keep a single digit, otherwise return a string
 def normalize(value,formatter=None):
+	if value == conf["constants"]["null"]: return conf["constants"]["null"]
 	if formatter is None:
 		return float("{0:.1f}".format(float(value))) if is_number(value) else str(value)
-	elif formatter == "int": return int(value)
+	elif formatter == "int": return int(float(value))
 	elif formatter == "float_1": return float("{0:.1f}".format(float(value)))
 	elif formatter == "float_2": return float("{0:.2f}".format(float(value)))
 	else: return str(value)

@@ -249,7 +249,7 @@ def schedule_all():
 				# initialize the sensor
 				sensor = init_sensor(sensor,module['module_id'],group['group_id'])
 				if sensor is None: continue
-				# skip sensors wihtout a plugin
+				# skip sensors without a plugin
 				if 'plugin' not in sensor: continue
 				if sensor['plugin']['name'] not in conf['plugins']['sensors']:
 					log.error("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] invalid plugin "+sensor['plugin']['name'])
@@ -265,7 +265,7 @@ def schedule_all():
 					if sensor["refresh_interval_min"] == 0: continue
 					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["refresh_interval_min"])+" minutes")
 					# run it now first
-#					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
 	                                # then schedule it for each refresh interval
 	       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["refresh_interval_min"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                	# schedule an expire job every day
@@ -291,7 +291,7 @@ def web_get_current(module_id,group_id,sensor_id):
 def web_get_current_image(module_id,group_id,sensor_id):
 	data = json.loads(web_get_current(module_id,group_id,sensor_id))
 	if len(data) == 0: return ""
-	filename = "nt_"+data[0] if utils.is_night() else data[0]
+	filename = "nt_"+str(data[0]) if utils.is_night() else str(data[0])
 	with open(conf["constants"]["web_dir"]+"/images/"+sensor_id+"_"+str(filename)+".png",'r') as file:
                 data = file.read()
         file.close()
