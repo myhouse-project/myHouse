@@ -187,6 +187,7 @@ def get_group(module_id,group_id):
 	if "sensor_groups" not in module: return None
 	for i in range(len(module["sensor_groups"])):
 		group = module["sensor_groups"][i]
+		group["module_id"] = module_id
 		if group["group_id"] == group_id: return group
 
 # return a given sensor
@@ -196,16 +197,9 @@ def get_sensor(module_id,group_id,sensor_id):
 	if "sensors" not in group: return None
 	for j in range (len(group["sensors"])):
 		sensor = group["sensors"][j]
+		sensor["module_id"] = module_id
+		sensor["group_id"] = group_id
 		if sensor["sensor_id"] == sensor_id: return sensor
-
-# return a given actuator
-def get_actuator(module_id,actuator_id):
-        module = get_module(module_id)
-        if module is None: return None
-        if "actuators" not in module: return None
-        for i in range(len(module["actuators"])):
-                actuator = module["actuators"][i]
-                if actuator["actuator_id"] == actuator_id: return actuator
 
 # split a given group string
 def split_group(widget,key):
@@ -234,21 +228,6 @@ def split_sensor(widget,key):
         sensor = get_sensor(split[0],split[1],split[2])
         if sensor is None:
         	log.warning("Unable to find sensor "+key+" for widget "+widget["widget_id"])
-                return None
-        return split
-
-# split a given actuator string
-def split_actuator(widget,key):
-        # ensure the key is in widget
-        if key not in widget:
-                log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
-                return None
-        # split it
-        split = widget[key].split(":")
-	# ensure the actuator exists
-        actuator = get_actuator(split[0],split[1])
-        if actuator is None:
-        	log.warning("Unable to find actuator "+key+" for widget "+widget["widget_id"])
                 return None
         return split
 

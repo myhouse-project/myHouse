@@ -15,7 +15,6 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 import notifications
-import actuators
 import sensors
 
 # variables
@@ -93,24 +92,30 @@ def run(module_id,rule_id,notify=True):
 		log.debug("["+module_id+"]["+rule_id+"] evaluates to "+str(evaluation))
 		# evaluate the conditions
 		if not evaluation: continue
-		# prepare the alert text
+		# alert has triggered, prepare the alert text
 		alert_text = rule["display_name"]
 		for statement in rule["statements"]:
 			value = statements[statement][0] if isinstance(statements[statement],list) else statements[statement]
 			# add the suffix
 			if is_sensor(rule["statements"][statement]): value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
-		# run the action with an actuator
-		if "actuator" in rule:
-			actuator = utils.get_actuator(module_id,rule["actuator"])
-			if actuator is not None: actuators.run(module_id,actuator["actuator_id"],rule["actuator_value"])
-                # run the action with the sensor
-                if "sensor" in rule:
-		        split = rule["sensor"].split(":")
-		        # ensure the sensor exists
-		        sensor = utils.get_sensor(split[0],split[1],split[2])
-			if sensor is not None: sensors.web_set(split[0],split[1],split[2],rule["sensor_value"])
-		# notify the alert
+		# execute the requested actions
+		if "actions" in rule:
+			# send a message to a sensor
+			if "send" in rule["actions"]:
+				key,value = rule["actions"]["send"].split(',')
+			        split = key.split(":")
+			        # ensure the sensor exists
+			        sensor = utils.get_sensor(split[0],split[1],split[2])
+				if sensor is not None: sensors.web_send(split[0],split[1],split[2],value)
+	                # set the value to a sensor
+	                if "set" in rule["actions"]:
+                                key,value = rule["actions"]["set"].split(',')
+                                split = key.split(":")
+			        # ensure the sensor exists
+			        sensor = utils.get_sensor(split[0],split[1],split[2])
+				if sensor is not None: sensors.web_set(split[0],split[1],split[2],value)
+		# notify about the alert
 		if notify:
 			db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
 			log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)

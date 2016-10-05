@@ -13,7 +13,7 @@ conf = config.get_config()
 
 # variables
 url = 'https://api.weather.com/v1/geocode/'
-plugin_conf = conf['plugins']['sensors']['weatherchannel']
+plugin_conf = conf['plugins']['weatherchannel']
 
 # poll the sensor
 def poll(sensor):
