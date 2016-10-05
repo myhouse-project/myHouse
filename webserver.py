@@ -60,6 +60,11 @@ def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 def sensor_set(module_id,group_id,sensor_id,value):
         return sensors.web_set(module_id,group_id,sensor_id,value)
 
+# send a message to a sensor
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/send/<value>')
+def sensor_send(module_id,group_id,sensor_id,value):
+        return sensors.web_send(module_id,group_id,sensor_id,value)
+
 # return the alerts
 @app.route('/alerts/<severity>/<timeframe>')
 def alerts_get_data(severity,timeframe):

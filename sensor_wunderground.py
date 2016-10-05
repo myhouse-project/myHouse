@@ -14,7 +14,7 @@ conf = config.get_config()
 # variables
 url = 'http://api.wunderground.com/api'
 forecast_max_entries = 5
-plugin_conf = conf['plugins']['sensors']['wunderground']
+plugin_conf = conf['plugins']['wunderground']
 
 # poll the sensor
 def poll(sensor):

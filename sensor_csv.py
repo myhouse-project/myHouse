@@ -9,7 +9,7 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-plugin_conf = conf['plugins']['sensors']['csv']
+plugin_conf = conf['plugins']['csv']
 
 # poll the sensor
 def poll(sensor):

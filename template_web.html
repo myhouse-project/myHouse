@@ -300,7 +300,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget);
 				else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget);
 				else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget);
-				else if (widget["type"] == "input_on_off") add_input_on_off_widget(tag+"_body",widget);
+				else if (widget["type"] == "form") add_form_widget(tag+"_body",widget);
 			}
 			// end of the row
 			$("#"+row).append('</div>');
@@ -462,12 +462,11 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 	}
 	
-	// add an on/off input widget
-	function add_input_on_off_widget(tag,widget) {
+	// add a custom form widget
+	function add_form_widget(tag,widget) {
 		$(tag).html("")
 		$(tag).append('<div class="container">')
-		if ("checkbox" in widget) bind_html_control(tag,widget,"checkbox")
-		if ("input" in widget) bind_html_control(tag,widget,"input")
+		for (var i = 0; i < widget["layout"].length; i++) add_html_control(tag,widget["layout"][i])
 		$(tag).append('</div>')
 	}
 	
@@ -542,8 +541,9 @@ th.dt-center, td.dt-center { text-align: center; }
 		$("#"+tag).append('<div id="'+tag+'_body"></div>')
 	}
 	
-	// add and bind a html input
-	function bind_html_control(tag,widget,type) {
+	// add a html control
+	function add_html_control(tag,widget) {
+		var type = widget["type"]
 		tag = tag.replace("#","")
 		// define the HTML inputs
 		checkbox_html = '<div class="row"><div class="col-sm-6 col-sm-offset-4"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
@@ -567,7 +567,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			$(tag).append(checkbox_html);	
 		}
 		// retrieve the sensor to control
-		split = split_sensor(widget,type)
+		split = split_sensor(widget,"set")
 		if (split == null) return;
 		var module_id = split[0]
 		var group_id = split[1]
@@ -580,6 +580,7 @@ th.dt-center, td.dt-center { text-align: center; }
 					if (type == "input") $(tag).val(data[0])
 					if (type == "checkbox") $(tag).prop("checked",data[0]);
 				}
+				else log.warning("invalid data received: "+data);
 			};
 		}(tag+"_"+type));
 		// listen for changes
@@ -597,6 +598,17 @@ th.dt-center, td.dt-center { text-align: center; }
 						}
 					};
 				}(tag,new_value,type));
+				// if there is a message to send
+				if ("send" in widget) {
+					$.getJSON(hostname+widget["send"]+new_value,function(tag,new_value,type) {
+					return function (data) {
+						if (data != "OK") {
+							// handle errors
+							log.warning("error sending "+new_value+" to "+sensor_url);
+						}
+					};
+					}(tag,new_value,type));
+				}
 			};
 		}(tag+"_"+type,sensor_url,type));
 	}
@@ -718,17 +730,6 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 	}
 	
-	// return a actuator data
-	function get_actuator(module_id,actuator_id) {
-		module = get_module(module_id);
-		if (module == null) return null;
-		if (!("actuators" in module)) return null;
-		for (var i = 0; i < module["actuators"].length; i++) {
-			var actuator = module["actuators"][i];
-			if (actuator["actuator_id"] == actuator_id) return actuator;
-		}
-	}
-	
 	// split group
 	function split_group(widget,key) {
 		// ensure the key is in widget
@@ -764,24 +765,6 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 		return split
 	}
-
-	// split actuator
-	function split_actuator(widget,key) {
-		// ensure the key is in widget
-		if (!(key in widget)) {
-			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
-			return null
-		}
-		// split it
-		split = widget[key].split(":")
-		// ensure the actuator exists
-		actuator = get_actuator(split[0],split[1])
-		if (actuator == null) {
-			log("warning","Unable to find actuator "+key+" for widget "+widget["widget_id"])
-			return null
-		}
-		return split
-	}	
 
 	// auto refresh the page
 	function auto_refresh(minutes) {

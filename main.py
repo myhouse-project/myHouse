@@ -7,7 +7,6 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
-import actuators
 import scheduler
 schedule = scheduler.get_scheduler()
 import webserver
@@ -24,8 +23,6 @@ def run():
 	schedule.start()
 	# schedule all sensors
 	sensors.schedule_all()
-	# schedule all actuators
-	actuators.schedule_all()
 	# schedule all alerts
 	alerter.schedule_all()
         # schedule all notifications
