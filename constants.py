@@ -80,6 +80,10 @@ constants = {
 			'formatter': "", 
 			'suffix': "",
 		},
+                'calendar': {
+                        'formatter': "",
+                        'suffix': "",
+                },
 	},
 	'charts': {
 		'master': {
