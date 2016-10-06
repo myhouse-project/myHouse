@@ -56,8 +56,9 @@ def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	return sensors.web_get_data(module_id,group_id,sensor_id,timeframe,stat)
 
 # set the value of an input sensor
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/set/<value>')
+@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/set/<value>',methods = ['GET', 'POST'])
 def sensor_set(module_id,group_id,sensor_id,value):
+	if request.method == 'POST': value = request.form["value"]
         return sensors.web_set(module_id,group_id,sensor_id,value)
 
 # send a message to a sensor

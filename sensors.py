@@ -115,7 +115,7 @@ def store(sensor,measures):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if needed
-		if sensor["format"] == "image": db.delete(key)
+		if sensor["format"] == "image" or sensor["format"] == "calendar": db.delete(key)
 		# check if there is already a value stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:

@@ -40,6 +40,13 @@
 <script src="web/datatables/datatables.min.js"></script>
 <link rel="stylesheet" href="web/datatables/datatables.min.css" />
 <link rel="stylesheet" href="web/datatables-plugins/dataTables.fontAwesome.css" />
+
+<!--  dhtmlxscheduler -->
+<script src="web/dhtmlxscheduler/dhtmlxscheduler.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_recurring.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_serialize.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_quick_info.js"></script>
+<link rel="stylesheet" href="web/dhtmlxscheduler/dhtmlxscheduler_flat.css" />
 	
 <!--  Highstock -->
 <script src="web/highstock/highstock-all.js"></script>
@@ -295,12 +302,13 @@ th.dt-center, td.dt-center { text-align: center; }
 				if ("current" in widget || "current_icon" in widget) add_current_measure_header(tag,widget)
 				else add_empty_header(tag)
 				// load the requested widget
-				if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget);				
+				if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget);	
 				else if (widget["type"] == "image") add_sensor_image(tag+"_body",widget);
 				else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget);
 				else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget);
 				else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget);
 				else if (widget["type"] == "form") add_form_widget(tag+"_body",widget);
+				else if (widget["type"] == "calendar") add_calender_widget(tag+"_body",widget);
 			}
 			// end of the row
 			$("#"+row).append('</div>');
@@ -468,6 +476,45 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(tag).append('<div class="container">')
 		for (var i = 0; i < widget["layout"].length; i++) add_html_control(tag,widget["layout"][i])
 		$(tag).append('</div>')
+	}
+	
+	// add a calendar widget
+	function add_calender_widget(tag,widget) {
+		var id = tag.replace("#","")
+		// add the calendar
+		$(tag).html('<div class="'+id+'_calendar" style="width:100%; height:700px;"></div>')
+		$("."+id+"_calendar").dhx_scheduler({
+			xml_date: "%Y-%m-%d %H:%i",
+			mode: "week",
+			details_on_create: true,
+			details_on_dblclick: true,
+			occurrence_timestamp_in_utc: true,
+			include_end_by: true,
+			repeat_precise: true,
+			touch: "force",
+			time_step: 30,
+		});
+		// load the events
+		split = split_sensor(widget,"set")
+		if (split == null) return;
+		var module_id = split[0]
+		var group_id = split[1]
+		var sensor_id = split[2];
+		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		$.getJSON(hostname+sensor_url+"/current", function (data) {
+			if (data.length > 0)  scheduler.parse(data[0],"json");
+		});
+		// listen for changes
+		var onChange = function(id,e){
+			// on change save the events
+			$.post(hostname+sensor_url+"/set/post", {value: scheduler.toJSON()}, function (data) {
+				if (data != '"OK"') log.warning("error saving calendar "+scheduler.toJSON()+" to "+sensor_url);
+			});
+		};
+		scheduler.attachEvent("onEventAdded",onChange);
+		scheduler.attachEvent("onEventChanged",onChange);
+		scheduler.attachEvent("onEventCopied",onChange);
+		scheduler.attachEvent("onEventDeleted",onChange);
 	}
 	
 	/**

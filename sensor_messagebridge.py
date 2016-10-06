@@ -98,6 +98,7 @@ def run():
 			# for each measure
 			for message in data["data"]:
 	                        if message == "STARTED":
+					if "__request__" not in node: continue
 					sensor = node["__request__"]
 	                                log.info("["+sensor["module_id"]+"]["+sensor["sensor_id"]+"] has just started")
         	                        # ACK a started message
@@ -105,6 +106,7 @@ def run():
 	                                # initialize
         	                        init(sensor)
 	                        elif message == "AWAKE":
+					if "__request__" not in node: continue
 					sensor = node["__request__"]
 	                                # send a message if there is something in the queue
 	                                if data["id"] in queue and len(queue[data["id"]]) > 0:
