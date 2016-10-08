@@ -349,17 +349,27 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// load a given widget
 	function load_widget(tag,widget) {
-		// add the current measure header if requested
-		if ("current" in widget || "current_icon" in widget) add_current_measure_header(tag,widget)
+		if (! ('layout' in widget)) return;
+		// search for the "current" layout
+		var current_layout = get_current_layout(widget)
+		// add the current layout if requested
+		if (current_layout != null) add_current_measure_header(tag,widget["layout"][current_layout])
 		else add_empty_header(tag)
-		// load the requested widget
-		if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget)
-		else if (widget["type"] == "image") add_sensor_image(tag+"_body",widget)
-		else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget)
-		else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget)
-		else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget)
-		else if (widget["type"] == "form") add_form_widget(tag+"_body",widget)
-		else if (widget["type"] == "calendar") add_calender_widget(tag+"_body",widget)	
+		// load each layout in the widget
+		for (var i = 0; i < widget["layout"].length; i++) {
+			layout = widget["layout"][i]
+			layout["current_layout"] = current_layout
+			if (layout["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",layout)
+			else if (layout["type"] == "image") add_sensor_image(tag+"_body",layout)
+			else if (layout["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",layout)
+			else if (layout["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",layout)
+			else if (layout["type"] == "alerts") add_alerts_widget(tag+"_body",layout)
+			else if (layout["type"] == "checkbox") add_html_control(tag+"_body",tag+"_body_"+i,layout)
+			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
+			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
+			else if (layout["type"] == "current") continue
+			else log("warning","unknown layout "+layout["type"])
+		}
 	}
 	
 	/**
@@ -367,14 +377,14 @@ th.dt-center, td.dt-center { text-align: center; }
 	**/
 	
 	// add a sensor summary widget
-	function add_sensor_group_summary_chart(tag,widget) {
-		split = split_group(widget,"group")
+	function add_sensor_group_summary_chart(tag,layout) {
+		split = split_group(layout,"group")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]; 
 		sensors = get_group(module_id,group_id)
 		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_sensor_group_summary"]);
-		if ("current" in widget) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
 		// for each sensor	
@@ -393,14 +403,14 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add a sensor timeline widget
-	function add_sensor_group_timeline_chart(tag,widget) {
-		split = split_group(widget,"group")
+	function add_sensor_group_timeline_chart(tag,layout) {
+		split = split_group(layout,"group")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1];
 		sensors = get_group(module_id,group_id)
-		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]]);
-		if ("current" in widget) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+layout["type"]+"_"+layout["timeframe"]]);
+		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts('StockChart',options);
 		var chart = $(tag).highcharts();
 		// for each sensor
@@ -411,14 +421,14 @@ th.dt-center, td.dt-center { text-align: center; }
 			// add each series, to the chart
 			for (var j = 0; j < sensor["series"].length; j++) {
 				series = sensor["series"][j]
-				add_series(chart,sensor_url+"/"+widget["timeframe"]+"/"+series["series_id"],sensor,j);
+				add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,j);
 			}
 		}
 	}	
 	
 	// add a generic sensor chart widget
-	function add_sensor_chart(tag,widget) {
-		split = split_sensor(widget,"sensor")
+	function add_sensor_chart(tag,layout) {
+		split = split_sensor(layout,"sensor")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]
@@ -426,8 +436,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		var sensor = get_sensor(module_id,group_id,sensor_id)
 		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 		// add the chart
-		var options = $.extend(true,{}, conf["constants"]["charts"][widget["type"]]);
-		if ("current" in widget) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		var options = $.extend(true,{}, conf["constants"]["charts"][layout["type"]]);
+		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		if (sensor["format"] == "percentage") options["yAxis"]["max"] = 100;
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
@@ -435,25 +445,25 @@ th.dt-center, td.dt-center { text-align: center; }
 		if (! ("series" in sensor)) return;
 		for (var i = 0; i < sensor["series"].length; i++) {
 			series = sensor["series"][i];
-			add_series(chart,sensor_url+"/"+widget["timeframe"]+"/"+series["series_id"],sensor,i);
+			add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,i);
 		}
 	}
 	
 	// add an image widget
-	function add_sensor_image(tag,widget) {
-		split = split_sensor(widget,"sensor")
+	function add_sensor_image(tag,layout) {
+		split = split_sensor(layout,"sensor")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]
 		sensor_id = split[2];
 		var sensor = get_sensor(module_id,group_id,sensor_id)
 		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
-		// add the image to the widget
+		// add the image to the layout
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
 	}
 	
 	// add an alert widget
-	function add_alerts_widget(tag,widget) {
+	function add_alerts_widget(tag,layout) {
 		// define the alerts table
 		var table_html = '<table id="alerts_table" class="table table-bordered table-striped">\
 							<thead>\
@@ -525,8 +535,80 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(tag).append('</div>')
 	}
 	
+	// add a html control
+	function add_html_control(body,tag,layout) {
+		var type = layout["type"]
+		tag = tag.replace("#","")
+		// define the HTML inputs
+		checkbox_html = '<div class="row"><div class="col-sm-6 col-sm-offset-4"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
+		input_html = '<div class="row"><div class="col-sm-12"><div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div></div></div>'
+		tag = "#"+tag
+		// add the HTML of the requested input
+		if (type == "input") {
+			// add the input box
+			$(body).append(input_html);
+			$(tag+"_"+type).TouchSpin({
+					min: 0,
+					max: 100,
+					step: 0.1,
+					decimals: 1,
+					boostat: 5,
+					maxboostedstep: 10,
+			});
+		} 
+		else if (type == "checkbox") {
+			// add the checkbox
+			$(body).append(checkbox_html);	
+		}
+		// retrieve the sensor to control
+		split = split_sensor(layout,"set")
+		if (split == null) return;
+		var module_id = split[0]
+		var group_id = split[1]
+		var sensor_id = split[2];
+		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		// set the current value
+		$.getJSON(hostname+sensor_url+"/current",function(tag) {
+			return function (data) {
+				if (data.length > 0) {
+					if (type == "input") $(tag).val(data[0])
+					if (type == "checkbox") $(tag).prop("checked",data[0]);
+				}
+				else log("warning","invalid data received: "+data);
+			};
+		}(tag+"_"+type));
+		// listen for changes
+		$(tag+"_"+type).change(function(tag,sensor_url,type) {
+			return function () {
+				// set the new value
+				if (type == "input") var new_value = $(tag).val();
+				if (type == "checkbox") var new_value = $(tag).is(':checked') ? 1 : 0;
+				$.getJSON(hostname+sensor_url+"/set/"+new_value,function(tag,new_value,type) {
+					return function (data) {
+						if (data != "OK") {
+							// handle errors
+							if (type == "input") log("warning","error setting value "+new_value+" to "+sensor_url);
+							if (type == "checkbox") $(tag).prop("checked", !$(tag).prop("checked"));
+						}
+					};
+				}(tag,new_value,type));
+				// if there is a message to send
+				if ("send" in layout) {
+					$.getJSON(hostname+layout["send"]+new_value,function(tag,new_value,type) {
+					return function (data) {
+						if (data != "OK") {
+							// handle errors
+							log("warning","error sending "+new_value+" to "+sensor_url);
+						}
+					};
+					}(tag,new_value,type));
+				}
+			};
+		}(tag+"_"+type,sensor_url,type));
+	}
+	
 	// add a calendar widget
-	function add_calender_widget(tag,widget) {
+	function add_calender_widget(tag,layout) {
 		var id = tag.replace("#","")
 		// add the calendar
 		$(tag).html('<div class="'+id+'_calendar" style="width:100%; height:700px;"></div>')
@@ -590,7 +672,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			return "Temperature:<b> "+event.text+"°C</b>";
 		}
 		// load the events
-		split = split_sensor(widget,"set")
+		split = split_sensor(layout,"set")
 		if (split == null) return;
 		var module_id = split[0]
 		var group_id = split[1]
@@ -611,7 +693,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			// save both the events for being displaying and for the analysis
 			value = JSON.stringify([scheduler.toJSON(),JSON.stringify(events)])
 			$.post(hostname+sensor_url+"/set/post", {value: value}, function (data) {
-				if (data != '"OK"') log.warning("error saving calendar "+value+" to "+sensor_url);
+				if (data != '"OK"') log("warning","error saving calendar "+value+" to "+sensor_url);
 			});
 		};
 		// on any change, save the calendar
@@ -656,9 +738,9 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add the current measure widget
-	function add_current_measure_header(tag,widget) {
+	function add_current_measure_header(tag,layout) {
 		tag = tag.replace("#","")
-		split = split_sensor(widget,"current")
+		split = split_sensor(layout,"sensor")
 		if (split == null) return;
 		module_id = split[0]
 		group_id = split[1]
@@ -680,11 +762,11 @@ th.dt-center, td.dt-center { text-align: center; }
 		// add the summary body to it
 		$(tag).html(summary_body);
 		// add the summary icon
-		if ("current_icon" in widget) {
-			$(tag+"_icon").attr('src',widget["current_icon"]);
+		if ("icon" in layout) {
+			$(tag+"_icon").attr('src',layout["icon"]);
 		}
 		// set the current measure
-		if ("current" in widget) {
+		if ("sensor" in layout) {
 			set_html(tag+"_current",sensor_url+"/current");
 			$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
 			// set the timestamp
@@ -692,84 +774,21 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 	}
 	
+	// get the current layout id
+	function get_current_layout(widget) {
+		var current_layout = -1
+		for (var i = 0; i < widget["layout"].length; i++) {
+			if (widget["layout"][i]["type"] == "current") current_layout = i
+		}
+		if (current_layout >= 0) return current_layout
+		else return null
+	}
+	
 	// add an empty widget header
 	function add_empty_header(tag) {
 		tag = tag.replace("#","")
 		$("#"+tag).append('<div id="'+tag+'_body"></div>')
 	}
-	
-	// add a html control
-	function add_html_control(body,tag,widget) {
-		var type = widget["type"]
-		tag = tag.replace("#","")
-		// define the HTML inputs
-		checkbox_html = '<div class="row"><div class="col-sm-6 col-sm-offset-4"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
-		input_html = '<div class="row"><div class="col-sm-12"><div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div></div></div>'
-		tag = "#"+tag
-		// add the HTML of the requested input
-		if (type == "input") {
-			// add the input box
-			$(body).append(input_html);
-			$(tag+"_"+type).TouchSpin({
-					min: 0,
-					max: 100,
-					step: 0.1,
-					decimals: 1,
-					boostat: 5,
-					maxboostedstep: 10,
-			});
-		} 
-		else if (type == "checkbox") {
-			// add the checkbox
-			$(body).append(checkbox_html);	
-		}
-		// retrieve the sensor to control
-		split = split_sensor(widget,"set")
-		if (split == null) return;
-		var module_id = split[0]
-		var group_id = split[1]
-		var sensor_id = split[2];
-		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
-		// set the current value
-		$.getJSON(hostname+sensor_url+"/current",function(tag) {
-			return function (data) {
-				if (data.length > 0) {
-					if (type == "input") $(tag).val(data[0])
-					if (type == "checkbox") $(tag).prop("checked",data[0]);
-				}
-				else log.warning("invalid data received: "+data);
-			};
-		}(tag+"_"+type));
-		// listen for changes
-		$(tag+"_"+type).change(function(tag,sensor_url,type) {
-			return function () {
-				// set the new value
-				if (type == "input") var new_value = $(tag).val();
-				if (type == "checkbox") var new_value = $(tag).is(':checked') ? 1 : 0;
-				$.getJSON(hostname+sensor_url+"/set/"+new_value,function(tag,new_value,type) {
-					return function (data) {
-						if (data != "OK") {
-							// handle errors
-							if (type == "input") log.warning("error setting value "+new_value+" to "+sensor_url);
-							if (type == "checkbox") $(tag).prop("checked", !$(tag).prop("checked"));
-						}
-					};
-				}(tag,new_value,type));
-				// if there is a message to send
-				if ("send" in widget) {
-					$.getJSON(hostname+widget["send"]+new_value,function(tag,new_value,type) {
-					return function (data) {
-						if (data != "OK") {
-							// handle errors
-							log.warning("error sending "+new_value+" to "+sensor_url);
-						}
-					};
-					}(tag,new_value,type));
-				}
-			};
-		}(tag+"_"+type,sensor_url,type));
-	}
-	
 	
 	/**
 		CHART HELPER FUNCTIONS

@@ -77,10 +77,10 @@ def is_true(a,operator,b):
 	# return the evaluation
 	return evaluation
 
-# determine if a statament is involving a sensor
-def is_sensor(statement):
-	if utils.is_number(statement): return False
-	if ',' in statement: return True
+# determine if a definition is involving a sensor
+def is_sensor(definition):
+	if utils.is_number(definition): return False
+	if ',' in definition: return True
 	return False
 
 # evaluate if the given alert has to trigger
@@ -89,61 +89,58 @@ def run(module_id,rule_id,notify=True):
 	for rule in module["rules"]:
 		# retrive the rule for the given rule_id
         	if rule["rule_id"] != rule_id: continue
-		# for each statement retrieve the data
-		statements = {}
+		# for each definition retrieve the data
+		definitions = {}
 		suffix = {}
-		for statement in rule["statements"]:
-			if is_sensor(rule["statements"][statement]):
+		for definition in rule["definitions"]:
+			if is_sensor(rule["definitions"][definition]):
 				# check if the sensor exists
-				key,start,end =  rule["statements"][statement].split(',')
+				key,start,end =  rule["definitions"][definition].split(',')
 	                        key_split = key.split(":")
 	                        sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
 	                        if sensor is None:
 	                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
 	                                continue
 				# retrieve and store the data
-				statements[statement] = get_data(sensor,rule["statements"][statement])
-				if len(statements[statement]) == 0: 
+				definitions[definition] = get_data(sensor,rule["definitions"][definition])
+				if len(definitions[definition]) == 0: 
 					log.error("invalid data from sensor "+key)
 					continue
 				# store the suffix
-				suffix[statement] = conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
+				suffix[definition] = conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			else: 
-				statements[statement] = rule["statements"][statement]
+				definitions[definition] = rule["definitions"][definition]
 		# for each condition check if it is true
 		evaluation = True
 		for condition in rule["conditions"]:
 			condition = re.sub(' +',' ',condition)
 			a,operator,b = condition.split(' ')
-			sub_evaluation = is_true(statements[a],operator,statements[b])
-			log.debug("["+module_id+"]["+rule_id+"] evaluating "+a+" ("+str(statements[a])+") "+operator+" "+b+" ("+str(statements[b])+"): "+str(sub_evaluation))
+			sub_evaluation = is_true(definitions[a],operator,definitions[b])
+			log.debug("["+module_id+"]["+rule_id+"] evaluating "+a+" ("+str(definitions[a])+") "+operator+" "+b+" ("+str(definitions[b])+"): "+str(sub_evaluation))
 			if not sub_evaluation: evaluation = False
 		log.debug("["+module_id+"]["+rule_id+"] evaluates to "+str(evaluation))
 		# evaluate the conditions
 		if not evaluation: continue
 		# alert has triggered, prepare the alert text
 		alert_text = rule["display_name"]
-		for statement in rule["statements"]:
-			value = statements[statement][0] if isinstance(statements[statement],list) else statements[statement]
+		for definition in rule["definitions"]:
+			value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]
 			# add the suffix
-			if is_sensor(rule["statements"][statement]): value = str(value)+suffix[statement]
-			alert_text = alert_text.replace("%"+statement+"%",str(value))
-		# send a message to a sensor
-		if "send" in rule:
-			for send in rule["send"]:
-				key,value = send.split(',')
-			        split = key.split(":")
-			        # ensure the sensor exists
-			        sensor = utils.get_sensor(split[0],split[1],split[2])
-				if sensor is not None: sensors.data_send(split[0],split[1],split[2],value)
-	        # set the value to a sensor
-	        if "set" in rule:
-			for set in rule["set"]:
-	                	key,value = set.split(',')
-	                        split = key.split(":")
-				# ensure the sensor exists
+			if is_sensor(rule["definitions"][definition]): value = str(value)+suffix[definition]
+			alert_text = alert_text.replace("%"+definition+"%",str(value))
+		# execute an action
+		if "actions" in rule:
+			for action in rule["actions"]:
+				what,key,value = action.split(',')
+				# ensure the target sensor exists
+				split = key.split(":")
 				sensor = utils.get_sensor(split[0],split[1],split[2])
-				if sensor is not None: sensors.data_set(split[0],split[1],split[2],value)
+				if sensor is None: 
+					log.warning("["+rule["rule_id"]+"] invalid sensor "+key)
+					continue
+				# execute the requested action
+				if what == "send": sensors.data_send(split[0],split[1],split[2],value)
+				elif what == "set": sensors.data_set(split[0],split[1],split[2],value)
 		# notify about the alert
 		if notify:
 			db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
