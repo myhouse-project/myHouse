@@ -58,12 +58,14 @@ def learn_config():
 			for i in range(len(module["widgets"])):
 				for j in range(len(module["widgets"][i])):
 					widget = module["widgets"][i][j]
-					if widget["type"] != "image" and not widget["type"].startswith("chart_") and not widget["type"].startswith("sensor_"): continue
-                			r["widget"] = copy.deepcopy(r["module"])
-		                        r["widget"].extend(["chart","widget",widget["widget_id"],widget["display_name"],widget["type"]])
-					context = module["module_id"]+"|"+widget["widget_id"]
-					# user requesting for a widget
-					kb[cleanup.sub(' '," ".join(r["widget"])).lower()] = "chart|"+context
+					for k in range(len(widget["layout"])):
+						layout = widget["layout"][k]
+						if layout["type"] != "image" and not layout["type"].startswith("chart_") and not layout["type"].startswith("sensor_"): continue
+	                			r["widget"] = copy.deepcopy(r["module"])
+			                        r["widget"].extend(["chart","widget",widget["widget_id"],widget["display_name"],widget["type"]])
+						context = module["module_id"]+"|"+widget["widget_id"]
+						# user requesting for a widget
+						kb[cleanup.sub(' '," ".join(r["widget"])).lower()] = "chart|"+context
 					
 # initialize the oracle		
 def init():
