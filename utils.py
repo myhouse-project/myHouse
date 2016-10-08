@@ -184,22 +184,22 @@ def get_module(module_id):
 def get_group(module_id,group_id):
 	module = get_module(module_id)
 	if module is None: return None
-	if "sensor_groups" not in module: return None
-	for i in range(len(module["sensor_groups"])):
-		group = module["sensor_groups"][i]
-		group["module_id"] = module_id
-		if group["group_id"] == group_id: return group
+	if "sensors" not in module: return None
+	sensors = []
+	for i in range(len(module["sensors"])):
+		sensor = module["sensors"][i]
+		sensor["module_id"] = module_id
+		if sensor["group_id"] == group_id: sensors.append(sensor)
+	return sensors
 
 # return a given sensor
 def get_sensor(module_id,group_id,sensor_id):
-	group = get_group(module_id,group_id)
-	if group is None: return None
-	if "sensors" not in group: return None
-	for j in range (len(group["sensors"])):
-		sensor = group["sensors"][j]
-		sensor["module_id"] = module_id
-		sensor["group_id"] = group_id
+	sensors = get_group(module_id,group_id)
+	if sensors is None: return None
+	for j in range (len(sensors)):
+		sensor = sensors[j]
 		if sensor["sensor_id"] == sensor_id: return sensor
+	return None
 
 # split a given group string
 def split_group(widget,key):
