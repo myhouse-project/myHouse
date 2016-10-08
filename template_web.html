@@ -46,6 +46,10 @@
 <script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_recurring.js"></script>
 <script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_serialize.js"></script>
 <script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_quick_info.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_key_nav.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_collision.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_minical.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_limit.js"></script>
 <link rel="stylesheet" href="web/dhtmlxscheduler/dhtmlxscheduler_flat.css" />
 	
 <!--  Highstock -->
@@ -64,6 +68,7 @@
 </head>
 <style>
 th.dt-center, td.dt-center { text-align: center; }
+.center-block {float: none !important}
 </style>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -156,6 +161,24 @@ th.dt-center, td.dt-center { text-align: center; }
 			</section>
 		</div>
 
+		<!-- =============================================== -->
+
+		<div class="modal fade" id="popup">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="popup_title"></h4>
+					</div>
+					<div class="modal-body">
+						<div class="row"><div class="col-md-8 center-block" id="popup_body"></div></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary pull-rigth" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<!-- =============================================== -->
 		<footer class="main-footer" id="footer">
@@ -298,21 +321,45 @@ th.dt-center, td.dt-center { text-align: center; }
 				// add an empty widget template
 				tag = "#"+widget["widget_id"];
 				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
-				// add the current measure header if requested
-				if ("current" in widget || "current_icon" in widget) add_current_measure_header(tag,widget)
-				else add_empty_header(tag)
-				// load the requested widget
-				if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget);	
-				else if (widget["type"] == "image") add_sensor_image(tag+"_body",widget);
-				else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget);
-				else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget);
-				else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget);
-				else if (widget["type"] == "form") add_form_widget(tag+"_body",widget);
-				else if (widget["type"] == "calendar") add_calender_widget(tag+"_body",widget);
+				// load the widget
+				load_widget(tag,widget)
+				// configure the refresh button
+				$(tag+"_refresh").click(function(tag,widget) {
+					return function () {
+						// clear the widget and load it
+						$(tag).html("");
+						load_widget(tag,widget)
+					};
+				}(tag,widget));
+				// configure the maximize button
+				$(tag+"_popup").click(function(tag,widget) {
+					return function () {
+						// clear the widget and load it
+						$("#popup_body").html("");
+						$("#popup_title").html(widget["display_name"]);
+						load_widget("#popup_body",widget)
+						$("#popup").modal()
+					};
+				}(tag,widget));				
 			}
 			// end of the row
 			$("#"+row).append('</div>');
 		}
+	}
+	
+	// load a given widget
+	function load_widget(tag,widget) {
+		// add the current measure header if requested
+		if ("current" in widget || "current_icon" in widget) add_current_measure_header(tag,widget)
+		else add_empty_header(tag)
+		// load the requested widget
+		if (widget["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",widget)
+		else if (widget["type"] == "image") add_sensor_image(tag+"_body",widget)
+		else if (widget["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",widget)
+		else if (widget["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",widget)
+		else if (widget["type"] == "alerts") add_alerts_widget(tag+"_body",widget)
+		else if (widget["type"] == "form") add_form_widget(tag+"_body",widget)
+		else if (widget["type"] == "calendar") add_calender_widget(tag+"_body",widget)	
 	}
 	
 	/**
@@ -474,7 +521,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	function add_form_widget(tag,widget) {
 		$(tag).html("")
 		$(tag).append('<div class="container">')
-		for (var i = 0; i < widget["layout"].length; i++) add_html_control(tag,widget["layout"][i])
+		for (var i = 0; i < widget["layout"].length; i++) add_html_control(tag,tag+"_"+i,widget["layout"][i])
 		$(tag).append('</div>')
 	}
 	
@@ -488,12 +535,60 @@ th.dt-center, td.dt-center { text-align: center; }
 			mode: "week",
 			details_on_create: true,
 			details_on_dblclick: true,
-			occurrence_timestamp_in_utc: true,
+			occurrence_timestamp_in_utc: false,
 			include_end_by: true,
 			repeat_precise: true,
 			touch: "force",
 			time_step: 30,
+			mark_now: true,
+			wide_form: false,
+			hour_size_px: 35,
+			scroll_hour: 6,
 		});
+		// configure the mini-calendars
+		scheduler.attachEvent("onLightbox", function(){
+			var lightbox_form = scheduler.getLightbox();
+			var inputs = lightbox_form.getElementsByTagName('input');
+			var date_of_end = null;
+			for (var i=0; i<inputs.length; i++) {
+				if (inputs[i].name == "date_of_end") {
+					date_of_end = inputs[i];
+					break;
+				}
+			}
+			var repeat_end_date_format = scheduler.date.date_to_str(scheduler.config.repeat_date);
+			var show_minical = function(){
+				if (scheduler.isCalendarVisible()) scheduler.destroyCalendar();
+				else {
+					scheduler.renderCalendar({
+						position:date_of_end,
+						date: scheduler.getState().date,
+						navigation:true,
+						handler:function(date,calendar) {
+							date_of_end.value = repeat_end_date_format(date);
+							scheduler.destroyCalendar()
+						}
+					});
+				}
+			};
+			date_of_end.onclick = show_minical;
+		});
+		// configure event details sections
+		scheduler.config.lightbox.sections = [
+			{ name:"description", height:30, map_to:"text", type:"textarea" , focus:true, },
+			{ name:"recurring", type:"recurring", map_to:"rec_type", button:"recurring" },
+			{ name:"time", height:72, type:"calendar_time", map_to:"auto" }
+		];
+		// configure default value
+		scheduler.attachEvent("onBeforeLightbox", function (id){
+			var event = scheduler.getEvent(id);
+			event.text = "25";
+			return true;
+		});
+		// configure the event template
+		scheduler.templates.event_text=function(start,end,event){
+			return "Temperature:<b> "+event.text+"°C</b>";
+		}
 		// load the events
 		split = split_sensor(widget,"set")
 		if (split == null) return;
@@ -502,15 +597,24 @@ th.dt-center, td.dt-center { text-align: center; }
 		var sensor_id = split[2];
 		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 		$.getJSON(hostname+sensor_url+"/current", function (data) {
+			data = JSON.parse(data)
 			if (data.length > 0)  scheduler.parse(data[0],"json");
 		});
 		// listen for changes
 		var onChange = function(id,e){
 			// on change save the events
-			$.post(hostname+sensor_url+"/set/post", {value: scheduler.toJSON()}, function (data) {
-				if (data != '"OK"') log.warning("error saving calendar "+scheduler.toJSON()+" to "+sensor_url);
+			var now = new Date()
+			var start = new Date(now.setDate(now.getDate() - 2))
+			var now = new Date()
+			var end = new Date(now.setMonth(now.getMonth() + 2))
+			var events = scheduler.getEvents(start,end)
+			// save both the events for being displaying and for the analysis
+			value = JSON.stringify([scheduler.toJSON(),JSON.stringify(events)])
+			$.post(hostname+sensor_url+"/set/post", {value: value}, function (data) {
+				if (data != '"OK"') log.warning("error saving calendar "+value+" to "+sensor_url);
 			});
 		};
+		// on any change, save the calendar
 		scheduler.attachEvent("onEventAdded",onChange);
 		scheduler.attachEvent("onEventChanged",onChange);
 		scheduler.attachEvent("onEventCopied",onChange);
@@ -530,6 +634,12 @@ th.dt-center, td.dt-center { text-align: center; }
 							<div class="box box-solid box-primary">\
 								<div class="box-header">\
 									<h3 class="box-title">#title#</h3>\
+									<div class="box-tools pull-right">\
+										<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>\
+										</button>\
+										<button id="#tag#_refresh" type="button" class="btn btn-box-tool"><i class="fa fa-refresh"></i></button>\
+										<button id="#tag#_popup" type="button" class="btn btn-box-tool" ><i class="fa fa-arrows-alt"></i></button>\
+									</div>\
 								</div>\
 								<div class="box-body no-padding box-primary">\
 								    <div class="box-body" id="#tag#" align="center">\
@@ -589,7 +699,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add a html control
-	function add_html_control(tag,widget) {
+	function add_html_control(body,tag,widget) {
 		var type = widget["type"]
 		tag = tag.replace("#","")
 		// define the HTML inputs
@@ -599,7 +709,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		// add the HTML of the requested input
 		if (type == "input") {
 			// add the input box
-			$(tag).append(input_html);
+			$(body).append(input_html);
 			$(tag+"_"+type).TouchSpin({
 					min: 0,
 					max: 100,
@@ -611,7 +721,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		} 
 		else if (type == "checkbox") {
 			// add the checkbox
-			$(tag).append(checkbox_html);	
+			$(body).append(checkbox_html);	
 		}
 		// retrieve the sensor to control
 		split = split_sensor(widget,"set")

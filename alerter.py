@@ -4,6 +4,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 import time
 import json
+import datetime
 import re
 
 import utils
@@ -24,14 +25,36 @@ rules = {
 	"minute": [],
 }
 
+
+# for a calendar parse the data and return the value
+def parse_calendar(data):
+	# the calendar string is at position 0
+	if len(data) != 1: return
+	data = json.loads(data[0])
+	# the list of events is at position 1
+	if len(data) != 2: return
+	events = json.loads(data[1])
+	for event in events:
+		# generate the timestamp of start and end date
+                start_date = datetime.datetime.strptime(event["start_date"],"%Y-%m-%dT%H:%M:%S.000Z")
+                start_timestamp = utils.timezone(utils.timezone(int(time.mktime(start_date.timetuple()))))
+                end_date = datetime.datetime.strptime(event["end_date"],"%Y-%m-%dT%H:%M:%S.000Z")
+                end_timestamp = utils.timezone(utils.timezone(int(time.mktime(end_date.timetuple()))))
+		now = utils.now()
+		# check if we are within an event
+		if now > start_timestamp and now < end_timestamp: return [event["text"]]
+	return [0]
+
 # retrieve for the database the requested data
-def get_data(request):
+def get_data(sensor,request):
 	key,start,end = request.split(',')
 	key_split = key.split(":")
 	# remove the module from the key
 	key = key.replace(key_split[0]+":","",1)	
 	key = conf["constants"]["db_schema"]["root"]+":"+key_split[0]+":sensors:"+key
-	return db.range(key,start=start,end=end,withscores=False)
+	data = db.range(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+	if sensor["format"] == "calendar": data = parse_calendar(data)
+	return data
 
 # evaluate if a condition is met
 def is_true(a,operator,b):
@@ -47,9 +70,9 @@ def is_true(a,operator,b):
 		elif operator == "!=":
 			if value == a: evaluation = False
 		elif operator == ">":
-			if value >= a: evaluation = False
+			if float(value) >= float(a): evaluation = False
 		elif operator == "<":
-			if value <= a: evaluation = False
+			if float(value) <= float(a): evaluation = False
 		else: evaluation = False
 	# return the evaluation
 	return evaluation
@@ -68,6 +91,7 @@ def run(module_id,rule_id,notify=True):
         	if rule["rule_id"] != rule_id: continue
 		# for each statement retrieve the data
 		statements = {}
+		suffix = {}
 		for statement in rule["statements"]:
 			if is_sensor(rule["statements"][statement]):
 				# check if the sensor exists
@@ -78,7 +102,12 @@ def run(module_id,rule_id,notify=True):
 	                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
 	                                continue
 				# retrieve and store the data
-				statements[statement] = get_data(rule["statements"][statement])
+				statements[statement] = get_data(sensor,rule["statements"][statement])
+				if len(statements[statement]) == 0: 
+					log.error("invalid data from sensor "+key)
+					continue
+				# store the suffix
+				suffix[statement] = conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 			else: 
 				statements[statement] = rule["statements"][statement]
 		# for each condition check if it is true
@@ -97,23 +126,23 @@ def run(module_id,rule_id,notify=True):
 		for statement in rule["statements"]:
 			value = statements[statement][0] if isinstance(statements[statement],list) else statements[statement]
 			# add the suffix
-			if is_sensor(rule["statements"][statement]): value = str(value)+conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
+			if is_sensor(rule["statements"][statement]): value = str(value)+suffix[statement]
 			alert_text = alert_text.replace("%"+statement+"%",str(value))
-		# execute the requested actions
-		if "actions" in rule:
-			# send a message to a sensor
-			if "send" in rule["actions"]:
-				key,value = rule["actions"]["send"].split(',')
+		# send a message to a sensor
+		if "send" in rule:
+			for send in rule["send"]:
+				key,value = send.split(',')
 			        split = key.split(":")
 			        # ensure the sensor exists
 			        sensor = utils.get_sensor(split[0],split[1],split[2])
 				if sensor is not None: sensors.web_send(split[0],split[1],split[2],value)
-	                # set the value to a sensor
-	                if "set" in rule["actions"]:
-                                key,value = rule["actions"]["set"].split(',')
-                                split = key.split(":")
-			        # ensure the sensor exists
-			        sensor = utils.get_sensor(split[0],split[1],split[2])
+	        # set the value to a sensor
+	        if "set" in rule:
+			for set in rule["set"]:
+	                	key,value = set.split(',')
+	                        split = key.split(":")
+				# ensure the sensor exists
+				sensor = utils.get_sensor(split[0],split[1],split[2])
 				if sensor is not None: sensors.web_set(split[0],split[1],split[2],value)
 		# notify about the alert
 		if notify:

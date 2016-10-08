@@ -71,6 +71,15 @@ def sensor_send(module_id,group_id,sensor_id,value):
 def alerts_get_data(severity,timeframe):
 	return alerter.web_get_data(severity,timeframe)
 
+# handle errors
+@app.errorhandler(404)
+@app.errorhandler(500)
+@app.errorhandler(Exception)
+def error(error):
+	message = request.path+": "+str(error)
+	log.warning(message)
+	return message
+
 # run the web server
 def run():
 	# configure logging
