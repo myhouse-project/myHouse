@@ -14,21 +14,22 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 
-# nodes[<node_id>][<request>] = sensor
+# nodes[<node_id>][<measure>] = sensor
 # e.g. nodes["HA"]["TEMP"]
 nodes = {}
 queue = {}
 plugin_conf = conf['plugins']['messagebridge']
+default_measure = "__measure__"
 
 # register a new sensor against this plugin
 def register(sensor):
 	if sensor['plugin']['name'] != 'messagebridge': return
 	if sensor['plugin']['node_id'] not in nodes: nodes[sensor['plugin']['node_id']] = {}
-	if "request" not in sensor['plugin']: sensor['plugin']['request'] = "__request__"
-	if sensor['plugin']['request'] not in nodes[sensor['plugin']['node_id']]: nodes[sensor['plugin']['node_id']][sensor['plugin']['request']] = {}
+	if "measure" not in sensor['plugin']: sensor['plugin']['measure'] = default_measure
+	if sensor['plugin']['measure'] not in nodes[sensor['plugin']['node_id']]: nodes[sensor['plugin']['node_id']][sensor['plugin']['measure']] = {}
 	# add the sensor to the sensors list
-	nodes[sensor['plugin']['node_id']][sensor['plugin']['request']] = sensor
-	log.debug("["+__name__+"]["+sensor['plugin']['node_id']+"]["+sensor['plugin']['request']+"] registered sensor "+sensor['module_id']+":"+sensor['sensor_id']+":"+sensor['sensor_id'])
+	nodes[sensor['plugin']['node_id']][sensor['plugin']['measure']] = sensor
+	log.debug("["+__name__+"]["+sensor['plugin']['node_id']+"]["+sensor['plugin']['measure']+"] registered sensor "+sensor['module_id']+":"+sensor['sensor_id']+":"+sensor['sensor_id'])
 	# initialize the sensor
 	if "sleep_min" in sensor["plugin"]: init(sensor)
 
@@ -98,37 +99,36 @@ def run():
 			# for each measure
 			for message in data["data"]:
 	                        if message == "STARTED":
-					if "__request__" not in node: continue
-					sensor = node["__request__"]
+					if default_measure not in node: continue
+					sensor = node[default_measure]
 	                                log.info("["+sensor["module_id"]+"]["+sensor["sensor_id"]+"] has just started")
         	                        # ACK a started message
 	                                tx(sensor,"ACK",True)
 	                                # initialize
         	                        init(sensor)
-	                        elif message == "AWAKE":
-					if "__request__" not in node: continue
-					sensor = node["__request__"]
+	                        if message == "AWAKE":
+					if default_measure not in node: continue
+					sensor = node[default_measure]
 	                                # send a message if there is something in the queue
 	                                if data["id"] in queue and len(queue[data["id"]]) > 0:
 	                                        tx(sensor,queue[data["id"]])
 	                                        queue[data["id"]] = []
 	                                # put it to sleep again
 	                                sleep(sensor)
-				else: 
-					# other messages can be a measure from the sensor
-					measures = []
-					# for each registered request for this node_id
-					for request,sensor in node.iteritems():
-						# skip if not a registered measure
-						if not message.startswith(request): continue
-						measure = {}
-						# generate the timestamp
-				                date = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
-				                measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
-						measure["key"] = sensor["sensor_id"]
-						# strip out the measure from the value
-				                measure["value"] = utils.normalize(message.replace(request,""),conf["constants"]["formats"][sensor["format"]]["formatter"])
-				                measures.append(measure)
-						sensors.store(sensor,measures)
+				# other messages can be a measure from the sensor
+				measures = []
+				# for each registered measure for this node_id
+				for measure,sensor in node.iteritems():
+					# skip if not a registered measure
+					if not message.startswith(measure): continue
+					measure_data = {}
+					# generate the timestamp
+			                date = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
+			                measure_data["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
+					measure_data["key"] = sensor["sensor_id"]
+					# strip out the measure from the value
+			                measure_data["value"] = utils.normalize(message.replace(measure,""),conf["constants"]["formats"][sensor["format"]]["formatter"])
+			                measures.append(measure_data)
+					sensors.store(sensor,measures)
 		except Exception,e:
 			log.warning("unable to parse "+str(data)+": "+utils.get_exception(e))
