@@ -34,13 +34,13 @@ def parse(sensor,data):
 		value = entry[2]
 		# skip if the entry is not related to the node_id and measure we are looking for
 		if node_id != sensor['plugin']['node_id']: continue
-		if not value.startswith(sensor['plugin']['request']): continue
+		if not value.startswith(sensor['plugin']['measure']): continue
 		# generate the timestamp
 		date = datetime.datetime.strptime(entry[0],"%d %b %Y %H:%M:%S +0000")
 		measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
 		measure["key"] = sensor["sensor_id"]
 		# strip out the measure from the value
-		measure["value"] = float(value.replace(sensor['plugin']['request'],""))
+		measure["value"] = float(value.replace(sensor['plugin']['measure'],""))
 		measures.append(measure)
         return measures
 

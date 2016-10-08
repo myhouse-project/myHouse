@@ -16,12 +16,12 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 
-import sensor_wunderground
-import sensor_weatherchannel
-import sensor_linux
-import sensor_http
-import sensor_csv
-import sensor_messagebridge
+import plugin_wunderground
+import plugin_weatherchannel
+import plugin_linux
+import plugin_http
+import plugin_csv
+import plugin_messagebridge
 
 # variables
 plugins = {}
@@ -32,12 +32,12 @@ def init_plugins():
         for name in conf["plugins"]:
                 # get the plugin and store it
 	        plugin = None
-	        if name == "wunderground": plugin = sensor_wunderground
-	        elif name == "weatherchannel": plugin = sensor_weatherchannel
-	        elif name == "linux": plugin = sensor_linux
-	        elif name == "http": plugin = sensor_http
-	        elif name == "csv": plugin = sensor_csv
-	        elif name == "messagebridge": plugin = sensor_messagebridge
+	        if name == "wunderground": plugin = plugin_wunderground
+	        elif name == "weatherchannel": plugin = plugin_weatherchannel
+	        elif name == "linux": plugin = plugin_linux
+	        elif name == "http": plugin = plugin_http
+	        elif name == "csv": plugin = plugin_csv
+	        elif name == "messagebridge": plugin = plugin_messagebridge
                 if plugin is None:
                         log.error("plugin "+name+" not supported")
                         continue
@@ -190,7 +190,7 @@ def init_sensor(sensor,module_id,group_id):
 	        # define the cache location if cache is in use by the plugin
 		if hasattr(plugins[sensor["plugin"]["name"]], 'cache_schema'):
 	                if plugins[sensor["plugin"]["name"]].cache_schema(sensor) is None:
-	                        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid request")
+	                        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid measure")
 	                        return None
 	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+plugins[sensor["plugin"]["name"]].cache_schema(sensor)
 	return sensor
@@ -267,7 +267,7 @@ def schedule_all():
                               	        schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 
 # return the latest read of a sensor for a web request
-def web_get_current(module_id,group_id,sensor_id):
+def data_get_current(module_id,group_id,sensor_id):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
@@ -278,8 +278,8 @@ def web_get_current(module_id,group_id,sensor_id):
 	else: return json.dumps(data)
 
 # return the latest image of a sensor for a web request
-def web_get_current_image(module_id,group_id,sensor_id):
-	data = json.loads(web_get_current(module_id,group_id,sensor_id))
+def data_get_current_image(module_id,group_id,sensor_id):
+	data = json.loads(data_get_current(module_id,group_id,sensor_id))
 	if len(data) == 0: return ""
 	filename = "nt_"+str(data[0]) if utils.is_night() else str(data[0])
 	with open(conf["constants"]["web_dir"]+"/images/"+sensor_id+"_"+str(filename)+".png",'r') as file:
@@ -288,7 +288,7 @@ def web_get_current_image(module_id,group_id,sensor_id):
 	return data
 
 # return the time difference between now and the latest measure
-def web_get_current_timestamp(module_id,group_id,sensor_id):
+def data_get_current_timestamp(module_id,group_id,sensor_id):
         data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
@@ -296,7 +296,7 @@ def web_get_current_timestamp(module_id,group_id,sensor_id):
 	else: return json.dumps(data)
 
 # return the data of a requested sensor based on the timeframe and stat requested
-def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
+def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         data = []
         # get the parameters for the requested timeframe
@@ -343,7 +343,7 @@ def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
         # if a range is requested, start asking for the min
         if stat == "range": requested_stat = ":min"
 	if timeframe == "realtime": requested_stat = ""
-        # requeste the data
+        # request the data
         data = db.rangebyscore(key+requested_stat,start,end,withscores=withscores,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
         if stat == "range" and len(data) > 0:
                 # if a range is requested, ask for the max and combine the results
@@ -356,7 +356,7 @@ def web_get_data(module_id,group_id,sensor_id,timeframe,stat):
         return json.dumps(data)
 
 # set a sensor value
-def web_set(module_id,group_id,sensor_id,value):
+def data_set(module_id,group_id,sensor_id,value):
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
         # ensure the group and sensor exist
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
@@ -375,7 +375,7 @@ def web_set(module_id,group_id,sensor_id,value):
         return json.dumps("OK")
 
 # send a message to a sensor
-def web_send(module_id,group_id,sensor_id,value):
+def data_send(module_id,group_id,sensor_id,value):
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] sending message: "+str(value))
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         if sensor is None:

@@ -135,7 +135,7 @@ def run(module_id,rule_id,notify=True):
 			        split = key.split(":")
 			        # ensure the sensor exists
 			        sensor = utils.get_sensor(split[0],split[1],split[2])
-				if sensor is not None: sensors.web_send(split[0],split[1],split[2],value)
+				if sensor is not None: sensors.data_send(split[0],split[1],split[2],value)
 	        # set the value to a sensor
 	        if "set" in rule:
 			for set in rule["set"]:
@@ -143,7 +143,7 @@ def run(module_id,rule_id,notify=True):
 	                        split = key.split(":")
 				# ensure the sensor exists
 				sensor = utils.get_sensor(split[0],split[1],split[2])
-				if sensor is not None: sensors.web_set(split[0],split[1],split[2],value)
+				if sensor is not None: sensors.data_set(split[0],split[1],split[2],value)
 		# notify about the alert
 		if notify:
 			db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
@@ -175,7 +175,7 @@ def schedule_all():
 	schedule.add_job(run_schedule,'cron',hour="1",args=["day"])
 
 # return the latest alerts for a web request
-def web_get_data(severity,timeframe):
+def data_get_alerts(severity,timeframe):
 	start = utils.recent()
 	if timeframe == "recent": start = utils.recent()
 	if timeframe == "history": start = utils.history()
