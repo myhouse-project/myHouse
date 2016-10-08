@@ -173,24 +173,22 @@ def expire(sensor):
 	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
 
 # initialize a sensor data structure
-def init_sensor(sensor,module_id,group_id):
+def init_sensor(sensor,module_id):
 	# initialize a new data structure
 	sensor = copy.deepcopy(sensor)
-        # add group and module
         sensor['module_id'] = module_id
-        sensor['group_id'] = group_id
         # define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
         sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 	if "plugin" in sensor:
 		# ensure the sensor is using a valid plugin
 	        if sensor["plugin"]["name"] not in plugins:
-	                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] plugin "+sensor["plugin"]["name"]+" not supported")
+	                log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] plugin "+sensor["plugin"]["name"]+" not supported")
 	                return None
 	        # define the cache location if cache is in use by the plugin
 		if hasattr(plugins[sensor["plugin"]["name"]], 'cache_schema'):
 	                if plugins[sensor["plugin"]["name"]].cache_schema(sensor) is None:
-	                        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] invalid measure")
+	                        log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] invalid measure")
 	                        return None
 	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+plugins[sensor["plugin"]["name"]].cache_schema(sensor)
 	return sensor
@@ -199,7 +197,7 @@ def init_sensor(sensor,module_id,group_id):
 def run(module_id,group_id,sensor_id,action):
 	# ensure the group and sensor exist
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor = init_sensor(sensor,module_id,group_id)
+	sensor = init_sensor(sensor,module_id)
 	if sensor is None: 
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found, skipping it")
 		return
@@ -233,38 +231,34 @@ def schedule_all():
         # for each module
         for module in conf["modules"]:
 		if not module["enabled"]: continue
-		# skip modules without sensor groups
-		if "sensor_groups" not in module: continue
-	        # for each group of sensors
-                for group in module["sensor_groups"]:
-			# skip group without sensors
-			if "sensors" not in group: continue
-			for sensor in group["sensors"]:
-				# initialize the sensor data structure
-				sensor = init_sensor(sensor,module['module_id'],group['group_id'])
-				if sensor is None: continue
-				# skip sensors without a plugin
-				if 'plugin' not in sensor: continue
-				# the plugin needs sensors to be registered with it first
-				if hasattr(plugins[sensor['plugin']['name']],'register'):
-					# register the sensor
-					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with plugin service "+sensor['plugin']['name'])
-					plugins[sensor['plugin']['name']].register(sensor)
-				# the plugin needs the sensor to be polled
-				if "polling_interval" in sensor["plugin"]:
-					# schedule polling
-					log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["plugin"]["polling_interval"])+" minutes")
-					# run it now first
-#					schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
-	                                # then schedule it for each refresh interval
-	       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["plugin"]["polling_interval"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
-                               	# schedule an expire job every day
-                                schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
-				# schedule a summarize job every hour and every day if needed
-                                if "calculate_avg" in sensor and sensor["calculate_avg"]:
-               	                        log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
-                      	                schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
-                              	        schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
+		# skip group without sensors
+		if "sensors" not in module: continue
+		for sensor in module["sensors"]:
+			# initialize the sensor data structure
+			sensor = init_sensor(sensor,module['module_id'])
+			if sensor is None: continue
+			# skip sensors without a plugin
+			if 'plugin' not in sensor: continue
+			# the plugin needs sensors to be registered with it first
+			if hasattr(plugins[sensor['plugin']['name']],'register'):
+				# register the sensor
+				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with plugin service "+sensor['plugin']['name'])
+				plugins[sensor['plugin']['name']].register(sensor)
+			# the plugin needs the sensor to be polled
+			if "polling_interval" in sensor["plugin"]:
+				# schedule polling
+				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["plugin"]["polling_interval"])+" minutes")
+				# run it now first
+				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+                                # then schedule it for each refresh interval
+       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["plugin"]["polling_interval"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+                        # schedule an expire job every day
+                        schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
+			# schedule a summarize job every hour and every day if needed
+                        if "calculate_avg" in sensor and sensor["calculate_avg"]:
+              	        	log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
+                     	        schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
+                             	schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 
 # return the latest read of a sensor for a web request
 def data_get_current(module_id,group_id,sensor_id):
@@ -360,7 +354,7 @@ def data_set(module_id,group_id,sensor_id,value):
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
         # ensure the group and sensor exist
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        sensor = init_sensor(sensor,module_id,group_id)
+        sensor = init_sensor(sensor,module_id)
         if sensor is None:
                 log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
                 return json.dumps("KO")

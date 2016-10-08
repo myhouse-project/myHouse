@@ -76,11 +76,11 @@ def add_sensor_group_summary_chart(widget):
 	if split is None: return
 	module_id = split[0]
 	group_id = split[1] 
-	group = utils.get_group(module_id,group_id)
+	sensors = utils.get_group(module_id,group_id)
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_sensor_group_summary"])
-	for i in range(len(group["sensors"])):
-		sensor = group["sensors"][i];
-		sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
+	for i in range(len(sensors)):
+		sensor = sensors[i];
+		sensor_url = module_id+"/sensors/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		# skip flags
 		if sensor['format'] == 'string': continue
 		# add the sensor to the xAxis
@@ -98,12 +98,12 @@ def add_sensor_group_timeline_chart(widget):
         if split is None: return
         module_id = split[0]
         group_id = split[1]
-        group = utils.get_group(module_id,group_id)
+        sensors = utils.get_group(module_id,group_id)
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+widget["type"]+"_"+widget["timeframe"]])
 	# for each sensor
-	for i in range(len(group["sensors"])):
-		sensor = group["sensors"][i]
-		sensor_url = module_id+"/sensors/"+group["group_id"]+"/"+sensor["sensor_id"]
+	for i in range(len(sensors)):
+		sensor = sensors[i]
+		sensor_url = module_id+"/sensors/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		if "series" not in sensor: continue
 		# add each series, to the chart
 		for j in range(len(sensor["series"])):
