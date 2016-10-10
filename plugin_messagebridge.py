@@ -41,11 +41,11 @@ def init(sensor):
         sleep(sensor)
 
 # send a message to the sensor
-def send(sensor,data):
+def send(sensor,data,force=False):
         # retrieve the sensor
         node_id = sensor["plugin"]["node_id"]
         if node_id not in nodes: return
-        if "sleep_min" not in sensor["plugin"]:
+        if "sleep_min" not in sensor["plugin"] or force:
                 # send the message directly
                 tx(sensor,data)
         else:

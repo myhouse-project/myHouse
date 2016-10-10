@@ -179,7 +179,7 @@ def init_sensor(sensor,module_id):
 	sensor = copy.deepcopy(sensor)
         sensor['module_id'] = module_id
         # define the database schema
-        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
+        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
         sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 	if "plugin" in sensor:
 		# ensure the sensor is using a valid plugin
@@ -265,7 +265,7 @@ def schedule_all():
 def data_get_current(module_id,group_id,sensor_id):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         data = []
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 	# if an image, decode it and return it
@@ -286,7 +286,7 @@ def data_get_current_image(module_id,group_id,sensor_id,night_day):
 # return the time difference between now and the latest measure
 def data_get_current_timestamp(module_id,group_id,sensor_id):
         data = []
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
 	if len(data) > 0: return json.dumps([utils.timestamp_difference(utils.now(),data[0][0]/1000)])
 	else: return json.dumps(data)
@@ -334,7 +334,7 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
                 withscores = True
         else: return data
         # define the key to request
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":sensors:"+group_id+":"+sensor_id+range
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id+range
         requested_stat = ":"+stat
         # if a range is requested, start asking for the min
         if stat == "range": requested_stat = ":min"
@@ -371,13 +371,13 @@ def data_set(module_id,group_id,sensor_id,value):
         return json.dumps("OK")
 
 # send a message to a sensor
-def data_send(module_id,group_id,sensor_id,value):
+def data_send(module_id,group_id,sensor_id,value,force=False):
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] sending message: "+str(value))
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         if sensor is None:
 	        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
 		return json.dumps("KO")
-	plugins[sensor["plugin"]["name"]].send(sensor,value)
+	plugins[sensor["plugin"]["name"]].send(sensor,value,force=force)
 	return json.dumps("OK")
 
 # allow running it both as a module and when called directly
