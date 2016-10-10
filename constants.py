@@ -14,7 +14,8 @@ constants = {
 	'1_day': 86400,
 	'db_schema': {
 		'root': "myHouse",
-		'alerts': "myHouse:alerts"
+		'alerts': "myHouse:_alerts_"
+		'tmp': "myHouse:_tmp_"
 	},
 	'null': "None",
 	'base_dir': base_dir,
