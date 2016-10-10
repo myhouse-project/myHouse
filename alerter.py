@@ -167,7 +167,7 @@ def schedule_all():
                 # for each configured rule
                 for rule in module["rules"]:
 			if not rule["enabled"]: continue
-			if rule["run_every"] != "hour" and rule["run_every"] != "day" and rule["run_every"] != "minute": continue
+			if rule["run_every"] != "hour" and rule["run_every"] != "day" and rule["run_every"] != "minute" and and rule["run_every"] != "startup": continue
 			rules[rule["run_every"]].append([module["module_id"],rule["rule_id"]])
         # run startup alerts
         schedule.add_job(run_schedule,'date',run_date=datetime.datetime.now(),args=["startup"])
