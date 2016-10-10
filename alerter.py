@@ -23,6 +23,7 @@ rules = {
 	"hour": [],
 	"day": [],
 	"minute": [],
+	"startup": [],
 }
 
 
@@ -87,6 +88,7 @@ def is_sensor(definition):
 def run(module_id,rule_id,notify=True):
 	module = utils.get_module(module_id)
 	for rule in module["rules"]:
+		if not rule["enabled"]: continue
 		# retrive the rule for the given rule_id
         	if rule["rule_id"] != rule_id: continue
 		# for each definition retrieve the data
@@ -142,7 +144,7 @@ def run(module_id,rule_id,notify=True):
 				if what == "send": sensors.data_send(split[0],split[1],split[2],value)
 				elif what == "set": sensors.data_set(split[0],split[1],split[2],value)
 		# notify about the alert
-		if notify:
+		if notify and rule["severity"] != "debug":
 			db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
 			log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
 			notifications.notify(alert_text)	
@@ -164,8 +166,11 @@ def schedule_all():
                 if "rules" not in module: continue
                 # for each configured rule
                 for rule in module["rules"]:
+			if not rule["enabled"]: continue
 			if rule["run_every"] != "hour" and rule["run_every"] != "day" and rule["run_every"] != "minute": continue
 			rules[rule["run_every"]].append([module["module_id"],rule["rule_id"]])
+        # run startup alerts
+        schedule.add_job(run_schedule,'date',run_date=datetime.datetime.now(),args=["startup"])
 	# schedule minute, hourly and daily jobs
 	schedule.add_job(run_schedule,'cron',second="30",args=["minute"])
 	schedule.add_job(run_schedule,'cron',minute="1",args=["hour"])

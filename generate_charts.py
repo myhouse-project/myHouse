@@ -59,7 +59,7 @@ def add_series(chart,url,sensor,series_index):
 	# add the data to it
 	series['data'] = data
 	# if the data is a string, add flags
-	if sensor['format'] == 'string':
+	if "type" in sensor['series'][series_index] and sensor['series'][series_index]['type'] == "flags":
 		flags = []
 		for i in range(len(data)):
 			if data[i][1] == None: continue
@@ -144,8 +144,9 @@ def add_sensor_image(layout,widget):
 	save_to_file(r,widget["widget_id"])
 
 # load all the widgets of the given module
-def run(module_id,requested_widget=None):
+def run(module_id,requested_widget=None,generate_chart=True):
 	module = utils.get_module(module_id)
+	widgets = []
 	if module is None: return
 	if 'widgets' not in module: return
 	for i in range(len(module["widgets"])):
@@ -155,13 +156,27 @@ def run(module_id,requested_widget=None):
 			if requested_widget is not None and widget["widget_id"] != requested_widget: continue
 		        if widget["size"] == 0: continue
 			# generate the widget
+			if "layout" not in widget: continue
 			for k in range(len(widget["layout"])):
 				layout = widget["layout"][k]
-				if layout["type"] == "sensor_group_summary": add_sensor_group_summary_chart(layout,widget)
-				elif layout["type"] == "image": add_sensor_image(layout,widget)
-				elif layout["type"] == "sensor_group_timeline": add_sensor_group_timeline_chart(layout,widget)
-				elif layout["type"] in conf["constants"]["charts"]: add_sensor_chart(layout,widget)
-				else: continue
+				chart_generated = True
+				if layout["type"] == "sensor_group_summary": 
+					if generate_chart: add_sensor_group_summary_chart(layout,widget)
+					break
+				elif layout["type"] == "image": 
+					if generate_chart: add_sensor_image(layout,widget)
+					break
+				elif layout["type"] == "sensor_group_timeline": 
+					if generate_chart: add_sensor_group_timeline_chart(layout,widget)
+					break
+				elif layout["type"] in conf["constants"]["charts"]: 
+					if generate_chart: add_sensor_chart(layout,widget)
+					break
+				else: 
+					chart_generated = False
+					continue
+			if chart_generated: widgets.append(widget["widget_id"])
+	return widgets
 
 # main
 if __name__ == '__main__':

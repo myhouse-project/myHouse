@@ -83,7 +83,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			</a>
 
 			<nav class="navbar navbar-static-top" role="navigation">
-				<a href="" class="sidebar-toggle" data-toggle="offcanvas" role="button"> 
+				<a href="" id="sidebar-button" class="sidebar-toggle" data-toggle="offcanvas" role="button"> 
 					<span class="sr-only">Toggle navigation</span> 
 					<span class="icon-bar"></span> 
 					<span class="icon-bar"></span> 
@@ -252,15 +252,24 @@ th.dt-center, td.dt-center { text-align: center; }
 		log("info","loading menu");
 		// empty the menu
 		$("#menu").empty()
-		var menu = '<li class="header">MENU</li>';
-		for (var i = 0; i < conf['modules'].length; i++) {
-			// for each module add it to the menu
-			var module = conf['modules'][i];
-			if (! module['enabled']) continue;
-			log("info","adding menu item "+module['display_name']);
-			menu = menu + '<li><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(module['display_name'])+'</span></a></li>';
+		for (var i = 0; i < conf["sections"].length; i++) {
+			var section_id = conf["sections"][i]
+			$("#menu").append('<li class="header">'+section_id.toUpperCase()+'</li>');
+			for (var j = 0; j < conf["modules"].length; j++) {
+				var module = conf['modules'][j];
+				if (! module["enabled"]) continue;
+				if (module["section_id"] != section_id) continue;
+				log("info","adding menu item "+module['display_name']);
+				$("#menu").append('<li id="menu_item_'+module["module_id"]+'"><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(module['display_name'])+'</span></a></li>');
+				$("#menu_item_"+module["module_id"]).click(function(){
+					if ($("body").hasClass('sidebar-open')) $("body").removeClass('sidebar-open').removeClass('sidebar-collapse').trigger('collapsed.pushMenu');
+					alert($("body").attr( "class" ))
+					//$("#sidebar-button").click()
+					//console.log($("#sidebar-button"))
+				
+				})
+			}
 		}
-		$("#menu").html(menu);
 	}
 	
 	// load version
@@ -540,9 +549,11 @@ th.dt-center, td.dt-center { text-align: center; }
 		var type = layout["type"]
 		tag = tag.replace("#","")
 		// define the HTML inputs
-		checkbox_html = '<div class="row"><div class="col-sm-6 col-sm-offset-4"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
+		checkbox_html = '<div class="row"><div class="col-sm-12 col-sm-offset-5"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
 		input_html = '<div class="row"><div class="col-sm-12"><div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div></div></div>'
 		tag = "#"+tag
+		// add the label
+		if ("display_name" in layout) $(body).append('<div class="row"><div class="col-sm-6 col-sm-offset-3"><h4>'+layout["display_name"]+'</h4></div></div>');
 		// add the HTML of the requested input
 		if (type == "input") {
 			// add the input box
@@ -561,7 +572,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			$(body).append(checkbox_html);	
 		}
 		// retrieve the sensor to control
-		split = split_sensor(layout,"set")
+		split = split_sensor(layout,"sensor")
 		if (split == null) return;
 		var module_id = split[0]
 		var group_id = split[1]
@@ -577,6 +588,8 @@ th.dt-center, td.dt-center { text-align: center; }
 				else log("warning","invalid data received: "+data);
 			};
 		}(tag+"_"+type));
+		// disabled it if requested
+		if ("disabled" in layout && layout["disabled"]) $(tag+"_"+type).attr("disabled", true);
 		// listen for changes
 		$(tag+"_"+type).change(function(tag,sensor_url,type) {
 			return function () {
@@ -592,13 +605,13 @@ th.dt-center, td.dt-center { text-align: center; }
 						}
 					};
 				}(tag,new_value,type));
-				// if there is a message to send
-				if ("send" in layout) {
-					$.getJSON(hostname+layout["send"]+new_value,function(tag,new_value,type) {
+				// if there is a url to visit
+				if ("url" in layout) {
+					$.getJSON(layout["url"]+new_value,function(tag,new_value,type) {
 					return function (data) {
 						if (data != "OK") {
 							// handle errors
-							log("warning","error sending "+new_value+" to "+sensor_url);
+							log("warning","error to visit "+layout["url"]+new_value);
 						}
 					};
 					}(tag,new_value,type));
@@ -672,7 +685,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			return "Temperature:<b> "+event.text+"°C</b>";
 		}
 		// load the events
-		split = split_sensor(layout,"set")
+		split = split_sensor(layout,"sensor")
 		if (split == null) return;
 		var module_id = split[0]
 		var group_id = split[1]
@@ -740,14 +753,6 @@ th.dt-center, td.dt-center { text-align: center; }
 	// add the current measure widget
 	function add_current_measure_header(tag,layout) {
 		tag = tag.replace("#","")
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]
-		sensor_id = split[2];
-		var sensor = get_sensor(module_id,group_id,sensor_id)
-		if (sensor == null) return;
-		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 		var summary_body = '\
 			<div class="box-profile">\
 				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
@@ -767,10 +772,31 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 		// set the current measure
 		if ("sensor" in layout) {
+			split = split_sensor(layout,"sensor")
+			if (split == null) return;
+			module_id = split[0]
+			group_id = split[1]
+			sensor_id = split[2];
+			var sensor = get_sensor(module_id,group_id,sensor_id)
+			if (sensor == null) return;
+			var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
 			set_html(tag+"_current",sensor_url+"/current");
 			$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
 			// set the timestamp
 			set_html(tag+"_timestamp",sensor_url+"/timestamp");
+		}
+		// if a different timestamp has to be set, retrieve it
+		if ("timestamp" in layout) {
+			split = split_sensor(layout,"timestamp")
+			if (split == null) return;
+			module_id = split[0]
+			group_id = split[1]
+			sensor_id = split[2];
+			var sensor = get_sensor(module_id,group_id,sensor_id)
+			if (sensor == null) return;
+			var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+			// set the timestamp
+			set_html(tag+"_timestamp",sensor_url+"/timestamp");			
 		}
 	}
 	
@@ -808,7 +834,7 @@ th.dt-center, td.dt-center { text-align: center; }
 					//add the data to it
 					series['data'] = data;
 					// if the data is a string, add flags
-					if (sensor['format'] == 'string') {
+					if ("type" in sensor['series'][series_index] && sensor['series'][series_index]['type'] == "flags") {
 						flags = [];
 						for (var i = 0; i < data.length; i++) {
 							if (data[i][1] == null) continue;

@@ -25,6 +25,7 @@ import plugin_messagebridge
 
 # variables
 plugins = {}
+poll_at_startup = False
 
 # initialize the configured plugins
 def init_plugins():
@@ -128,7 +129,7 @@ def store(sensor,measures):
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"]))+conf["constants"]["formats"][sensor["format"]]["suffix"])
 		db.set(key,measure["value"],measure["timestamp"])
 		# re-calculate the avg/min/max of the hour/day
-		if "calculate_avg" in sensor and sensor["calculate_avg"]:
+		if "summarize" in sensor:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
 	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
@@ -145,12 +146,12 @@ def summarize(sensor,timeframe,start,end):
 	data = db.rangebyscore(key_to_read,start,end,withscores=False)
 	timestamp = start
 	min = avg = max = "-"
-	if "calculate_avg" in sensor and sensor["calculate_avg"]:
+	if sensor["summarize"]["avg"]:
 		# calculate avg
 		avg = utils.avg(data)
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
-	if "calculate_min_max" in sensor and sensor["calculate_min_max"]:
+	if sensor["summarize"]["min_max"]:
 		# calculate min
 		min = utils.min(data)
 		db.deletebyscore(key_to_write+":min",start,end)
@@ -249,13 +250,13 @@ def schedule_all():
 				# schedule polling
 				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["plugin"]["polling_interval"])+" minutes")
 				# run it now first
-				schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+				if poll_at_startup: schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                 # then schedule it for each refresh interval
        	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["plugin"]["polling_interval"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                         # schedule an expire job every day
                         schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
 			# schedule a summarize job every hour and every day if needed
-                        if "calculate_avg" in sensor and sensor["calculate_avg"]:
+                        if "summarize" in sensor:
               	        	log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
                      	        schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
                              	schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
@@ -272,10 +273,11 @@ def data_get_current(module_id,group_id,sensor_id):
 	else: return json.dumps(data)
 
 # return the latest image of a sensor for a web request
-def data_get_current_image(module_id,group_id,sensor_id):
+def data_get_current_image(module_id,group_id,sensor_id,night_day):
 	data = json.loads(data_get_current(module_id,group_id,sensor_id))
 	if len(data) == 0: return ""
-	filename = "nt_"+str(data[0]) if utils.is_night() else str(data[0])
+	filename = str(data[0])
+	if night_day and utils.is_night(): filename = "nt_"+filename
 	with open(conf["constants"]["web_dir"]+"/images/"+sensor_id+"_"+str(filename)+".png",'r') as file:
                 data = file.read()
         file.close()

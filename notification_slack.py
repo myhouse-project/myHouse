@@ -141,11 +141,13 @@ def run():
 						slack_message(channel,oracle.get_wait_message())
 						# generate the chart
 						module_id,widget_id = response["content"].split(",")
-						generate_charts.run(module_id,widget_id)
+						widgets = generate_charts.run(module_id,widget_id)
 						# upload the chart to the channel
-						filename = utils.get_widget_chart(widget_id)
-						log.debug("uploading "+filename)
-						slack_upload(channel,filename)
+						if len(widgets) > 0:
+							filename = utils.get_widget_chart(widgets[0])
+							log.debug("uploading "+filename)
+							slack_upload(channel,filename)
+						else: slack_message(channel,"unable to find the chart "+filename)
 		time.sleep(1)
 
 # main
