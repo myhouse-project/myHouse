@@ -36,36 +36,37 @@ def get_internet_status():
 	return utils.web_get("http://ipinfo.io")
 
 # return the latest read of a sensor
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/current')
+@app.route('/<module_id>/<group_id>/<sensor_id>/current')
 def sensor_get_current(module_id,group_id,sensor_id):
 	return sensors.data_get_current(module_id,group_id,sensor_id)
 
 # return the latest image of a sensor
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/image')
+@app.route('/<module_id>/<group_id>/<sensor_id>/image')
 def sensor_get_current_image(module_id,group_id,sensor_id):
-	night_day =  True if request.args.get('night_day') else False
+	night_day = True if request.args.get('night_day') else False
         return sensors.data_get_current_image(module_id,group_id,sensor_id,night_day)
 
 # return the time difference between now and the latest measure
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/timestamp')
+@app.route('/<module_id>/<group_id>/<sensor_id>/timestamp')
 def sensor_get_current_timestamp(module_id,group_id,sensor_id):
         return sensors.data_get_current_timestamp(module_id,group_id,sensor_id)
 
 # return the data of a requested sensor based on the timeframe and stat requested
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/<timeframe>/<stat>')
+@app.route('/<module_id>/<group_id>/<sensor_id>/<timeframe>/<stat>')
 def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	return sensors.data_get_data(module_id,group_id,sensor_id,timeframe,stat)
 
 # set the value of an input sensor
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/set/<value>',methods = ['GET', 'POST'])
+@app.route('/<module_id>/<group_id>/<sensor_id>/set/<value>',methods = ['GET', 'POST'])
 def sensor_set(module_id,group_id,sensor_id,value):
 	if request.method == 'POST': value = request.form["value"]
         return sensors.data_set(module_id,group_id,sensor_id,value)
 
 # send a message to a sensor
-@app.route('/<module_id>/sensors/<group_id>/<sensor_id>/send/<value>')
+@app.route('/<module_id>/<group_id>/<sensor_id>/send/<value>')
 def sensor_send(module_id,group_id,sensor_id,value):
-        return sensors.data_send(module_id,group_id,sensor_id,value)
+	force = True if request.args.get('force') else False
+        return sensors.data_send(module_id,group_id,sensor_id,value,force=force)
 
 # return the alerts
 @app.route('/alerts/<severity>/<timeframe>')

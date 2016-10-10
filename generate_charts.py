@@ -80,7 +80,7 @@ def add_sensor_group_summary_chart(layout,widget):
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_sensor_group_summary"])
 	for i in range(len(sensors)):
 		sensor = sensors[i];
-		sensor_url = module_id+"/sensors/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+		sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		# skip flags
 		if sensor['format'] == 'string': continue
 		# add the sensor to the xAxis
@@ -103,7 +103,7 @@ def add_sensor_group_timeline_chart(layout,widget):
 	# for each sensor
 	for i in range(len(sensors)):
 		sensor = sensors[i]
-		sensor_url = module_id+"/sensors/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+		sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		if "series" not in sensor: continue
 		# add each series, to the chart
 		for j in range(len(sensor["series"])):
@@ -120,7 +120,7 @@ def add_sensor_chart(layout,widget):
         group_id = split[1]
 	sensor_id = split[2]		
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id
+	sensor_url = module_id+"/"+group_id+"/"+sensor_id
 	chart = copy.deepcopy(conf["constants"]["charts"][layout["type"]])
 	if sensor["format"] == "percentage": chart["yAxis"]["max"] = 100
 	# add each series to the chart
@@ -139,7 +139,7 @@ def add_sensor_image(layout,widget):
         group_id = split[1]
         sensor_id = split[2]
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id
+	sensor_url = module_id+"/"+group_id+"/"+sensor_id
 	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,widget["widget_id"])
 

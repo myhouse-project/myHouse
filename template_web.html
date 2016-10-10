@@ -261,12 +261,9 @@ th.dt-center, td.dt-center { text-align: center; }
 				if (module["section_id"] != section_id) continue;
 				log("info","adding menu item "+module['display_name']);
 				$("#menu").append('<li id="menu_item_'+module["module_id"]+'"><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(module['display_name'])+'</span></a></li>');
+				// close the menu on click on mobile devices
 				$("#menu_item_"+module["module_id"]).click(function(){
 					if ($("body").hasClass('sidebar-open')) $("body").removeClass('sidebar-open').removeClass('sidebar-collapse').trigger('collapsed.pushMenu');
-					alert($("body").attr( "class" ))
-					//$("#sidebar-button").click()
-					//console.log($("#sidebar-button"))
-				
 				})
 			}
 		}
@@ -399,7 +396,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		// for each sensor	
 		for (var i = 0; i < sensors.length; i++) {
 			var sensor = sensors[i];
-			var sensor_url = module_id+"/sensors/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			// skip flags
 			if (sensor['format'] == 'string') continue;
 			// add the sensor to the xAxis
@@ -425,7 +422,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		// for each sensor
 		for (var i = 0; i < sensors.length; i++) {
 			var sensor = sensors[i];
-			var sensor_url = module_id+"/sensors/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			if (! ("series" in sensor)) continue;
 			// add each series, to the chart
 			for (var j = 0; j < sensor["series"].length; j++) {
@@ -443,7 +440,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		group_id = split[1]
 		sensor_id = split[2];
 		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][layout["type"]]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
@@ -466,7 +463,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		group_id = split[1]
 		sensor_id = split[2];
 		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 		// add the image to the layout
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
 	}
@@ -577,7 +574,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		var module_id = split[0]
 		var group_id = split[1]
 		var sensor_id = split[2];
-		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 		// set the current value
 		$.getJSON(hostname+sensor_url+"/current",function(tag) {
 			return function (data) {
@@ -690,7 +687,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		var module_id = split[0]
 		var group_id = split[1]
 		var sensor_id = split[2];
-		var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 		$.getJSON(hostname+sensor_url+"/current", function (data) {
 			data = JSON.parse(data)
 			if (data.length > 0)  scheduler.parse(data[0],"json");
@@ -779,7 +776,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			sensor_id = split[2];
 			var sensor = get_sensor(module_id,group_id,sensor_id)
 			if (sensor == null) return;
-			var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+			var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 			set_html(tag+"_current",sensor_url+"/current");
 			$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
 			// set the timestamp
@@ -794,7 +791,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			sensor_id = split[2];
 			var sensor = get_sensor(module_id,group_id,sensor_id)
 			if (sensor == null) return;
-			var sensor_url = module_id+"/sensors/"+group_id+"/"+sensor_id;
+			var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 			// set the timestamp
 			set_html(tag+"_timestamp",sensor_url+"/timestamp");			
 		}

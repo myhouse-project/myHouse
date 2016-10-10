@@ -111,7 +111,7 @@ def flushdb():
 def init():
 	db = connect()
 	# check the version
-	version_key = conf["constants"]["db_schema"]["root"]+":version"
+	version_key = conf["constants"]["db_schema"]["version"]
 	if not exists(version_key): set(version_key,conf["constants"]["version"],None)
 	else:
 		version = float(get(version_key))

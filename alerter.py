@@ -52,7 +52,7 @@ def get_data(sensor,request):
 	key_split = key.split(":")
 	# remove the module from the key
 	key = key.replace(key_split[0]+":","",1)	
-	key = conf["constants"]["db_schema"]["root"]+":"+key_split[0]+":sensors:"+key
+	key = conf["constants"]["db_schema"]["root"]+":"+key_split[0]+":"+key
 	data = db.range(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 	if sensor["format"] == "calendar": data = parse_calendar(data)
 	return data
@@ -167,7 +167,7 @@ def schedule_all():
                 # for each configured rule
                 for rule in module["rules"]:
 			if not rule["enabled"]: continue
-			if rule["run_every"] != "hour" and rule["run_every"] != "day" and rule["run_every"] != "minute" and and rule["run_every"] != "startup": continue
+			if rule["run_every"] != "hour" and rule["run_every"] != "day" and rule["run_every"] != "minute" and rule["run_every"] != "startup": continue
 			rules[rule["run_every"]].append([module["module_id"],rule["rule_id"]])
         # run startup alerts
         schedule.add_job(run_schedule,'date',run_date=datetime.datetime.now(),args=["startup"])
