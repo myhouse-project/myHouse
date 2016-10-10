@@ -168,7 +168,7 @@ def expire(sensor):
 	for stat in ["",':hour:min',':hour:avg',':hour:max']:
 		key = sensor['db_sensor']+stat
 		if db.exists(key):
-			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["data_expire_days"]*conf["constants"]["1_day"])
+			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["sensor_data_expire_days"]*conf["constants"]["1_day"])
 			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+stat+" "+str(total)+" items")
 			total = total + deleted
 	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")

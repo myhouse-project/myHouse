@@ -89,6 +89,12 @@ def delete(key):
         log.debug("del "+key)
         return db.delete(key)
 
+# rename a key
+def rename(key,new_key):
+        db = connect()
+        log.debug("rename "+key+" "+new_key)
+        return db.rename(key,new_key)
+
 # delete all elements between a given score
 def deletebyscore(key,start,end):
 	db = connect()
@@ -119,19 +125,44 @@ def init():
 
 # main
 if __name__ == '__main__':
-	connect()
-	print "Connection: "+str(db)
-	print "\nDatabase info:"
-	info = db.info()
-	for key in info:
-		print "\t- "+key+": "+str(info[key])
-	print "\nDatabase key size:"
-	keys = keys("*")
-	for key in sorted(keys):
-		if db.type(key) != "zset": continue
-		data = range(key,1,1,format_date=True)
-		start = data[0][0] if len(data) > 0 else "N.A"
-               	data = range(key,-1,-1,format_date=True)
-		end = data[0][0] if len(data) > 0 else "N.A"
-		print "\t- "+key+": "+str(db.zcard(key))+" ("+start+" / "+end+")"
+	if len(sys.argv) == 1:
+		# print database status and a summary of all the keys
+		connect()
+		print "Connection: "+str(db)
+		print "\nDatabase info:"
+		info = db.info()
+		for key in info:
+			print "\t- "+key+": "+str(info[key])
+		print "\nDatabase key size:"
+		keys = keys("*")
+		for key in sorted(keys):
+			if db.type(key) != "zset": continue
+			data = range(key,1,1,format_date=True)
+			start = data[0][0] if len(data) > 0 else "N.A"
+	               	data = range(key,-1,-1,format_date=True)
+			end = data[0][0] if len(data) > 0 else "N.A"
+			print "\t- "+key+": "+str(db.zcard(key))+" ("+start+" / "+end+")"
 	
+	else:
+		if sys.argv[1] == "delete": 
+			key = conf["constants"]["db_schema"]["root"]+":"+sys.argv[2]
+			print "Deleting sensor "+key
+			delete(key)
+			delete(key+":hour:min")
+			delete(key+":hour:avg")
+			delete(key+":hour:max")
+			delete(key+":day:min")
+                        delete(key+":day:avg")
+                        delete(key+":day:max")
+		elif sys.argv[1] == "rename":
+			key = conf["constants"]["db_schema"]["root"]+":"+sys.argv[2]
+			new_key = conf["constants"]["db_schema"]["root"]+":"+sys.argv[3]
+			print "Renameing sensor "+key+" into "+new_key
+			rename(key,new_key)
+			rename(key+":hour:min",new_key+":hour:min")
+                        rename(key+":hour:avg",new_key+":hour:avg")
+                        rename(key+":hour:max",new_key+":hour:max")
+                        reanme(key+":day:min",new_key+":day:min")
+                        rename(key+":day:avg",new_key+":day:avg")
+                        rename(key+":day:max",new_key+":day:max")
+		else: print "Usage: db.py <delete|rename> <module_id:group_id:sensor_id> [module_id:group_id:new_sensor_id]"

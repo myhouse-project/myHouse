@@ -61,6 +61,7 @@ def get_data(sensor,request):
 def is_true(a,operator,b):
 	evaluation = True
 	# get a's value
+	if not isinstance(a,list): a = [a]
 	a = a[0]
 	# prepare b's value
 	if not isinstance(b,list): b = [b]
@@ -149,6 +150,17 @@ def run(module_id,rule_id,notify=True):
 			log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
 			notifications.notify(alert_text)	
 		return alert_text
+
+# purge old data from the database
+def expire():
+        total = 0
+        for stat in [':alert',':warning',':info']:
+                key = conf["constants"]["db_schema"]["alerts"]+stat
+                if db.exists(key):
+                        deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["alerts_expire_days"]*conf["constants"]["1_day"])
+                        log.debug("expiring from "+stat+" "+str(total)+" items")
+                        total = total + deleted
+        log.info("expired "+str(total)+" items")
 		
 # run the given schedule
 def run_schedule(run_every):
@@ -175,6 +187,8 @@ def schedule_all():
 	schedule.add_job(run_schedule,'cron',second="30",args=["minute"])
 	schedule.add_job(run_schedule,'cron',minute="1",args=["hour"])
 	schedule.add_job(run_schedule,'cron',hour="1",args=["day"])
+	# schedule an expire job
+	schedule.add_job(expire,'cron',hour="1")
 
 # return the latest alerts for a web request
 def data_get_alerts(severity,timeframe):
