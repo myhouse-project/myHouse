@@ -21,7 +21,7 @@ run_generate_charts = True
 def get_email_widget(title,body):
         template = '<tr class="total" style="font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; \
         box-sizing: border-box; font-size: 14px; margin: 0;"><td class="alignright" width="80%" style="font-family: \'Helvetica \
-        Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; border-top-width: 2px; \
+        Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: left; border-top-width: 2px; \
         border-top-color: #333; border-top-style: solid; border-bottom-color: #333; border-bottom-width: 2px; border-bottom-style: solid; font-weight: 700; \
         margin: 0; padding: 5px 0;" valign="top">#title# \
         <br>#body# \
@@ -42,21 +42,20 @@ def get_email_body(title):
 # email module digest
 def module_digest(module_id):
 	log.info("generating module summary email report for module "+module_id)
+	images = []
+	widgets = []
 	module = utils.get_module(module_id)
 	if module is None: return
-	images = []
-	if run_generate_charts: generate_charts.run(module_id)
+	if run_generate_charts: widgets = generate_charts.run(module_id,generate_chart=run_generate_charts)
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
 	title = module['display_name']+" Report "+date
 	template = get_email_body(title)
 	if 'widgets' not in module: return
 	# for each widget
-        for i in range(len(module["widgets"])):
-		for j in range(len(module["widgets"][i])):
-			widget = module["widgets"][i][j]
-			template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+widget["widget_id"]+'"/>')+"\n<!-- widgets -->")
-			# add the image to the queue
-			images.append({'filename': utils.get_widget_chart(widget["widget_id"]) , 'id': widget["widget_id"],})
+	for widget_id in widgets:
+		template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+widget_id+'"/>')+"\n<!-- widgets -->")
+		# add the image to the queue
+		images.append({'filename': utils.get_widget_chart(widget_id),'id': widget_id,})
         # send the email
 	smtp.send(title,template,images)
 
@@ -70,11 +69,11 @@ def alerts_digest():
         for severity in alerts:
                 # for each severity, get the data
                 text = ""
-		data = db.rangebyscore(conf["constants"]["db_schema"]["alerts"]+":"+severity,utils.recent(),utils.now(),withscores=True,milliseconds=True)
+		data = db.rangebyscore(conf["constants"]["db_schema"]["alerts"]+":"+severity,utils.recent(),utils.now(),withscores=True,format_date=True)
                 if len(data) == 0: continue
                 # merge the alerts together
                 for alert in data:
-                        text = "<small>* "+alert[1]+" *</small><br>"+text
+                        text = "<small>["+alert[0]+"] "+alert[1]+"</small><br>"+text
                 template = template.replace("<!-- widgets -->",get_email_widget(severity.capitalize(),text)+"\n<!-- widgets -->")
         # send the email
         smtp.send(title,template.encode('utf-8'),[])

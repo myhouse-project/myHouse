@@ -48,6 +48,7 @@ def learn_config():
 		r["module"] = [module["module_id"],module["display_name"]]
 		if "rules" in module:
 			for rule in module["rules"]:
+				if not rule["enabled"]: continue
 				if len(rule["conditions"]) != 0: continue
 				r["rule"] = copy.deepcopy(r["module"])
 				r["rule"].extend([rule["rule_id"],rule["display_name"]])
@@ -61,11 +62,11 @@ def learn_config():
 					for k in range(len(widget["layout"])):
 						layout = widget["layout"][k]
 						if layout["type"] != "image" and not layout["type"].startswith("chart_") and not layout["type"].startswith("sensor_"): continue
-	                			r["widget"] = copy.deepcopy(r["module"])
-			                        r["widget"].extend(["chart","widget",widget["widget_id"],widget["display_name"],widget["type"]])
+	                			r["layout"] = copy.deepcopy(r["module"])
+			                        r["layout"].extend(["chart","widget",widget["widget_id"],widget["display_name"],layout["type"]])
 						context = module["module_id"]+"|"+widget["widget_id"]
 						# user requesting for a widget
-						kb[cleanup.sub(' '," ".join(r["widget"])).lower()] = "chart|"+context
+						kb[cleanup.sub(' '," ".join(r["layout"])).lower()] = "chart|"+context
 					
 # initialize the oracle		
 def init():

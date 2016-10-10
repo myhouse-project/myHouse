@@ -129,5 +129,9 @@ if __name__ == '__main__':
 	keys = keys("*")
 	for key in sorted(keys):
 		if db.type(key) != "zset": continue
-		print "\t- "+key+": "+str(db.zcard(key))
+		data = range(key,1,1,format_date=True)
+		start = data[0][0] if len(data) > 0 else "N.A"
+               	data = range(key,-1,-1,format_date=True)
+		end = data[0][0] if len(data) > 0 else "N.A"
+		print "\t- "+key+": "+str(db.zcard(key))+" ("+start+" / "+end+")"
 	

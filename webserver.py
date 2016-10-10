@@ -43,7 +43,8 @@ def sensor_get_current(module_id,group_id,sensor_id):
 # return the latest image of a sensor
 @app.route('/<module_id>/sensors/<group_id>/<sensor_id>/image')
 def sensor_get_current_image(module_id,group_id,sensor_id):
-        return sensors.data_get_current_image(module_id,group_id,sensor_id)
+	night_day =  True if request.args.get('night_day') else False
+        return sensors.data_get_current_image(module_id,group_id,sensor_id,night_day)
 
 # return the time difference between now and the latest measure
 @app.route('/<module_id>/sensors/<group_id>/<sensor_id>/timestamp')
