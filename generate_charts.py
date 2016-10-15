@@ -154,7 +154,7 @@ def run(module_id,requested_widget=None,generate_chart=True):
 			# for each widget
 			widget = module["widgets"][i][j]
 			if requested_widget is not None and widget["widget_id"] != requested_widget: continue
-		        if widget["size"] == 0: continue
+		        if not widget["enabled"]: continue
 			# generate the widget
 			if "layout" not in widget: continue
 			for k in range(len(widget["layout"])):

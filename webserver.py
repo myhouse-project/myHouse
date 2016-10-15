@@ -17,12 +17,17 @@ app = Flask(__name__,template_folder=conf["constants"]["base_dir"])
 
 # render index if no page name is provided
 @app.route('/')
-def web_root():
+def root():
         return render_template(conf["constants"]["web_template"])
+
+# return favicon
+@app.route('/favicon.ico')
+def favicon():
+	return send_from_directory(conf["constants"]["web_dir"],"favicon.ico")
 
 # static folder (web)
 @app.route('/web/<path:filename>')
-def web_static(filename):
+def static_page(filename):
         return send_from_directory(conf["constants"]["web_dir"], filename)
 
 # return the json config

@@ -28,7 +28,7 @@ plugins = {}
 poll_at_startup = False
 
 # initialize the configured plugins
-def init_plugins():
+def init_plugins(start_services):
         # for each plugin
         for name in conf["plugins"]:
                 # get the plugin and store it
@@ -44,7 +44,7 @@ def init_plugins():
                         continue
                 plugins[name] = plugin
                 # start the plugin service
-		if hasattr(plugin, 'run'):
+		if hasattr(plugin, 'run') and start_services:
 	                log.info("starting plugin service "+name)
 	                schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
 
@@ -82,6 +82,7 @@ def parse(sensor):
 			if sensor["format"] == "temperature": measures[i]["value"] = utils.temperature_unit(measures[i]["value"])
 			if sensor["format"] == "length": measures[i]["value"] = utils.length_unit(measures[i]["value"])
 			if sensor["format"] == "pressure": measures[i]["value"] = utils.pressure_unit(measures[i]["value"])
+			if sensor["format"] == "speed": measures[i]["value"] = utils.speed_unit(measures[i]["value"])
 			measures[i]["value"] = utils.normalize(measures[i]["value"],conf["constants"]["formats"][sensor["format"]]["formatter"])
 		log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
@@ -191,7 +192,7 @@ def init_sensor(sensor,module_id):
 	                if plugins[sensor["plugin"]["name"]].cache_schema(sensor) is None:
 	                        log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] invalid measure")
 	                        return None
-	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":tmp:plugin_"+sensor["plugin"]["name"]+":"+plugins[sensor["plugin"]["name"]].cache_schema(sensor)
+	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["name"]+":"+plugins[sensor["plugin"]["name"]].cache_schema(sensor)
 	return sensor
 
 # read or save the measure of a given sensor
@@ -227,7 +228,7 @@ def run(module_id,group_id,sensor_id,action):
 # schedule all the sensors
 def schedule_all():
 	# init plugins
-	init_plugins()
+	init_plugins(True)
 	log.info("setting up all the configured sensors")
         # for each module
         for module in conf["modules"]:
@@ -391,5 +392,6 @@ if __name__ == '__main__':
 	else: 
 		# run the command for the given sensor
 		# <module_id> <group_id> <sensor_id> <action>
+		init_plugins(False)
 		run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
 
