@@ -37,7 +37,7 @@ constants = {
 	'web_use_reloader': True,
 	'bot_brain_file': base_dir+"/bot.txt",
 	'chart_extension': 'png',
-	'chart_short_height': 194,
+	'chart_short_height': 230,
 	'formats': {
 		'int': { 
 			'formatter': 'int', 
@@ -72,12 +72,16 @@ constants = {
 			'suffix': 'v', 
 		},
 		'length': { 
-			'formatter': 'int', 
+			'formatter': 'float_1',
 			'suffix': 'mm', 
 		},
                 'pressure': {
                         'formatter': 'int',
                         'suffix': 'mb',
+                },
+                'speed': {
+                        'formatter': 'float_1',
+                        'suffix': 'km/h',
                 },
 		'image': { 
 			'formatter': "", 
@@ -100,6 +104,7 @@ constants = {
 			'yAxis': {
 				'title': ' ',
 				'opposite': True,
+				'plotLines': [],
 			},
 			'credits': { 
 				'enabled': False,

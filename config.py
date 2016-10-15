@@ -16,6 +16,7 @@ def get_config():
         if config["general"]["imperial_units"]:
                 constants["formats"]["length"]["suffix"] = "in"
                 constants["formats"]["length"]["formatter"] = "float_2"
+		constants["formats"]["speed"]["suffix"] = "m/h"
         if config["general"]["fahrenheit_temperature"]:
                 constants["formats"]["temperature"]["suffix"] = u'\u00B0F'
                 constants["formats"]["temperature"]["formatter"] = "int"

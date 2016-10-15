@@ -262,6 +262,11 @@ def pressure_unit(pressure):
         if conf["general"]["imperial_units"]: return pressure*0.0295301
         else: return pressure
 
+# convert a speed if needed
+def speed_unit(speed):
+	if conf["general"]["imperial_units"]: return speed*0.621371
+	else: return speed
+
 # return the file path of a given widget id
 def get_widget_chart(widget_id):
 	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']

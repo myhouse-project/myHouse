@@ -50,11 +50,15 @@
 <script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_collision.js"></script>
 <script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_minical.js"></script>
 <script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_limit.js"></script>
+<script src="web/dhtmlxscheduler/ext/dhtmlxscheduler_responsive.js"></script>
 <link rel="stylesheet" href="web/dhtmlxscheduler/dhtmlxscheduler_flat.css" />
+<link rel="stylesheet" href="web/dhtmlxscheduler/ext/dhtmlxscheduler_responsive.css" />
 	
 <!--  Highstock -->
-<script src="web/highstock/highstock-all.js"></script>
+<script src="web/highstock/highstock.js"></script>
 <script src="web/highstock/highcharts-more.js"></script>
+<script src="web/highstock/modules/exporting.js"></script>
+<script src="web/highstock/modules/offline-exporting.js"></script>
 
 <!--  AdminLTE -->
 <link rel="stylesheet" href="web/AdminLTE/AdminLTE.css">
@@ -69,6 +73,10 @@
 <style>
 th.dt-center, td.dt-center { text-align: center; }
 .center-block {float: none !important}
+.col-centered{
+    margin: 0 auto;
+    float: none;
+}
 </style>
 
 <body class="hold-transition skin-blue sidebar-mini">
@@ -185,7 +193,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			<div class="pull-right hidden-xs">
 				<b>Version</b> <span id="version"></span>
 			</div>
-			<strong>Copyright &copy; 2016 <a>myHouse</a>.
+			<strong>Copyright &copy; 2016 <a href="http://my-house.sourceforge.net" target="_new">myHouse</a>.
 			</strong> All rights reserved.
 		</footer>
 
@@ -323,7 +331,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				// for each widget
 				widget = module["widgets"][i][j];
 				log("info","["+module_id+"] loading widget "+widget["widget_id"]);
-				if (widget["size"] == 0) continue;
+				if (! widget["enabled"]) continue;
 				// add an empty widget template
 				tag = "#"+widget["widget_id"];
 				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
@@ -372,6 +380,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			else if (layout["type"] == "alerts") add_alerts_widget(tag+"_body",layout)
 			else if (layout["type"] == "checkbox") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
+			else if (layout["type"] == "separator") add_html_separator(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
 			else if (layout["type"] == "current") continue
 			else log("warning","unknown layout "+layout["type"])
@@ -396,9 +405,17 @@ th.dt-center, td.dt-center { text-align: center; }
 		// for each sensor	
 		for (var i = 0; i < sensors.length; i++) {
 			var sensor = sensors[i];
+			if ("group_summary_exclude" in sensor) continue;
 			var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			// skip flags
 			if (sensor['format'] == 'string') continue;
+			is_flag = false;
+			if ("series" in sensor) {
+				for (var j = 0; j < sensor["series"].length; j++) {
+					if ("type" in sensor["series"][j] && sensor["series"][j]["type"] == "flags") is_flag = true;
+				}
+				if (is_flag) continue;
+			}
 			// add the sensor to the xAxis
 			chart['xAxis'][0]['categories'].push(sensor["display_name"]);
 			// add the point for yesterday's range
@@ -541,16 +558,22 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(tag).append('</div>')
 	}
 	
+	// add a html separator
+	function add_html_separator(body,tag,layout) {
+		$(body).append("<hr>");
+	}
+	
 	// add a html control
 	function add_html_control(body,tag,layout) {
 		var type = layout["type"]
 		tag = tag.replace("#","")
 		// define the HTML inputs
-		checkbox_html = '<div class="row"><div class="col-sm-12 col-sm-offset-5"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div></div>'
-		input_html = '<div class="row"><div class="col-sm-12"><div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div></div></div>'
+		checkbox_html = '<div class="input-group"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div>'
+		input_html = '<div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div>'
 		tag = "#"+tag
 		// add the label
-		if ("display_name" in layout) $(body).append('<div class="row"><div class="col-sm-6 col-sm-offset-3"><h4>'+layout["display_name"]+'</h4></div></div>');
+		//if ("display_name" in layout) $(body).append('<div class="row"><div class="col-sm-6 col-sm-offset-3">'+layout["display_name"]+'</div></div>');
+		if ("display_name" in layout) $(body).append('<div class="text-center">'+layout["display_name"]+'</div>');
 		// add the HTML of the requested input
 		if (type == "input") {
 			// add the input box
@@ -631,12 +654,13 @@ th.dt-center, td.dt-center { text-align: center; }
 			include_end_by: true,
 			repeat_precise: true,
 			touch: "force",
-			time_step: 30,
+			time_step: 15,
 			mark_now: true,
 			wide_form: false,
 			hour_size_px: 35,
 			scroll_hour: 6,
 		});
+		initResponsive(scheduler);
 		// configure the mini-calendars
 		scheduler.attachEvent("onLightbox", function(){
 			var lightbox_form = scheduler.getLightbox();
@@ -755,10 +779,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				<img class="profile-user-img img-responsive img-circle" id="'+tag+'_icon" src="web/images/unknown.png">\
 					<h3 class="profile-username text-center"><span id="'+tag+'_current"></span><span id="'+tag+'_current_suffix"></span></h3>\
 					<p class="text-muted text-center" id="'+tag+'_timestamp"></p>\
-					<ul class="list-group list-group-unbordered">\
-						<li class="list-group-item" id="'+tag+'_body">\
-						</li>\
-					</ul>\
+					<div id="'+tag+'_body"></div>\
 				<div>';
 		tag = "#"+tag;
 		// add the summary body to it
@@ -819,6 +840,12 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a new series to a chart
 	function add_series(chart,url,sensor,series_index) {
+		// draw a static line
+		if ("value" in sensor['series'][series_index]) {
+			chart["yAxis"][0].addPlotLine(sensor['series'][series_index])
+			return
+		}
+		// retrieve the data from the series
 		$.getJSON(hostname+url, function(chart,sensor,series_index) {
 				return function (data) {
 					// get the series template
