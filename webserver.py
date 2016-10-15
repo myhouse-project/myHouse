@@ -35,6 +35,11 @@ def static_page(filename):
 def get_config():
 	return config.get_json_config()
 
+# save a configuration file
+@app.route('/save_config',methods = ['POST'])
+def save_config():
+	return config.save(request.form["configuration"])
+
 # return the internet status
 @app.route('/internet_status')
 def get_internet_status():

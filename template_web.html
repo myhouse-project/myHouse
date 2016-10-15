@@ -25,9 +25,11 @@
 <!-- FastClick -->
 <script src="web/fastclick/fastclick.min.js"></script>
 
-<!--  PNotify -->
-<script src="web/pnotify/pnotify.custom.js"></script>
-<link rel="stylesheet" href="web/pnotify/pnotify.custom.min.css" />
+<!--  Bootstrap-notify -->
+<script src="web/bootstrap-notify/bootstrap-notify.min.js"></script>
+
+<!--  JsonEditor -->
+<script src="web/jsoneditor/jsoneditor.min.js"></script>
 
 <!--  Touchspin -->
 <script src="web/touchspin/touchspin.min.js"></script>
@@ -382,6 +384,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "separator") add_html_separator(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
+			else if (layout["type"] == "configuration") add_configuration_widget(tag+"_body",layout)
 			else if (layout["type"] == "current") continue
 			else log("warning","unknown layout "+layout["type"])
 		}
@@ -548,6 +551,56 @@ th.dt-center, td.dt-center { text-align: center; }
 				};
 			}(severity[i]));
 		}
+	}
+	
+	// add a configuration widget
+	function add_configuration_widget(tag,layout) {
+		var editor_id = "json_editor"
+		var buttons_html =  '\
+			<div class="row">\
+				<div class="col-md-12">\
+					<button id="json_editor_save" class="btn btn-primary">Save</button>\
+					<button id="json_editor_validate" class="btn btn-default">Validate</button>\
+				</div>\
+			</div>'
+		// add the buttons and the editor 
+		$(tag).append(buttons_html)
+		$(tag).append('<div class="row"><div id="'+editor_id+'" class="col-md-12" style="text-align:left;"></div></div>');
+		// configure the editor
+		var configuration = $.extend(true,{},conf);
+		delete configuration["constants"]
+		var options = {
+			startval: configuration,
+			schema: JSON.parse(conf["constants"]["config_schema"]),
+		}
+		JSONEditor.defaults.theme = 'bootstrap3';
+		JSONEditor.defaults.iconlib = 'fontawesome4';
+		// add it
+		var editor = new JSONEditor($("#"+editor_id)[0],options)
+		// configure the validate button
+		$("#json_editor_validate").unbind().on('click',function() {
+			var errors = editor.validate();
+			if (errors.length) {
+				notify("danger","Invalid configuration. See the console for the errors")
+				console.log(errors)
+			}
+			else notify("success","The configuration is valid")			
+		});
+		// configure the save button
+		$("#json_editor_save").unbind().on('click',function() {
+			var errors = editor.validate();
+			if (errors.length) {
+				notify("danger","Invalid configuration. See the console for the errors")
+				console.log(errors)
+			}
+			else {
+				$.post(hostname+"/save_config", {"configuration": JSON.stringify(editor.getValue())}, function (data) {
+					if (data != '"OK"') 
+						notify("danger","Unable to save the configuration")
+					else notify("success","Configuration saved. Restart the service to apply the changes")
+				});
+			}
+		});
 	}
 	
 	// add a custom form widget
@@ -1008,6 +1061,22 @@ th.dt-center, td.dt-center { text-align: center; }
 	function log(level,message) {
 		if (conf["web"]["debug_console"] || level != "info") console.log(level.toUpperCase()+": "+message);
 	}
+	
+	// notify the user about something
+	function notify(type,message) {
+		options = {
+			message: message,
+		}
+		settings = {
+			type: type,
+		}
+		var title = null
+		if (type == "danger") title = "Error"
+		else if (type == "warning") title = "Warning"
+		if (title != null) options["title"] = "<strong>"+title+":</strong> "
+		$.notify(options,settings);
+	}
+	
 	</script>
 
 </body>
