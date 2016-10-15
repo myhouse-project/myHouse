@@ -19,21 +19,21 @@ def schedule_all():
         for module in conf["modules"]:
 		if not module["enabled"]: continue
 		if "daily_digest" not in module: continue
-                if conf["notification"]["email"]["module_digest"] and module["daily_digest"]:
+                if conf["notifications"]["email"]["module_digest"] and module["daily_digest"]:
                         schedule.add_job(notification_email.module_digest,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
                         log.info("["+module['module_id']+"] scheduling daily module digest")
 	# schedule alert summary report
-	if conf["notification"]["email"]["alerts_digest"]: 
+	if conf["notifications"]["email"]["alerts_digest"]: 
 		log.info("scheduling daily alert digest")
 		schedule.add_job(notification_email.alerts_digest,'cron',hour="0",minute="55",args=[])
 	# run slack bot
-	if conf["notification"]["slack"]["interactive_bot"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
+	if conf["notifications"]["slack"]["interactive_bot"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
 
 
 # notify all the registered plugins
 def notify(text):
-	if conf["notification"]["email"]["realtime_alerts"]: notification_email.alert(text)
-	if conf["notification"]["slack"]["realtime_alerts"]: notification_slack.says(text)
+	if conf["notifications"]["email"]["realtime_alerts"]: notification_email.alert(text)
+	if conf["notifications"]["slack"]["realtime_alerts"]: notification_slack.says(text)
 
 # main
 if __name__ == '__main__':

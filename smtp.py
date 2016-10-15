@@ -25,13 +25,13 @@ def send(subject,body,images=[]):
 	if len(images) > 0: 
 		for image in images: attach_image(msg,image)
 	# prepare the message
-        msg['From'] = conf["notification"]["email"]["from"]
-        msg['To'] = ", ".join(conf["notification"]["email"]["to"])
+        msg['From'] = conf["notifications"]["email"]["from"]
+        msg['To'] = ", ".join(conf["notifications"]["email"]["to"])
         msg['Subject'] = "[myHouse] "+subject
         msg.attach(MIMEText(body, 'html'))
-        smtp = smtplib.SMTP(conf["notification"]["email"]["hostname"])
+        smtp = smtplib.SMTP(conf["notifications"]["email"]["hostname"])
 	# send it
 	log.info("sending email '"+subject+"' to "+msg['To'])
-        smtp.sendmail(conf["notification"]["email"]["from"],conf["notification"]["email"]["to"], msg.as_string())
+        smtp.sendmail(conf["notifications"]["email"]["from"],conf["notifications"]["email"]["to"], msg.as_string())
         smtp.quit()
 

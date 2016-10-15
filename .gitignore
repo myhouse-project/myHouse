@@ -5,4 +5,5 @@
 *.pyc
 logs/*
 tmp/*
-config.yml
+config.json
+config.bak

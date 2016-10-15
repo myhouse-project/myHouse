@@ -1,8 +1,8 @@
 #!/usr/bin/python
-import json
+import simplejson as json
 import constants
-import yaml
 import time
+from shutil import copyfile
 from collections import OrderedDict
 
 config = None
@@ -40,28 +40,19 @@ def load():
         # open the config file
         with open(const['config_file'], 'r') as file:
                 config_file = file.read()
-	config = ordered_load(config_file, yaml.SafeLoader)
+	file.close()
+	config = json.loads(config_file, object_pairs_hook=OrderedDict)
 
-# dump the configuration
-def dump():
-	print ordered_dump(config, Dumper=yaml.SafeDumper,indent=1,default_flow_style=False)
-
-# load a yaml file into a OrderedDict
-def ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
-	class OrderedLoader(Loader):
-        	pass
-	def construct_mapping(loader, node):
-        	loader.flatten_mapping(node)
-	        return object_pairs_hook(loader.construct_pairs(node))
-	OrderedLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,construct_mapping)
-	return yaml.load(stream, OrderedLoader)
-
-# dump a OrderedDict into a yaml file
-def ordered_dump(data, stream=None, Dumper=yaml.Dumper, **kwds):
-	class OrderedDumper(Dumper):
-        	pass
-	def _dict_representer(dumper, data):
-        	return dumper.represent_mapping(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,data.items())
-	OrderedDumper.add_representer(OrderedDict, _dict_representer)
-	return yaml.dump(data,stream, OrderedDumper, **kwds)
-
+# save the configuration
+def save(config_string):
+	const = constants.get_constants()
+        try:
+		new_config = json.loads(config_string, object_pairs_hook=OrderedDict)
+        except ValueError, e:
+                log.warning("unable to save configuration, invalid JSON provided: "+config_string)
+                return json.dumps("KO")
+	copyfile(const['config_file'],const['config_file_backup'])
+        with open(const['config_file'],'w') as file:
+                file.write(json.dumps(new_config,indent=2))
+        file.close()
+	return json.dumps("OK")

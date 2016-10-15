@@ -22,11 +22,11 @@ def run():
 	# start the scheduler
 	schedule.start()
 	# schedule all sensors
-	sensors.schedule_all()
+	if conf['sensors']['enabled']: sensors.schedule_all()
 	# schedule all alerts
-	alerter.schedule_all()
+	if conf['alerter']['enabled']: alerter.schedule_all()
         # schedule all notifications
-        notifications.schedule_all()
+        if conf['notifications']['enabled']: notifications.schedule_all()
 	# start the web server
 	if conf['web']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	# run as a deamon
