@@ -13,11 +13,11 @@ def get_config():
         # attach constants
         config['constants'] = constants.get_constants()
         # adapt the units if needed
-        if config["general"]["imperial_units"]:
+        if config["units"]["imperial"]:
                 constants["formats"]["length"]["suffix"] = "in"
                 constants["formats"]["length"]["formatter"] = "float_2"
 		constants["formats"]["speed"]["suffix"] = "m/h"
-        if config["general"]["fahrenheit_temperature"]:
+        if config["units"]["fahrenheit"]:
                 constants["formats"]["temperature"]["suffix"] = u'\u00B0F'
                 constants["formats"]["temperature"]["formatter"] = "int"
         return config

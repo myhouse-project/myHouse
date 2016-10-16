@@ -34,7 +34,7 @@ def get_email_widget(title,body):
 def get_email_body(title):
         with open(conf['constants']['email_template'], 'r') as file:
                 template = file.read()
-        template = template.replace("#url#",conf['web']['url'])
+        template = template.replace("#url#",conf['gui']['url'])
         template = template.replace("#version#",conf['constants']['version_string'])
         template = template.replace("#title#",title)
 	return template

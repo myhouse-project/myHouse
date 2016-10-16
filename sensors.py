@@ -91,14 +91,14 @@ def parse(sensor):
 	return measures
 
 # save the data of a sensor into the database
-def save(sensor):
+def save(sensor,force=False):
 	cache_timestamp = 0
 	# get the raw data from the cache
 	if db.exists(sensor["db_cache"]):
 		data = db.range(sensor["db_cache"],withscores=True)
 		cache_timestamp = data[0][0]
 	# if too old, refresh it
-	if utils.now() - cache_timestamp > conf['constants']['cache_expire_min']*conf["constants"]["1_minute"]:
+	if force or utils.now() - cache_timestamp > conf['constants']['cache_expire_min']*conf["constants"]["1_minute"]:
 		# if an exception occurred, skip this sensor
 		if poll(sensor) is None: return
 	# get the parsed data
@@ -117,7 +117,7 @@ def store(sensor,measures):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if needed
-		if sensor["format"] == "image" or sensor["format"] == "calendar": db.delete(key)
+		if "current_history" in sensor and not sensor["current_history"]: db.delete(key)
 		# check if there is already a value stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
@@ -210,10 +210,13 @@ def run(module_id,group_id,sensor_id,action):
 		poll(sensor)
 	elif action == "parse":
 		# just parse the output
-		parse(sensor)
+		log.info(parse(sensor))
 	elif action == "save":
 		# save the parsed output into the database
 		save(sensor)
+        elif action == "force_save":
+                # save the parsed output into the database forcing polling the measure
+                save(sensor,force=True)
 	elif action == "summarize_hour": 
 		# every hour calculate and save min,max,avg of the previous hour
 		summarize(sensor,'hour',utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
@@ -265,6 +268,9 @@ def schedule_all():
 # return the latest read of a sensor for a web request
 def data_get_current(module_id,group_id,sensor_id):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"]:
+		# the sensor needs to be polled on demand
+		run(module_id,group_id,sensor_id,"save")
         data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
         # return the latest measure
@@ -331,7 +337,7 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 		# next days measures
                 range = ":day"
                 start = utils.day_start(utils.now())
-                end = utils.day_start(utils.now()+(conf["web"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
+                end = utils.day_start(utils.now()+(conf["gui"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
                 withscores = True
         else: return data
         # define the key to request
