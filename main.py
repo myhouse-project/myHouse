@@ -28,7 +28,7 @@ def run():
         # schedule all notifications
         if conf['notifications']['enabled']: notifications.schedule_all()
 	# start the web server
-	if conf['web']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
+	if conf['gui']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	# run as a deamon
 	while True:
 		time.sleep(1)

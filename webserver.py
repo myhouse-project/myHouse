@@ -95,13 +95,13 @@ def error(error):
 # run the web server
 def run():
 	# configure logging
-	logger_name = "web"
+	logger_name = "webserver"
 	web_logger = logging.getLogger('werkzeug')
 	web_logger.setLevel(logger.get_level(conf["logging"][logger_name]["level"]))
 	web_logger.addHandler(logger.get_file_logger(logger_name))
 	# run the application
-	log.info("Starting web server on port "+str(conf["web"]["port"]))
-        app.run(debug=True, use_reloader=conf["constants"]["web_use_reloader"], host='0.0.0.0',port=conf["web"]["port"])
+	log.info("Starting web server on port "+str(conf["gui"]["port"]))
+        app.run(debug=True, use_reloader=conf["constants"]["web_use_reloader"], host='0.0.0.0',port=conf["gui"]["port"])
 
 # run the main web app
 if __name__ == '__main__':

@@ -231,7 +231,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			// load the alerts
 			load_alerts();
 			// load the given module
-			current_module = conf['general']['default_module'];
+			current_module = conf['gui']['default_module'];
 			if (location.hash) current_module = location.hash.replace('#','');
 			load_module(current_module);
 			// whenever the hash changes, load the requested module
@@ -240,7 +240,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				load_module(current_module);
 			};
 			// set auto-refresh
-			auto_refresh(conf["web"]["auto_refresh_min"]);
+			auto_refresh(conf["gui"]["auto_refresh_min"]);
 		});
 	});
 
@@ -262,8 +262,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		log("info","loading menu");
 		// empty the menu
 		$("#menu").empty()
-		for (var i = 0; i < conf["sections"].length; i++) {
-			var section_id = conf["sections"][i]
+		for (var i = 0; i < conf["gui"]["sections"].length; i++) {
+			var section_id = conf["gui"]["sections"][i]
 			$("#menu").append('<li class="header">'+section_id.toUpperCase()+'</li>');
 			for (var j = 0; j < conf["modules"].length; j++) {
 				var module = conf['modules'][j];
@@ -385,6 +385,8 @@ th.dt-center, td.dt-center { text-align: center; }
 			else if (layout["type"] == "separator") add_html_separator(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
 			else if (layout["type"] == "configuration") add_configuration_widget(tag+"_body",layout)
+			else if (layout["type"] == "data") add_sensor_data(tag+"_body",layout)
+			else if (layout["type"] == "table") add_sensor_table(tag+"_body",layout)
 			else if (layout["type"] == "current") continue
 			else log("warning","unknown layout "+layout["type"])
 		}
@@ -486,6 +488,71 @@ th.dt-center, td.dt-center { text-align: center; }
 		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 		// add the image to the layout
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
+	}
+
+	// add a sensor table data widget
+	function add_sensor_table(tag,layout) {
+		tag = tag.replace("#","")
+		// define and add the table html
+		var table_html = '<table id="'+tag+'_table" class="table table-bordered table-striped"><thead><tr>';
+		var columns = layout["columns"].split(",")
+		for (var i = 0; i < columns.length; i++) {
+			table_html = table_html+"<th>"+columns[i]+"</th>";
+		}
+		table_html = table_html+ '</tr></thead><tbody></tbody></table>';
+		tag = "#"+tag
+		$(tag).append(table_html);
+		// define datatables options
+		var options = {
+			"paging": true,
+			"lengthChange": false,
+			"searching": true,
+			"ordering": true,
+			"info": true,
+			"autoWidth": true,
+		};
+		// add the table
+		$(tag+"_table").DataTable(options);
+		var table = $(tag+"_table").DataTable();
+		// load the table
+		split = split_sensor(layout,"sensor")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1]
+		sensor_id = split[2];
+		var sensor = get_sensor(module_id,group_id,sensor_id)
+		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		// add the image to the layout
+		$.getJSON(sensor_url+"/current",function(table) {
+			return function (data) {
+				console.log(data)
+				if (data.length == 0) return
+				var lines = data[0].split("\n")
+				for (var i = 0; i < lines.length; i++) {
+					var line = lines[i]
+					var columns = line.split("|_|")
+					table.row.add(columns).draw(true);
+				}
+			};
+		}(table));
+	}
+	
+	// add a sensor data widget
+	function add_sensor_data(tag,layout) {
+		split = split_sensor(layout,"sensor")
+		if (split == null) return;
+		module_id = split[0]
+		group_id = split[1]
+		sensor_id = split[2];
+		var sensor = get_sensor(module_id,group_id,sensor_id)
+		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		// add the image to the layout
+		$.getJSON(sensor_url+"/current",function(tag) {
+			return function (data) {
+				data[0] = data[0].replaceAll("\n","<br>")
+				if (data.length > 0) $(tag).html('<div class="mailbox-read-message" align="left">'+data[0]+'</div>')
+			};
+		}(tag));
 	}
 	
 	// add an alert widget
@@ -1059,7 +1126,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// log to console a message
 	function log(level,message) {
-		if (conf["web"]["debug_console"] || level != "info") console.log(level.toUpperCase()+": "+message);
+		if (conf["gui"]["debug_console"] || level != "info") console.log(level.toUpperCase()+": "+message);
 	}
 	
 	// notify the user about something

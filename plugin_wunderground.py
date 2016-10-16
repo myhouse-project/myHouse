@@ -20,7 +20,8 @@ plugin_conf = conf['plugins']['wunderground']
 # poll the sensor
 def poll(sensor):
 	# request the web page
-	return utils.web_get(url+"/"+plugin_conf['api_key']+"/"+get_request_type(sensor['plugin']['measure'])+"/q/"+str(plugin_conf['latitude'])+","+str(plugin_conf['longitude'])+".json")
+	location = sensor["plugin"]["location"] if "location" in sensor["plugin"] else plugin_conf['location']
+	return utils.web_get(url+"/"+plugin_conf['api_key']+"/"+get_request_type(sensor['plugin']['measure'])+"/q/"+location+".json")
 
 # parse the data
 def parse(sensor,data):
@@ -158,5 +159,5 @@ def get_request_type(request):
 
 # return the cache schema
 def cache_schema(sensor):
-	location = str(plugin_conf['latitude'])+"_"+str(plugin_conf['longitude'])+"_"
-	return location+get_request_type(sensor['plugin']['measure'])
+	location = sensor["plugin"]["location"] if "location" in sensor["plugin"] else plugin_conf['location']
+	return location+"_"+get_request_type(sensor['plugin']['measure'])

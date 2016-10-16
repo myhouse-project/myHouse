@@ -73,15 +73,15 @@ def hour_end(timestamp):
 
 # return the realtime timestamp
 def realtime():
-	return now()-conf["web"]["realtime_timeframe_hours"]*conf["constants"]["1_hour"]
+	return now()-conf["gui"]["realtime_timeframe_hours"]*conf["constants"]["1_hour"]
 
 # return the recent timestamp
 def recent():
-	return now()-conf["web"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
+	return now()-conf["gui"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
 
 # return the history timestamp
 def history():
-	return now()-conf["web"]["history_timeframe_days"]*conf["constants"]["1_day"]
+	return now()-conf["gui"]["history_timeframe_days"]*conf["constants"]["1_day"]
 
 # return true if the input is a number
 def is_number(s):
@@ -249,22 +249,22 @@ def is_night():
 
 # convert the temperature if needed
 def temperature_unit(temperature):
-	if conf["general"]["fahrenheit_temperature"]: return (temperature * 1.8) + 32
+	if conf["units"]["fahrenheit"]: return (temperature * 1.8) + 32
 	else: return temperature
 
 # convert a length if neeeded
 def length_unit(length):
-        if conf["general"]["imperial_units"]: return length*0.039370
+        if conf["units"]["imperial"]: return length*0.039370
         else: return length
 
 # convert a pressure if neeeded
 def pressure_unit(pressure):
-        if conf["general"]["imperial_units"]: return pressure*0.0295301
+        if conf["units"]["imperial"]: return pressure*0.0295301
         else: return pressure
 
 # convert a speed if needed
 def speed_unit(speed):
-	if conf["general"]["imperial_units"]: return speed*0.621371
+	if conf["units"]["imperial"]: return speed*0.621371
 	else: return speed
 
 # return the file path of a given widget id
