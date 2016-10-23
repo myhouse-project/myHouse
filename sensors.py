@@ -19,9 +19,10 @@ schedule = scheduler.get_scheduler()
 import plugin_wunderground
 import plugin_weatherchannel
 import plugin_linux
-import plugin_http
+import plugin_image
 import plugin_csv
 import plugin_messagebridge
+import plugin_icloud
 
 # variables
 plugins = {}
@@ -36,7 +37,8 @@ def init_plugins(start_services):
 	        if name == "wunderground": plugin = plugin_wunderground
 	        elif name == "weatherchannel": plugin = plugin_weatherchannel
 	        elif name == "linux": plugin = plugin_linux
-	        elif name == "http": plugin = plugin_http
+	        elif name == "image": plugin = plugin_image
+		elif name == "icloud": plugin = plugin_icloud
 	        elif name == "csv": plugin = plugin_csv
 	        elif name == "messagebridge": plugin = plugin_messagebridge
                 if plugin is None:

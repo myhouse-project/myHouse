@@ -56,3 +56,7 @@ def save(config_string):
                 file.write(json.dumps(new_config,indent=2))
         file.close()
 	return json.dumps("OK")
+
+# main
+if __name__ == '__main__':
+	load()

@@ -50,20 +50,17 @@ def keys(key):
 	log.debug("keys "+key)
 	return db.keys(key)
 
-# save a value to the db (both with and without timestamp)
+# save a value to the db
 def set(key,value,timestamp):
 	db = connect()
-	# simple set query
 	if timestamp is None: 
-		log.debug("set "+key+" "+str(value))
-		if not conf['db']['enabled']: return 0
-		return db.set(key,value)
+		log.warning("no timestamp provided for key "+key)
+		return 
 	# zadd with the score	
-	else: 
-		value = str(timestamp)+":"+str(value)
-		log.debug("zadd "+key+" "+str(timestamp)+" "+str(value))
-		if not conf['db']['enabled']: return 0
-		return db.zadd(key,timestamp,value)
+	value = str(timestamp)+":"+str(value)
+	log.debug("zadd "+key+" "+str(timestamp)+" "+str(value))
+	if not conf['db']['enabled']: return 0
+	return db.zadd(key,timestamp,value)
 
 # get a single value from the db
 def get(key):

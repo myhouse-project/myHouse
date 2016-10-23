@@ -49,7 +49,7 @@ function initResponsive(scheduler) {
 
 	scheduler.attachEvent("onTemplatesReady", function () {
 		if (classic[scheduler.skin]) {
-			addCss("../Content/dhtmlxScheduler/dhtmlxscheduler-responsive-classic.css");
+			addCss("../Content/dhtmlxscheduler/dhtmlxscheduler-responsive-classic.css");
 		}
 	});
 
@@ -74,7 +74,7 @@ function initResponsive(scheduler) {
 
 
 	if (/Android|webOS|iPhone|iPad|iPod|IEMobile/i.test(navigator.userAgent) && loadQuickInfo) {
-		addJS("../Scripts/dhtmlxScheduler/ext/dhtmlxscheduler_quick_info.js", function () {
+		addJS("/web/dhtmlxscheduler/ext/dhtmlxscheduler_quick_info.js", function () {
 			scheduler.config.touch = "force";
 			scheduler.xy.menu_width = 0;
 		});

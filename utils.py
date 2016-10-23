@@ -3,6 +3,8 @@ import sys
 import os
 import subprocess
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 import time
 import math
 import traceback
@@ -72,16 +74,16 @@ def hour_end(timestamp):
         return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
 # return the realtime timestamp
-def realtime():
-	return now()-conf["gui"]["realtime_timeframe_hours"]*conf["constants"]["1_hour"]
+def realtime(hours=conf["gui"]["realtime_timeframe_hours"]):
+	return now()-hours*conf["constants"]["1_hour"]
 
 # return the recent timestamp
-def recent():
-	return now()-conf["gui"]["recent_timeframe_hours"]*conf["constants"]["1_hour"]
+def recent(hours=conf["gui"]["recent_timeframe_hours"]):
+	return now()-hours*conf["constants"]["1_hour"]
 
 # return the history timestamp
-def history():
-	return now()-conf["gui"]["history_timeframe_days"]*conf["constants"]["1_day"]
+def history(days=conf["gui"]["history_timeframe_days"]):
+	return now()-days*conf["constants"]["1_day"]
 
 # return true if the input is a number
 def is_number(s):
@@ -104,8 +106,8 @@ def normalize(value,formatter=None):
 # request a given url
 def web_get(url,username=None,password=None,binary=False):
 	log.debug("Requesting web page "+url)
-	if username is not None: request = requests.get(url,auth=(username,password),timeout=conf['constants']['web_timeout'])
-	else: request = requests.get(url,timeout=conf['constants']['web_timeout'])
+	if username is not None: request = requests.get(url,auth=(username,password),timeout=conf['constants']['web_timeout'],verify=False)
+	else: request = requests.get(url,timeout=conf['constants']['web_timeout'],verify=False)
 	if binary: return request.content
 	else: return request.text
 

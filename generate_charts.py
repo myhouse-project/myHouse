@@ -41,8 +41,10 @@ def apply_format(series,format):
 	series['dataLabels']['format'] = '{y}'+conf['constants']['formats'][format]['suffix'];
 
 # add a new point to an existing series
-def add_point(chart,url,series_index):
+def add_point(chart,url,series_index,category_index):
 	data = json.loads(utils.web_get(hostname+url))
+	# add the category index to the data
+	data = [category_index,data[0],data[1]]	
 	if 'data' not in chart['series'][series_index]: chart['series'][series_index]['data'] = []
 	chart['series'][series_index]['data'].append(data)
 
@@ -51,6 +53,8 @@ def add_series(chart,url,sensor,series_index):
 	data = json.loads(utils.web_get(hostname+url))
 	# get the series template
 	series = copy.deepcopy(sensor['series'][series_index])
+	null_value = None
+	if "null_value" in series: null_value = series["null_value"]
 	# set the name and the id
 	series['name'] = sensor['display_name']+" "+sensor['series'][series_index]['series_id']
 	series['id'] = sensor['sensor_id']+":"+sensor['series'][series_index]['series_id']
@@ -62,7 +66,7 @@ def add_series(chart,url,sensor,series_index):
 	if "type" in sensor['series'][series_index] and sensor['series'][series_index]['type'] == "flags":
 		flags = []
 		for i in range(len(data)):
-			if data[i][1] == None: continue
+			if data[i][1] == null_value or data[i][1] == None or data[i][1] == "": continue
 #			flags.append({'x': int(data[i][0]), 'shape': 'url(https://icons.wxug.com/i/c/k/'+str(data[i][1])+'.gif)', 'title': '<img width="'+str(series['width'])+'" heigth="'+str(series['heigth'])+'" src="https://icons.wxug.com/i/c/k/'+str(data[i][1])+'.gif">'})
 			flags.append({'x': int(data[i][0]), 'shape': 'circlepin', 'title': str(data[i][1])})
 			series['data'] = flags
@@ -80,15 +84,23 @@ def add_sensor_group_summary_chart(layout,widget):
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_sensor_group_summary"])
 	for i in range(len(sensors)):
 		sensor = sensors[i];
+		if "group_summary_exclude" in sensor: continue
 		sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		# skip flags
 		if sensor['format'] == 'string': continue
+		is_flag = False
+		if "series" in sensor:
+			for j in range(len(sensor["series"])):
+				if "type" in sensor["series"][j] and sensor["series"][j]["type"] == "flags": is_flag = True
+			if is_flag: continue
 		# add the sensor to the xAxis
 		chart['xAxis']['categories'].append(sensor["display_name"])
+		# apply the suffix to the today's series
+		chart["series"][1]["dataLabels"]["format"] = '{y}'+conf['constants']['formats'][sensor["format"]]['suffix']
 		# add the point for yesterday's range
-		add_point(chart,sensor_url+"/yesterday/range",0);
+		add_point(chart,sensor_url+"/yesterday/range",0,i);
 		# add the point for today's range
-		add_point(chart,sensor_url+"/today/range",1);
+		add_point(chart,sensor_url+"/today/range",1,i);
 	chart['title']['text'] = widget["display_name"]
 	generate_chart(chart,widget["widget_id"])
 
@@ -108,6 +120,9 @@ def add_sensor_group_timeline_chart(layout,widget):
 		# add each series, to the chart
 		for j in range(len(sensor["series"])):
 			series = sensor["series"][j]
+			# ignore range series for realtime charts
+			if layout["timeframe"] == "realtime" and series["series_id"] == "range": continue
+			# add the series to the chart
 			add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,j)
 	chart['title']['text'] = widget["display_name"]
         generate_chart(chart,widget["widget_id"])
