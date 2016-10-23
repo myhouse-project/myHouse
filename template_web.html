@@ -40,8 +40,11 @@
 
 <!--  Datatables -->
 <script src="web/datatables/datatables.min.js"></script>
+<script src="web/datatables-plugins/dataTables.responsive.min.js"></script>
+<script src="web/datatables-plugins/dataTables.colResize.js"></script>
 <link rel="stylesheet" href="web/datatables/datatables.min.css" />
 <link rel="stylesheet" href="web/datatables-plugins/dataTables.fontAwesome.css" />
+<link rel="stylesheet" href="web/datatables-plugins/responsive.dataTables.min.css" />
 
 <!--  dhtmlxscheduler -->
 <script src="web/dhtmlxscheduler/dhtmlxscheduler.js"></script>
@@ -240,7 +243,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				load_module(current_module);
 			};
 			// set auto-refresh
-			auto_refresh(conf["gui"]["auto_refresh_min"]);
+			auto_refresh(conf["gui"]["auto_refresh_min"]*60);
 		});
 	});
 
@@ -414,7 +417,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			// skip flags
 			if (sensor['format'] == 'string') continue;
-			is_flag = false;
+			var is_flag = false;
 			if ("series" in sensor) {
 				for (var j = 0; j < sensor["series"].length; j++) {
 					if ("type" in sensor["series"][j] && sensor["series"][j]["type"] == "flags") is_flag = true;
@@ -423,10 +426,12 @@ th.dt-center, td.dt-center { text-align: center; }
 			}
 			// add the sensor to the xAxis
 			chart['xAxis'][0]['categories'].push(sensor["display_name"]);
+			// apply the suffix to the today's series
+			chart.series[1].update({"dataLabels":{"enabled": true,"format":'{y}'+conf['constants']['formats'][sensor["format"]]['suffix']}});
 			// add the point for yesterday's range
-			add_point(chart,sensor_url+"/yesterday/range",0);
+			add_point(chart,sensor_url+"/yesterday/range",0,i);
 			// add the point for today's range
-			add_point(chart,sensor_url+"/today/range",1);
+			add_point(chart,sensor_url+"/today/range",1,i);
 		}
 	}
 	
@@ -449,6 +454,9 @@ th.dt-center, td.dt-center { text-align: center; }
 			// add each series, to the chart
 			for (var j = 0; j < sensor["series"].length; j++) {
 				series = sensor["series"][j]
+				// ignore range series for realtime charts
+				if (layout["timeframe"] == "realtime" && series["series_id"] == "range") continue
+				// add the series to the chart
 				add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,j);
 			}
 		}
@@ -504,6 +512,9 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(tag).append(table_html);
 		// define datatables options
 		var options = {
+			"responsive": true,
+			"dom": "Zlfrtip",
+			"fixedColumns": false,
 			"paging": true,
 			"lengthChange": false,
 			"searching": true,
@@ -525,13 +536,12 @@ th.dt-center, td.dt-center { text-align: center; }
 		// add the image to the layout
 		$.getJSON(sensor_url+"/current",function(table) {
 			return function (data) {
-				console.log(data)
 				if (data.length == 0) return
 				var lines = data[0].split("\n")
 				for (var i = 0; i < lines.length; i++) {
 					var line = lines[i]
 					var columns = line.split("|_|")
-					table.row.add(columns).draw(true);
+					table.row.add(columns).draw();
 				}
 			};
 		}(table));
@@ -570,6 +580,8 @@ th.dt-center, td.dt-center { text-align: center; }
 						  </table>';
 		// define datatables options
 		var options = {
+			"responsive": true,
+			"dom": "Zlfrtip",
 			"paging": true,
 			"lengthChange": false,
 			"searching": true,
@@ -626,8 +638,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		var buttons_html =  '\
 			<div class="row">\
 				<div class="col-md-12">\
-					<button id="json_editor_save" class="btn btn-primary">Save</button>\
-					<button id="json_editor_validate" class="btn btn-default">Validate</button>\
+					<button id="save" class="btn btn-default">Save</button>\
+					<button id="restart_service" class="btn btn-primary">Restart Service</button>\
 				</div>\
 			</div>'
 		// add the buttons and the editor 
@@ -644,17 +656,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		JSONEditor.defaults.iconlib = 'fontawesome4';
 		// add it
 		var editor = new JSONEditor($("#"+editor_id)[0],options)
-		// configure the validate button
-		$("#json_editor_validate").unbind().on('click',function() {
-			var errors = editor.validate();
-			if (errors.length) {
-				notify("danger","Invalid configuration. See the console for the errors")
-				console.log(errors)
-			}
-			else notify("success","The configuration is valid")			
-		});
 		// configure the save button
-		$("#json_editor_save").unbind().on('click',function() {
+		$("#save").unbind().on('click',function() {
 			var errors = editor.validate();
 			if (errors.length) {
 				notify("danger","Invalid configuration. See the console for the errors")
@@ -667,6 +670,19 @@ th.dt-center, td.dt-center { text-align: center; }
 					else notify("success","Configuration saved. Restart the service to apply the changes")
 				});
 			}
+		});
+		// configure the restart button
+		$("#restart_service").unbind().on('click',function() {
+			var notify_object = $.notify('<strong>Restarting the service,</strong> please wait...', {
+				allow_dismiss: false,
+				showProgressbar: true,
+			});
+			$.get(hostname+"/restart")
+			auto_refresh(null);
+			setTimeout(function() {
+				notify_object.update({'type': 'success', 'message': '<strong>Success</strong>, reloading...'});
+				location.reload();
+			}, 5500);
 		});
 	}
 	
@@ -970,6 +986,8 @@ th.dt-center, td.dt-center { text-align: center; }
 				return function (data) {
 					// get the series template
 					var series = $.extend(true,{}, sensor['series'][series_index]);
+					var null_value = null
+					if ("null_value" in series) null_value = series["null_value"]
 					// set the name and the id
 					series['name'] = sensor['display_name']+" "+sensor['series'][series_index]['series_id'];
 					series['id'] = sensor['sensor_id']+":"+sensor['series'][series_index]['series_id'];
@@ -981,7 +999,7 @@ th.dt-center, td.dt-center { text-align: center; }
 					if ("type" in sensor['series'][series_index] && sensor['series'][series_index]['type'] == "flags") {
 						flags = [];
 						for (var i = 0; i < data.length; i++) {
-							if (data[i][1] == null) continue;
+							if (data[i][1] == null_value || data[i][1] == null || data[i][1] == "") continue;
 							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="'+series['width']+'" heigth="'+series['heigth']+'" src="web/images/'+sensor['sensor_id']+"_"+data[i][1]+'.png">'};
 						}
 						series['data'] = flags;
@@ -993,13 +1011,15 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add a new point to an existing series
-	function add_point(chart,url,series_index) {
-		$.getJSON(hostname+url, function(chart,series_index) {
+	function add_point(chart,url,series_index,category_index) {
+		$.getJSON(hostname+url, function(chart,series_index,category_index) {
 				return function (data) {
+					// add the category index to the data
+					data = [category_index,data[0],data[1]]
 					// add the data as a new point to an existing series
 					chart.series[series_index].addPoint(data);
 				};
-		}(chart,series_index));
+		}(chart,series_index,category_index));
 	}
 
 	/**
@@ -1115,13 +1135,17 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 
 	// auto refresh the page
-	function auto_refresh(minutes) {
-		if (!(minutes > 0)) return;
+	function auto_refresh(seconds) {
+		if (seconds == null && refresher) {
+			clearInterval(refresher);
+			return;
+		}
+		if (!(seconds > 0)) return;
 		if (refresher) clearInterval(refresher);
 		refresher = setInterval(function(){
 			load_module(current_module);
 			load_alerts();
-		}, minutes*60*1000);
+		}, seconds*1000);
 	}
 	
 	// log to console a message

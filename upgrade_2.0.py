@@ -9,41 +9,44 @@ conf = config.get_config()
 import sensors
 
 ######## START OF CONFIGURATION
+# variables
+empty_target_db = False
+migrate_history = True
+history_start_timestamp = "-inf"
+history_end_timestamp = utils.now()
+migrate_recent = False
+
 # database number from which we are migrating
 db_from = 0
 # database number into which we are migrating
 db_to = 1
 
 # keys to migrate history (from key -> to key)
-# destination key format: myHouse:<module_id>:sensors:<group_id>:<sensor_id>
+# destination key format: myHouse:<module_id>:<group_id>:<sensor_id>
 history = {
-	'home:weather:outdoor:temperature:day:max': 'myHouse:outdoor:sensors:temperature:external:day:max',
-	'home:weather:outdoor:temperature:day:min': 'myHouse:outdoor::sensors:temperature:external:day:min',
-	'home:weather:outdoor:temperature:day': 'myHouse:outdoor::sensors:temperature:external:day:avg',
+	'home:weather:outdoor:temperature:day:max': 'myHouse:outdoor:temperature:external:day:max',
+	'home:weather:outdoor:temperature:day:min': 'myHouse:outdoor:temperature:external:day:min',
+	'home:weather:outdoor:temperature:day': 'myHouse:outdoor:temperature:external:day:avg',
 
-        'home:weather:indoor:temperature:day:max': 'myHouse:indoor:sensors:temperature:living_room:day:max',
-        'home:weather:indoor:temperature:day:min': 'myHouse:indoor:sensors:temperature:living_room:day:min',
-        'home:weather:indoor:temperature:day': 'myHouse:indoor:sensors:temperature:living_room:day:avg',
+        'home:weather:indoor:temperature:day:max': 'myHouse:indoor:temperature:living_room:day:max',
+        'home:weather:indoor:temperature:day:min': 'myHouse:indoor:temperature:living_room:day:min',
+        'home:weather:indoor:temperature:day': 'myHouse:indoor:temperature:living_room:day:avg',
 
-	'home:weather:almanac:record:min': 'myHouse:outdoor:sensors:temperature:record:day:min',
-	'home:weather:almanac:record:max': 'myHouse:outdoor:sensors:temperature:record:day:max',
+	'home:weather:almanac:record:min': 'myHouse:outdoor:temperature:record:day:min',
+	'home:weather:almanac:record:max': 'myHouse:outdoor:temperature:record:day:max',
 
-        'home:weather:almanac:normal:min': 'myHouse:outdoor:sensors:temperature:normal:day:min',
-        'home:weather:almanac:normal:max': 'myHouse:outdoor:sensors:temperature:normal:day:max',
+        'home:weather:almanac:normal:min': 'myHouse:outdoor:temperature:normal:day:min',
+        'home:weather:almanac:normal:max': 'myHouse:outdoor:temperature:normal:day:max',
 
-	'home:weather:outdoor:condition:day': 'myHouse:outdoor:sensors:temperature:condition:day:avg',
+	'home:weather:outdoor:condition:day': 'myHouse:outdoor:temperature:condition:day:avg',
 }
 
 # keys to migrate recent data (from key -> to key)
 recent = {
-	'home:weather:outdoor:temperature:measure': 'myHouse:outdoor:sensors:temperature:external',
-	'home:weather:indoor:temperature:measure': 'myHouse:indoor:sensors:temperature:living_room',
-	'home:weather:outdoor:condition:measure': 'myHouse:outdoor:sensors:temperature:condition',
+	'home:weather:outdoor:temperature:measure': 'myHouse:outdoor:temperature:external',
+	'home:weather:indoor:temperature:measure': 'myHouse:indoor:temperature:living_room',
+	'home:weather:outdoor:condition:measure': 'myHouse:outdoor:temperature:condition',
 }
-
-# enable history/recent migration
-migrate_history = True
-migrate_recent = True
 
 #debug
 debug = False
@@ -55,9 +58,10 @@ def change_db(database):
 	conf['db']['database'] = database
 
 # empty the target database first
-print "Flushing target database..."
-change_db(db_to)
-db.flushdb()
+if empty_target_db:
+	print "Flushing target database..."
+	change_db(db_to)
+	db.flushdb()
 
 # for each history key to migrate
 print "Migrating historical data..."
@@ -67,7 +71,7 @@ for key_from in history:
 	print "\tMigrating "+key_from+" -> "+key_to
 	# retrieve all the data
 	change_db(db_from)
-	data = db.rangebyscore(key_from,"-inf",utils.now(),withscores=True)
+	data = db.rangebyscore(key_from,history_start_timestamp,history_end_timestamp,withscores=True)
 	change_db(db_to)
 	count = 0
 	# for each entry
@@ -109,7 +113,7 @@ for key_from in recent:
 	        sensor = utils.get_sensor(module_id,group_id,sensor_id)
 	        sensor['module_id'] = module_id
 	        sensor['group_id'] = group_id
-	        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":sensors:"+sensor["group_id"]
+	        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
 	        sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 		sensors.summarize(sensor,'hour',utils.hour_start(timestamp),utils.hour_end(timestamp))
                 count = count +1

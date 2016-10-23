@@ -40,6 +40,11 @@ def get_config():
 def save_config():
 	return config.save(request.form["configuration"])
 
+# restart the service
+@app.route('/restart')
+def restart():
+	utils.run_command(conf['constants']['service_location']+" restart")
+
 # return the internet status
 @app.route('/internet_status')
 def get_internet_status():

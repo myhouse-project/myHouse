@@ -32,6 +32,10 @@ def install_deps():
         log.debug(utils.run_command("pip install python-Levenshtein"))
         log.info("Installing python-fuzzywuzzy...")
         log.debug(utils.run_command("pip install fuzzywuzzy"))
+        log.info("Installing python-pyicloud...")
+        log.debug(utils.run_command("pip install pyicloud"))
+        log.info("Installing python-motionless...")
+        log.debug(utils.run_command("pip install motionless"))
 
 # installation routine
 def install():

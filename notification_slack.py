@@ -106,6 +106,7 @@ def slack_upload(channel,filename):
 
 # attach the bot to the channel
 def run():
+	global initialized, connected
 	while True:
 		# init slack
 	        init()
@@ -118,6 +119,8 @@ def run():
 			output_list = slack.rtm_read()
         	except Exception,e:
 	                log.warning("unable to read from slack: "+utils.get_exception(e))
+			initialized = False
+			connected = False
 			time.sleep(sleep_on_error)
 		if output_list and len(output_list) > 0:
 			for output in output_list:
