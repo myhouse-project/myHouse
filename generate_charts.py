@@ -122,6 +122,8 @@ def add_sensor_group_timeline_chart(layout,widget):
 			series = sensor["series"][j]
 			# ignore range series for realtime charts
 			if layout["timeframe"] == "realtime" and series["series_id"] == "range": continue
+			# reduce the history timeframe for email notifications
+			if layout["timeframe"] == "history": layout["timeframe"] = "short_history"
 			# add the series to the chart
 			add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,j)
 	chart['title']['text'] = widget["display_name"]
@@ -142,6 +144,8 @@ def add_sensor_chart(layout,widget):
 	if "series" not in sensor: return
 	for i in range(len(sensor["series"])):
 		series = sensor["series"][i]
+                # reduce the history timeframe for email notifications
+		if layout["timeframe"] == "history": layout["timeframe"] = "short_history"
 		add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,i)
 	chart['title']['text'] = widget["display_name"]
         generate_chart(chart,widget["widget_id"])
@@ -184,7 +188,7 @@ def run(module_id,requested_widget=None,generate_chart=True):
 				elif layout["type"] == "sensor_group_timeline": 
 					if generate_chart: add_sensor_group_timeline_chart(layout,widget)
 					break
-				elif layout["type"] in conf["constants"]["charts"]: 
+				elif layout["type"] == "chart_short" or layout["type"] == "chart_short_inverted": 
 					if generate_chart: add_sensor_chart(layout,widget)
 					break
 				else: 

@@ -23,7 +23,7 @@ default_measure = "__measure__"
 
 # register a new sensor against this plugin
 def register(sensor):
-	if sensor['plugin']['name'] != 'messagebridge': return
+	if sensor['plugin']['plugin_name'] != 'messagebridge': return
 	if sensor['plugin']['node_id'] not in nodes: nodes[sensor['plugin']['node_id']] = {}
 	if "measure" not in sensor['plugin']: sensor['plugin']['measure'] = default_measure
 	if sensor['plugin']['measure'] not in nodes[sensor['plugin']['node_id']]: nodes[sensor['plugin']['node_id']][sensor['plugin']['measure']] = {}

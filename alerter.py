@@ -213,8 +213,8 @@ def schedule_all():
 # return the latest alerts for a web request
 def data_get_alerts(severity,timeframe):
 	start = utils.recent()
-	if timeframe == "recent": start = utils.recent(hours=conf["alerter"]["recent_timeframe_hours"])
-	if timeframe == "history": start = utils.history(days=conf["alerter"]["history_timeframe_days"])
+	if timeframe == "recent": start = utils.recent(hours=conf["timeframes"]["alerter_recent_hours"])
+	if timeframe == "history": start = utils.history(days=conf["timeframes"]["alerter_history_days"])
 	return json.dumps(db.rangebyscore(conf["constants"]["db_schema"]["alerts"]+":"+severity,start,utils.now(),withscores=True,format_date=True))
 
 # allow running it both as a module and when called directly
