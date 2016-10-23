@@ -1,228 +1,1188 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "general": {
-      "type": "object",
-      "properties": {
-        "default_module": {
-          "type": "string"
+  "$schema":"http://json-schema.org/draft-04/schema#",
+  "type":"object",
+  "title":"myHouse",
+  "properties":{
+    "db":{
+      "type":"object",
+      "description":"Database configuration",
+      "properties":{
+        "enabled":{
+          "type":"boolean",
+          "description":"Enable writing into the database"
         },
-        "imperial_units": {
-          "type": "boolean"
+        "hostname":{
+          "type":"string",
+          "description":"Hostname hosting the redis database"
         },
-        "fahrenheit_temperature": {
-          "type": "boolean"
+        "port":{
+          "type":"integer",
+          "description":"Port of the redis database"
+        },
+        "database":{
+          "type":"integer",
+          "description":"Instance number"
         }
-      }
+      },
+      "required":[
+        "enabled",
+        "hostname",
+        "port",
+        "database"
+      ]
     },
-    "db": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
+    "units":{
+      "type":"object",
+      "description":"How to deal with units of measure",
+      "properties":{
+        "imperial":{
+          "type":"boolean",
+          "description":"Use imperial units of measures"
         },
-        "hostname": {
-          "type": "string"
-        },
-        "port": {
-          "type": "integer"
-        },
-        "database": {
-          "type": "integer"
+        "fahrenheit":{
+          "type":"boolean",
+          "description":"Use Fahrenheit degrees"
         }
-      }
+      },
+      "required":[
+        "imperial",
+        "fahrenheit"
+      ]
     },
-    "web": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
+    "timeframes":{
+      "type":"object",
+      "description":"Define common timeframes",
+      "properties":{
+        "realtime_hours":{
+          "type":"integer",
+          "description":"Realtime timeframe in hours"
         },
-        "url": {
-          "type": "string"
+        "recent_hours":{
+          "type":"integer",
+          "description":"Recent timefram in hours"
         },
-        "port": {
-          "type": "integer"
+        "history_days":{
+          "type":"integer",
+          "description":"History timeframe in days"
         },
-        "auto_refresh_min": {
-          "type": "integer"
+        "short_history_days":{
+          "type":"integer",
+          "description":"Short history timeframe in days"
         },
-        "realtime_timeframe_hours": {
-          "type": "integer"
+        "forecast_days":{
+          "type":"integer",
+          "description":"Forecast timeframe in days"
         },
-        "recent_timeframe_hours": {
-          "type": "integer"
+        "alerter_recent_hours":{
+          "type":"integer",
+          "description":"Timeframe to show alerts in the top right icons in hours"
         },
-        "history_timeframe_days": {
-          "type": "integer"
-        },
-        "forecast_timeframe_days": {
-          "type": "integer"
-        },
-        "debug_console": {
-          "type": "boolean"
+        "alerter_history_days":{
+          "type":"integer",
+          "description":"Timeframe to show alerts in the alert table"
         }
-      }
+      },
+      "required":[
+        "realtime_hours",
+        "recent_hours",
+        "history_days",
+        "short_history_days",
+        "forecast_days",
+        "alerter_recent_hours",
+        "alerter_history_days"
+      ]
     },
-    "notifications": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
-            "hostname": {
-              "type": "string"
-            },
-            "from": {
-              "type": "string"
-            },
-            "to": {
-              "type": "array",
-              "items": {}
-            },
-            "alerts_digest": {
-              "type": "boolean"
-            },
-            "module_digest": {
-              "type": "boolean"
-            },
-            "realtime_alerts": {
-              "type": "boolean"
-            }
-          }
+    "gui":{
+      "type":"object",
+      "description":"GUI configuration",
+      "properties":{
+        "enabled":{
+          "type":"boolean",
+          "description":"Enable the GUI"
         },
-        "slack": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
-            "bot_name": {
-              "type": "string"
-            },
-            "bot_token": {
-              "type": "string"
-            },
-            "channel": {
-              "type": "string"
-            },
-            "realtime_alerts": {
-              "type": "boolean"
-            },
-            "interactive_bot": {
-              "type": "boolean"
-            }
-          }
-        }
-      }
-    },
-    "logging": {
-      "type": "object",
-      "properties": {
-        "myHouse": {
-          "type": "object",
-          "properties": {
-            "level": {
-              "type": "string"
-            },
-            "filename": {
-              "type": "string"
-            }
-          }
+        "compress":{
+          "type":"boolean",
+          "description":"GZIP compression of the web request/response"
         },
-        "web": {
-          "type": "object",
-          "properties": {
-            "level": {
-              "type": "string"
-            },
-            "filename": {
-              "type": "string"
-            }
-          }
+        "url":{
+          "type":"string",
+          "description":"URL of the web GUI"
         },
-        "scheduler": {
-          "type": "object",
-          "properties": {
-            "level": {
-              "type": "string"
-            },
-            "filename": {
-              "type": "string"
-            }
+        "port":{
+          "type":"integer",
+          "description":"Port for running the web server"
+        },
+        "default_module":{
+          "type":"string",
+          "description":"Default module to load when no arguments are provided"
+        },
+        "auto_refresh_min":{
+          "type":"integer",
+          "description":"Refresh automatically the page every X minutes"
+        },
+        "debug_console":{
+          "type":"boolean",
+          "description":"Enable GUI debug in the browser console"
+        },
+        "sections":{
+          "type":"array",
+          "description":"Web GUI menu sections, referred by each module",
+          "items":{
+            "type":"string",
+            "title":"Menu section"
           }
         }
-      }
+      },
+      "required":[
+        "enabled",
+        "compress",
+        "url",
+        "port",
+        "default_module",
+        "auto_refresh_min",
+        "debug_console",
+        "sections"
+      ]
     },
-    "plugins": {
-      "type": "object",
-      "properties": {
-        "wunderground": {
-          "type": "object",
-          "properties": {
-            "api_key": {
-              "type": "string"
-            },
-            "latitude": {
-              "type": "number"
-            },
-            "longitude": {
-              "type": "number"
-            }
-          }
-        },
-        "weatherchannel": {
-          "type": "object",
-          "properties": {
-            "api_key": {
-              "type": "string"
-            },
-            "latitude": {
-              "type": "number"
-            },
-            "longitude": {
-              "type": "number"
-            }
-          }
-        },
-        "csv": {
-          "type": "object",
-          "properties": {
-            "csv_file": {
-              "type": "string"
-            }
-          }
-        },
-        "linux": {
-          "type": "null"
-        },
-        "http": {
-          "type": "null"
-        },
-        "messagebridge": {
-          "type": "object",
-          "properties": {
-            "port_listen": {
-              "type": "integer"
-            },
-            "port_send": {
-              "type": "integer"
-            }
-          }
+    "alerter":{
+      "type":"object",
+      "description":"Alerter module configuration",
+      "properties":{
+        "enabled":{
+          "type":"boolean",
+          "description":"Enable the module"
         }
+      },
+      "required":[
+        "enabled"
+      ]
+    },
+    "sensors":{
+      "type":"object",
+      "description":"Sensors module configuration",
+      "properties":{
+        "enabled":{
+          "type":"boolean",
+          "description":"Enable the module"
+        }
+      },
+      "required":[
+        "enabled"
+      ]
+    },
+    "notifications":{
+      "type":"object",
+      "description":"Notification module configuration",
+      "properties":{
+        "enabled":{
+          "type":"boolean",
+          "description":"Enable the module"
+        },
+        "email":{
+          "type":"object",
+          "description":"E-mail notification configuration",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the module"
+            },
+            "hostname":{
+              "type":"string",
+              "description":"SMTP server"
+            },
+            "from":{
+              "type":"string",
+              "description":"From email address to use"
+            },
+            "to":{
+              "type":"array",
+              "description":"Email recipients",
+              "items":{
+                "type":"string",
+                "title":"E-mail recipient"
+              }
+            },
+            "alerts_digest":{
+              "type":"boolean",
+              "description":"Send a daily digest with yesterda's alerts"
+            },
+            "module_digest":{
+              "type":"boolean",
+              "description":"Send a daily digest for those modules with the digest option enabled"
+            },
+            "realtime_alerts":{
+              "type":"boolean",
+              "description":"Send realtime alerts"
+            }
+          },
+          "required":[
+            "enabled",
+            "hostname",
+            "from",
+            "to",
+            "alerts_digest",
+            "module_digest",
+            "realtime_alerts"
+          ]
+        },
+        "slack":{
+          "type":"object",
+          "description":"Slack module configuration",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the module"
+            },
+            "bot_name":{
+              "type":"string",
+              "description":"Name of the Slack bot"
+            },
+            "bot_token":{
+              "type":"string",
+              "description":"The Slack bot token previously created. https://api.slack.com/bot-users for more information"
+            },
+            "channel":{
+              "type":"string",
+              "description":"The Slack channel in which the bot will post its updates"
+            },
+            "realtime_alerts":{
+              "type":"boolean",
+              "description":"Send realtime alerts to the Slack channel"
+            },
+            "interactive_bot":{
+              "type":"boolean",
+              "description":"Make the bot interactive and able to respond to your questions"
+            }
+          },
+          "required":[
+            "enabled",
+            "bot_name",
+            "bot_token",
+            "channel",
+            "realtime_alerts",
+            "interactive_bot"
+          ]
+        }
+      },
+      "required":[
+        "enabled",
+        "email",
+        "slack"
+      ]
+    },
+    "logging":{
+      "type":"object",
+      "description":"Logging module configuration",
+      "properties":{
+        "myHouse":{
+          "type":"object",
+          "description":"myHouse logging",
+          "properties":{
+            "level":{
+              "type":"string",
+              "description":"Logging level"
+            },
+            "filename":{
+              "type":"string",
+              "description":"Log file"
+            }
+          },
+          "required":[
+            "level",
+            "filename"
+          ]
+        },
+        "webserver":{
+          "type":"object",
+          "description":"Webserver logging",
+          "properties":{
+            "level":{
+              "type":"string",
+              "description":"Logging level"
+            },
+            "filename":{
+              "type":"string",
+              "description":"Log file"
+            }
+          },
+          "required":[
+            "level",
+            "filename"
+          ]
+        },
+        "scheduler":{
+          "type":"object",
+          "description":"Scheduler logging",
+          "properties":{
+            "level":{
+              "type":"string",
+              "description":"Logging Level"
+            },
+            "filename":{
+              "type":"string",
+              "description":"Log file"
+            }
+          },
+          "required":[
+            "level",
+            "filename"
+          ]
+        }
+      },
+      "required":[
+        "myHouse",
+        "webserver",
+        "scheduler"
+      ]
+    },
+    "plugins":{
+      "type":"object",
+      "description":"Plugins configuration",
+      "properties":{
+        "wunderground":{
+          "type":"object",
+          "description":"Weather Underground configuration",
+          "properties":{
+            "api_key":{
+              "type":"string",
+              "description":"Wunderground API key (https://opensprinkler.freshdesk.com/support/solutions/articles/5000017485-getting-a-weather-api-key)"
+            },
+            "location":{
+              "type":"string",
+              "description":"Location (e.g. latitude,longitude - pwd:pwd_name)"
+            }
+          },
+          "required":[
+            "api_key",
+            "location"
+          ]
+        },
+        "weatherchannel":{
+          "type":"object",
+          "description":"Weather Channel configuration",
+          "properties":{
+            "api_key":{
+              "type":"string",
+              "description":"Weather Channel API key (https://weather.com)"
+            },
+            "location":{
+              "type":"string",
+              "description":"Location (e.g. latitude/longitude)"
+            }
+          },
+          "required":[
+            "api_key",
+            "location"
+          ]
+        },
+        "csv":{
+          "type":"object",
+          "description":"CSV plugin configuration",
+          "properties":{
+            "csv_file":{
+              "type":"string",
+              "description":"Location of the CSV file"
+            }
+          },
+          "required":[
+            "csv_file"
+          ]
+        },
+        "linux":{
+          "type":"null",
+          "description":"Linux plugin configuration"
+        },
+        "image":{
+          "type":"null",
+          "description":"Image plugin configuration"
+        },
+        "icloud":{
+          "type":"null",
+          "description":"iCloud plugin configuration"
+        },
+        "messagebridge":{
+          "type":"object",
+          "description":"Wirelessthings/Ciseco Messagebridge plugin configuration",
+          "properties":{
+            "port_listen":{
+              "type":"integer",
+              "description":"Listen to this port from messagebridge updates"
+            },
+            "port_send":{
+              "type":"integer",
+              "description":"Send to this port updates to messagebridge"
+            }
+          },
+          "required":[
+            "port_listen",
+            "port_send"
+          ]
+        }
+      },
+      "required":[
+        "wunderground",
+        "weatherchannel",
+        "csv",
+        "linux",
+        "image",
+        "icloud",
+        "messagebridge"
+      ]
+    },
+    "modules":{
+      "type":"array",
+      "description":"Individual module configuration",
+      "items":{
+        "type":"object",
+        "title":"Module",
+        "properties":{
+          "module_id":{
+            "type":"string",
+            "description":"ID of the module, must be unique"
+          },
+          "section_id":{
+            "type":"string",
+            "description":"Section of the menu the module belongs to, must be the same as defined in gui/sections"
+          },
+          "display_name":{
+            "type":"string",
+            "description":"Name of the module"
+          },
+          "icon":{
+            "type":"string",
+            "description":"Fontawesome icon associated to the module (http://fontawesome.io/icons/)"
+          },
+          "enabled":{
+            "type":"boolean",
+            "description":"Enable the module"
+          },
+          "daily_digest":{
+            "type":"boolean",
+            "description":"Generate and send by email a daily digest of the module"
+          },
+          "widgets":{
+            "type":"array",
+            "description":"Widgets for the GUI to be presented for this module",
+            "items":{
+              "type":"array",
+              "title":"Row",
+              "description":"Each row has a size of 12, multiple widget can split the size",
+              "items":{
+                "type":"object",
+                "title":"Widget",
+                "properties":{
+                  "widget_id":{
+                    "type":"string",
+                    "description":"The ID of the widget, must be unique across all the modules"
+                  },
+                  "display_name":{
+                    "type":"string",
+                    "description":"The title to the widget"
+                  },
+                  "enabled":{
+                    "type":"boolean",
+                    "description":"Enable the widget"
+                  },
+                  "size":{
+                    "type":"integer",
+                    "description":"The size of the widget. Each row has size 12"
+                  },
+                  "layout":{
+                    "type":"array",
+                    "description":"Each widget can have multiple objects in its layout",
+                    "items":{
+                      "type":"object",
+                      "title":"Layout",
+                      "anyOf":[
+                        {
+                          "title":"sensor_group_summary",
+                          "description":"Generate a chart with min/max for each sensor of the group for today and yesterday",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"sensor_group_summary"
+                            },
+                            "group":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "group"
+                          ]
+                        },
+                        {
+                          "title":"image",
+                          "description":"Add an image from a sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"image"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor"
+                          ]
+                        },
+                        {
+                          "title":"sensor_group_timeline",
+                          "description":"Generate a chart with a timeline of the given timeframe for the sensors belonging to the given group",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"sensor_group_timeline"
+                            },
+                            "group":{
+                              "type":"string"
+                            },
+                            "timeframe":{
+                              "type":"string",
+                              "enum":[
+                                "recent",
+                                "history",
+                                "realtime",
+                                "forecast"
+                              ]
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "group",
+                            "timeframe"
+                          ]
+                        },
+                        {
+                          "title":"chart_short",
+                          "description":"Generate a chart with a limited size for the sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"chart_short"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            },
+                            "timeframe":{
+                              "type":"string",
+                              "enum":[
+                                "recent",
+                                "history",
+                                "realtime",
+                                "forecast"
+                              ]
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor",
+                            "timeframe"
+                          ]
+                        },
+                        {
+                          "title":"chart_short_inverted",
+                          "description":"Generate a chart with a limited size for the sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"chart_short_inverted"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            },
+                            "timeframe":{
+                              "type":"string",
+                              "enum":[
+                                "recent",
+                                "history",
+                                "realtime",
+                                "forecast"
+                              ]
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor",
+                            "timeframe"
+                          ]
+                        },
+                        {
+                          "title":"current",
+                          "description":"Generate a header with the current measure of a sensor and an icon",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"current"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            },
+                            "icon":{
+                              "type":"string"
+                            },
+                            "timestamp":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type"
+                          ]
+                        },
+                        {
+                          "title":"alerts",
+                          "description":"Generate a table with all the alerts",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"alerts"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type"
+                          ]
+                        },
+                        {
+                          "title":"checkbox",
+                          "description":"Generate a checkbox controlling the given sensor and url",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"checkbox"
+                            },
+                            "display_name":{
+                              "type":"string"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            },
+                            "url":{
+                              "type":"string"
+                            },
+                            "disabled":{
+                              "type":"boolean"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type"
+                          ]
+                        },
+                        {
+                          "title":"input",
+                          "description":"Add an input form controlling a given sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"input"
+                            },
+                            "display_name":{
+                              "type":"string"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type"
+                          ]
+                        },
+                        {
+                          "title":"separator",
+                          "description":"Add a separator",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"separator"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type"
+                          ]
+                        },
+                        {
+                          "title":"configuration",
+                          "description":"Add a configuration editor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"configuration"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type"
+                          ]
+                        },
+                        {
+                          "title":"calendar",
+                          "description":"Add a calendar storing information in a given sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"calendar"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor"
+                          ]
+                        },
+                        {
+                          "title":"data",
+                          "description":"Add raw data from a given sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"data"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor"
+                          ]
+                        },
+                        {
+                          "title":"table",
+                          "description":"Add a table and add data from a given sensor. Rows are separated by \n and columns by |_|",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+                              "value":"data"
+                            },
+                            "sensor":{
+                              "type":"string"
+                            },
+                            "columns":{
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required":[
+                  "widget_id",
+                  "display_name",
+                  "enabled",
+                  "size",
+                  "layout"
+                ]
+              }
+            }
+          },
+          "rules":{
+            "type":"array",
+            "description":"Rules configuration",
+            "items":{
+              "type":"object",
+              "title":"Rule",
+              "properties":{
+                "rule_id":{
+                  "type":"string",
+                  "description":"Rule ID, must be unique across all the modules"
+                },
+                "display_name":{
+                  "type":"string",
+                  "description":"The text of alert then the rule triggers"
+                },
+                "enabled":{
+                  "type":"boolean",
+                  "description":"Enable the rule"
+                },
+                "severity":{
+                  "type":"string",
+                  "enum":[
+                    "debug",
+                    "info",
+                    "warning",
+                    "alert"
+                  ],
+                  "description":"Severity of the rule"
+                },
+                "run_every":{
+                  "type":"string",
+                  "enum":[
+                    "never",
+                    "minute",
+                    "hour",
+                    "day",
+                    "startup"
+                  ],
+                  "description":"Frequency to evaluate the rule's condition"
+                },
+                "conditions":{
+                  "type":"array",
+                  "description":"Set of conditions to evaluate. When all true, the alert will trigger",
+                  "items":{
+                    "type":"string",
+                    "title":"Condition",
+                    "description":"Compare what has been defined in definitions with the operator ==, !=, >, <"
+                  }
+                },
+                "definitions":{
+                  "type":"object",
+                  "description":"An explanation about the purpose of this instance.",
+                  "items":{
+                    "type":"string",
+                    "title":"Definition",
+                    "description":"Can be either a value or a query in the format module_id:group_id:sensor_id,start_position,end_position (e.g. start_position = -1 and ned_position = -1 is the last value of the sensor"
+                  }
+                },
+                "actions":{
+                  "type":"array",
+                  "description":"Actions to execute when the rule evaluates to true",
+                  "items":{
+                    "type":"string",
+                    "title":"Action",
+                    "description":"Can be either set,module_id:group_id:sensor_id,value to set a value to a sensor or send,module_id:group_id:sensor_id,value to send a message to a sensor"
+                  }
+                }
+              },
+              "required":[
+                "rule_id",
+                "display_name",
+                "enabled",
+                "severity",
+                "run_every",
+                "conditions",
+                "definitions"
+              ]
+            }
+          },
+          "sensors":{
+            "type":"array",
+            "description":"Sensors configuration",
+            "items":{
+              "type":"object",
+              "title":"Sensor",
+              "properties":{
+                "group_id":{
+                  "type":"string",
+                  "description":"The ID of a group of sensors. Sensors belonging to the same group can be presented within the same widget"
+                },
+                "sensor_id":{
+                  "type":"string",
+                  "description":"ID of the sensor, must be unique within the group"
+                },
+                "display_name":{
+                  "type":"string",
+                  "description":"Name of the sensor"
+                },
+                "plugin":{
+                  "type":"object",
+                  "description":"Properties are dependant on the plugin used to retrieve the data",
+                  "anyOf":[
+                    {
+                      "title":"csv",
+                      "description":"Parse a csv file and for the given node_id read the given measure",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"csv"
+                        },
+                        "measure":{
+                          "type":"string"
+                        },
+                        "node_id":{
+                          "type":"string"
+                        },
+                        "polling_interval":{
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "name",
+                        "measure",
+                        "node_id"
+                      ]
+                    },
+                    {
+                      "title":"messagebridge",
+                      "description":"Listen for updates from Wirelessthings/ciseco sensors and read the given measure for the given node_id",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"messagebridge"
+                        },
+                        "measure":{
+                          "type":"string"
+                        },
+                        "node_id":{
+                          "type":"string"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "measure",
+                        "node_id"
+                      ]
+                    },
+                    {
+                      "title":"icloud",
+                      "description":"Retrive from icloud the location of an IOS device. Run python plugin_icloud.py --username=youricloudemail@email.com to configure the plugin first",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"icloud"
+                        },
+                        "username":{
+                          "type":"string"
+                        },
+                        "devices":{
+                          "type":"array",
+                          "items":{
+                            "type":"string",
+                            "title":"Device Name"
+                          }
+                        },
+                        "polling_interval":{
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "username"
+                      ]
+                    },
+                    {
+                      "title":"image",
+                      "description":"Retrive an image from a given url",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"image"
+                        },
+                        "url":{
+                          "type":"string"
+                        },
+                        "polling_interval":{
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "url"
+                      ]
+                    },
+                    {
+                      "title":"linux",
+                      "description":"Run a linux command to poll a sensor. It can be either a pre-defined measure or if set to custom command_poll and command_parse can be defined",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"linux"
+                        },
+                        "measure":{
+                          "type":"string",
+                          "enum":[
+                            "cpu_user",
+                            "cpu_system",
+                            "ram_used",
+                            "swap_used",
+                            "load_1",
+                            "load_5",
+                            "load_15",
+                            "network_services",
+                            "network_connections",
+                            "temperature",
+                            "custom"
+                          ]
+                        },
+                        "command_poll":{
+                          "type":"string"
+                        },
+                        "command_parse":{
+                          "type":"string"
+                        },
+                        "polling_interval":{
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "measure"
+                      ]
+                    },
+                    {
+                      "title":"wunderground",
+                      "description":"Retrieve from Weather Underground the statistic given by measure",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"wunderground"
+                        },
+                        "measure":{
+                          "type":"string",
+                          "enum":[
+                            "temperature",
+                            "humidity",
+                            "wind",
+                            "wind_gust",
+                            "pressure",
+                            "condition",
+                            "wind_dir",
+                            "forecast_condition",
+                            "forecast_pop",
+                            "forecast_rain",
+                            "forecast_snow",
+                            "forecast_temperature",
+                            "record_temperature",
+                            "record_temperature_year",
+                            "normal_temperature",
+                            "rain",
+                            "snow"
+                          ]
+                        },
+                        "location":{
+                          "name":"string"
+                        },
+                        "polling_interval":{
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "measure"
+                      ]
+                    },
+                    {
+                      "title":"weatherchannel",
+                      "description":"Retrieve from Weather Channel the statistic given by measure",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+                          "value":"wunderground"
+                        },
+                        "measure":{
+                          "type":"string",
+                          "enum":[
+                            "alerts"
+                          ]
+                        },
+                        "location":{
+                          "name":"string"
+                        },
+                        "polling_interval":{
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "measure"
+                      ]
+                    }
+                  ]
+                },
+                "format":{
+                  "type":"string",
+                  "enum":[
+                    "int",
+                    "float",
+                    "string",
+                    "temperature",
+                    "humidity",
+                    "size",
+                    "percentage",
+                    "voltage",
+                    "length",
+                    "pressure",
+                    "speed",
+                    "image",
+                    "calendar"
+                  ],
+                  "description":"The format of the data of this sensor"
+                },
+                "series":{
+                  "type":"array",
+                  "description":"Series to be added to the charts in the GUI",
+                  "items":{
+                    "type":"object",
+                    "title":"Series",
+                    "description":"Set of highcharts properites (http://api.highcharts.com/highstock) for the series. series_id defines the data to use (e.g. min, max, avg, range)"
+                  }
+                }
+              },
+              "required":[
+                "group_id",
+                "sensor_id",
+                "display_name",
+                "format"
+              ]
+            }
+          }
+        },
+        "required":[
+          "module_id",
+          "section_id",
+          "enabled",
+          "display_name",
+          "icon",
+          "widgets"
+        ]
       }
-    },
-    "sections": {
-      "type": "array",
-      "items": {}
-    },
-    "modules": {
-      "type": "array",
-      "items": {}
     }
-  }
+  },
+  "required":[
+    "db",
+    "units",
+    "timeframes",
+    "gui",
+    "alerter",
+    "sensors",
+    "notifications",
+    "logging",
+    "plugins",
+    "modules"
+  ]
 }

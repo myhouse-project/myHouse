@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from flask import Flask,request,send_from_directory,render_template,current_app
+from flask_compress import Compress
 import logging
 import json
 
@@ -14,6 +15,8 @@ import alerter
 
 # define the web application
 app = Flask(__name__,template_folder=conf["constants"]["base_dir"])
+# apply gzip compression 
+if conf["gui"]["compress"]: Compress(app)
 
 # render index if no page name is provided
 @app.route('/')

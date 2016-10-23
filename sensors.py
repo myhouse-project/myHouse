@@ -57,7 +57,7 @@ def poll(sensor):
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
         try: 
 		# retrieve the raw data 
-		data = plugins[sensor['plugin']['name']].poll(sensor)
+		data = plugins[sensor['plugin']['plugin_name']].poll(sensor)
                 # delete from the cache the previous value
                 db.delete(sensor['db_cache'])
 	        # store it in the cache
@@ -77,7 +77,7 @@ def parse(sensor):
 	measures = None
         try:
 		# parse the cached data
-		measures = plugins[sensor['plugin']['name']].parse(sensor,data)
+		measures = plugins[sensor['plugin']['plugin_name']].parse(sensor,data)
 		# format each values
 		for i in range(len(measures)): 
 			# normalize the measures
@@ -119,7 +119,7 @@ def store(sensor,measures):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if needed
-		if "current_history" in sensor and not sensor["current_history"]: db.delete(key)
+		if "single_instance" in sensor and sensor["single_instance"]: db.delete(key)
 		# check if there is already a value stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
@@ -186,15 +186,15 @@ def init_sensor(sensor,module_id):
         sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 	if "plugin" in sensor:
 		# ensure the sensor is using a valid plugin
-	        if sensor["plugin"]["name"] not in plugins:
-	                log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] plugin "+sensor["plugin"]["name"]+" not supported")
+	        if sensor["plugin"]["plugin_name"] not in plugins:
+	                log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] plugin "+sensor["plugin"]["plugin_name"]+" not supported")
 	                return None
 	        # define the cache location if cache is in use by the plugin
-		if hasattr(plugins[sensor["plugin"]["name"]], 'cache_schema'):
-	                if plugins[sensor["plugin"]["name"]].cache_schema(sensor) is None:
+		if hasattr(plugins[sensor["plugin"]["plugin_name"]], 'cache_schema'):
+	                if plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor) is None:
 	                        log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] invalid measure")
 	                        return None
-	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["name"]+":"+plugins[sensor["plugin"]["name"]].cache_schema(sensor)
+	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["plugin_name"]+":"+plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor)
 	return sensor
 
 # read or save the measure of a given sensor
@@ -247,10 +247,10 @@ def schedule_all():
 			# skip sensors without a plugin
 			if 'plugin' not in sensor: continue
 			# the plugin needs sensors to be registered with it first
-			if hasattr(plugins[sensor['plugin']['name']],'register'):
+			if hasattr(plugins[sensor['plugin']['plugin_name']],'register'):
 				# register the sensor
-				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with plugin service "+sensor['plugin']['name'])
-				plugins[sensor['plugin']['name']].register(sensor)
+				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with plugin service "+sensor['plugin']['plugin_name'])
+				plugins[sensor['plugin']['plugin_name']].register(sensor)
 			# the plugin needs the sensor to be polled
 			if "polling_interval" in sensor["plugin"]:
 				# schedule polling
@@ -323,6 +323,12 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
                 start = utils.history()
                 end = utils.now()
                 withscores = True
+        elif timeframe == "short_history":
+                # historical daily measures up to new
+                range = ":day"
+                start = utils.history(conf["timeframes"]["short_history_days"])
+                end = utils.now()
+                withscores = True
         elif timeframe == "today":
                 # today's measure
                 range = ":day"
@@ -339,7 +345,7 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 		# next days measures
                 range = ":day"
                 start = utils.day_start(utils.now())
-                end = utils.day_start(utils.now()+(conf["gui"]["forecast_timeframe_days"]-1)*conf["constants"]["1_day"])
+                end = utils.day_start(utils.now()+(conf["timeframes"]["forecast_days"]-1)*conf["constants"]["1_day"])
                 withscores = True
         else: return data
         # define the key to request
@@ -386,7 +392,7 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
         if sensor is None:
 	        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
 		return json.dumps("KO")
-	plugins[sensor["plugin"]["name"]].send(sensor,value,force=force)
+	plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
 	return json.dumps("OK")
 
 # allow running it both as a module and when called directly

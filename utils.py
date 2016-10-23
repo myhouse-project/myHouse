@@ -74,15 +74,15 @@ def hour_end(timestamp):
         return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
 # return the realtime timestamp
-def realtime(hours=conf["gui"]["realtime_timeframe_hours"]):
+def realtime(hours=conf["timeframes"]["realtime_hours"]):
 	return now()-hours*conf["constants"]["1_hour"]
 
 # return the recent timestamp
-def recent(hours=conf["gui"]["recent_timeframe_hours"]):
+def recent(hours=conf["timeframes"]["recent_hours"]):
 	return now()-hours*conf["constants"]["1_hour"]
 
 # return the history timestamp
-def history(days=conf["gui"]["history_timeframe_days"]):
+def history(days=conf["timeframes"]["history_days"]):
 	return now()-days*conf["constants"]["1_day"]
 
 # return true if the input is a number

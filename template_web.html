@@ -381,7 +381,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			if (layout["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",layout)
 			else if (layout["type"] == "image") add_sensor_image(tag+"_body",layout)
 			else if (layout["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",layout)
-			else if (layout["type"] in conf["constants"]["charts"]) add_sensor_chart(tag+"_body",layout)
+			else if (layout["type"] == "chart_short_inverted" || layout["type"] == "chart_short") add_sensor_chart(tag+"_body",layout)
 			else if (layout["type"] == "alerts") add_alerts_widget(tag+"_body",layout)
 			else if (layout["type"] == "checkbox") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
@@ -780,7 +780,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	function add_calender_widget(tag,layout) {
 		var id = tag.replace("#","")
 		// add the calendar
-		$(tag).html('<div class="'+id+'_calendar" style="width:100%; height:700px;"></div>')
+		$(tag).html('<div class="'+id+'_calendar" style="width:100%; height:950px;"></div>')
 		$("."+id+"_calendar").dhx_scheduler({
 			xml_date: "%Y-%m-%d %H:%i",
 			mode: "week",
