@@ -287,10 +287,6 @@ for chart_id in constants['charts']:
 	new_chart = constants['charts'][chart['template']].copy()
 	new_chart.update(chart)
 	constants['charts'][chart_id] = new_chart
-# load config schema
-        with open(constants['config_file_schema'], 'r') as file:
-		constants['config_schema'] = file.read()
-        file.close()
 
 # return all the configuration settings as an object
 def get_constants():
