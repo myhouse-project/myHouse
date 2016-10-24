@@ -36,6 +36,10 @@ def install_deps():
         log.debug(utils.run_command("pip install pyicloud"))
         log.info("Installing python-motionless...")
         log.debug(utils.run_command("pip install motionless"))
+        log.info("Installing python-flask-compress...")
+        log.debug(utils.run_command("pip install flask-compress"))
+        log.info("Installing python-jsonschema...")
+        log.debug(utils.run_command("pip install jsonschema"))
 
 # installation routine
 def install():

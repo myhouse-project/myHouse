@@ -646,11 +646,9 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(tag).append(buttons_html)
 		$(tag).append('<div class="row"><div id="'+editor_id+'" class="col-md-12" style="text-align:left;"></div></div>');
 		// configure the editor
-		var configuration = $.extend(true,{},conf);
-		delete configuration["constants"]
 		var options = {
-			startval: configuration,
-			schema: JSON.parse(conf["constants"]["config_schema"]),
+			startval: JSON.parse(conf["config_json"]),
+			schema: JSON.parse(conf["constants"]["config_schema_json"]),
 		}
 		JSONEditor.defaults.theme = 'bootstrap3';
 		JSONEditor.defaults.iconlib = 'fontawesome4';

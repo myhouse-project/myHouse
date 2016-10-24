@@ -466,7 +466,7 @@
             "items":{
               "type":"array",
               "title":"Row",
-              "description":"Each row has a size of 12, multiple widget can split the size",
+              "description":"Each row has a size of 12, multiple widgets can share the row",
               "items":{
                 "type":"object",
                 "title":"Widget",
@@ -493,14 +493,15 @@
                     "items":{
                       "type":"object",
                       "title":"Layout",
-                      "anyOf":[
+                      "oneOf":[
                         {
                           "title":"sensor_group_summary",
                           "description":"Generate a chart with min/max for each sensor of the group for today and yesterday",
                           "properties":{
                             "type":{
-                              "type":"string",
-                              "value":"sensor_group_summary"
+								"type": "string",
+								"enum": [ "sensor_group_summary" ],
+								"value": "sensor_group_summary"
                             },
                             "group":{
                               "type":"string"
@@ -518,6 +519,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "image" ],
                               "value":"image"
                             },
                             "sensor":{
@@ -536,6 +538,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "sensor_group_timeline" ],
                               "value":"sensor_group_timeline"
                             },
                             "group":{
@@ -564,6 +567,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "chart_short" ],
                               "value":"chart_short"
                             },
                             "sensor":{
@@ -592,6 +596,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "chart_short_inverted" ],
                               "value":"chart_short_inverted"
                             },
                             "sensor":{
@@ -620,6 +625,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "current" ],
                               "value":"current"
                             },
                             "sensor":{
@@ -643,6 +649,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "alerts" ],
                               "value":"alerts"
                             }
                           },
@@ -657,6 +664,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "checkbox" ],
                               "value":"checkbox"
                             },
                             "display_name":{
@@ -683,6 +691,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "input" ],
                               "value":"input"
                             },
                             "display_name":{
@@ -703,6 +712,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "separator" ],
                               "value":"separator"
                             }
                           },
@@ -717,6 +727,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "configuration" ],
                               "value":"configuration"
                             }
                           },
@@ -731,6 +742,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "calendar" ],
                               "value":"calendar"
                             },
                             "sensor":{
@@ -749,6 +761,7 @@
                           "properties":{
                             "type":{
                               "type":"string",
+							  "enum": [ "data" ],
                               "value":"data"
                             },
                             "sensor":{
@@ -767,7 +780,8 @@
                           "properties":{
                             "type":{
                               "type":"string",
-                              "value":"data"
+							  "enum": [ "table" ],
+                              "value":"table"
                             },
                             "sensor":{
                               "type":"string"
@@ -897,13 +911,14 @@
                 "plugin":{
                   "type":"object",
                   "description":"Properties are dependant on the plugin used to retrieve the data",
-                  "anyOf":[
+                  "oneOf":[
                     {
                       "title":"csv",
                       "description":"Parse a csv file and for the given node_id read the given measure",
                       "properties":{
                         "plugin_name":{
                           "type":"string",
+						  "enum": [ "csv" ],
                           "value":"csv"
                         },
                         "measure":{
@@ -921,7 +936,7 @@
                       },
                       "additionalProperties":false,
                       "required":[
-                        "name",
+                        "plugin_name",
                         "measure",
                         "node_id"
                       ]
@@ -932,6 +947,7 @@
                       "properties":{
                         "plugin_name":{
                           "type":"string",
+						  "enum": [ "messagebridge" ],
                           "value":"messagebridge"
                         },
                         "measure":{
@@ -939,12 +955,14 @@
                         },
                         "node_id":{
                           "type":"string"
+                        },
+                        "sleep_min":{
+                          "type":"integer"
                         }
                       },
                       "additionalProperties":false,
                       "required":[
                         "plugin_name",
-                        "measure",
                         "node_id"
                       ]
                     },
@@ -954,6 +972,7 @@
                       "properties":{
                         "plugin_name":{
                           "type":"string",
+						  "enum": [ "icloud" ],
                           "value":"icloud"
                         },
                         "username":{
@@ -985,9 +1004,16 @@
                       "properties":{
                         "plugin_name":{
                           "type":"string",
+						  "enum": [ "image" ],
                           "value":"image"
                         },
                         "url":{
+                          "type":"string"
+                        },
+                        "username":{
+                          "type":"string"
+                        },
+                        "password":{
                           "type":"string"
                         },
                         "polling_interval":{
@@ -1009,6 +1035,7 @@
                       "properties":{
                         "plugin_name":{
                           "type":"string",
+						  "enum": [ "linux" ],
                           "value":"linux"
                         },
                         "measure":{
@@ -1052,6 +1079,7 @@
                       "properties":{
                         "plugin_name":{
                           "type":"string",
+						  "enum": [ "wunderground" ],
                           "value":"wunderground"
                         },
                         "measure":{
@@ -1098,7 +1126,8 @@
                       "properties":{
                         "plugin_name":{
                           "type":"string",
-                          "value":"wunderground"
+						  "enum": [ "weatherchannel" ],
+                          "value":"weatherchannel"
                         },
                         "measure":{
                           "type":"string",
@@ -1156,7 +1185,6 @@
               "required":[
                 "group_id",
                 "sensor_id",
-                "display_name",
                 "format"
               ]
             }
