@@ -31,7 +31,7 @@ def register(sensor):
 	nodes[sensor['plugin']['node_id']][sensor['plugin']['measure']] = sensor
 	log.debug("["+__name__+"]["+sensor['plugin']['node_id']+"]["+sensor['plugin']['measure']+"] registered sensor "+sensor['module_id']+":"+sensor['sensor_id']+":"+sensor['sensor_id'])
 	# initialize the sensor
-	if "sleep_min" in sensor["plugin"]: init(sensor)
+	if "cycle_sleep_min" in sensor["plugin"]: init(sensor)
 
 # initialize a sensor when just started or when in an unknown status
 def init(sensor):
@@ -45,7 +45,7 @@ def send(sensor,data,force=False):
         # retrieve the sensor
         node_id = sensor["plugin"]["node_id"]
         if node_id not in nodes: return
-        if "sleep_min" not in sensor["plugin"] or force:
+        if "cycle_sleep_min" not in sensor["plugin"] or force:
                 # send the message directly
                 tx(sensor,data)
         else:
@@ -74,7 +74,7 @@ def tx(sensor,data,service_message=False):
 
 # send a sensor to sleep
 def sleep(sensor):
-	sleep_min = sensor["plugin"]["sleep_min"]*60
+	sleep_min = sensor["plugin"]["cycle_sleep_min"]*60
         tx(sensor,"SLEEP"+str(sleep_min).zfill(3)+"S",False)
 
 

@@ -25,7 +25,7 @@ rules = {
 	"minute": [],
 	"startup": [],
 }
-minutes_since = "minutes_since"
+minutes_since = "timestamp"
 
 # for a calendar parse the data and return the value
 def parse_calendar(data):

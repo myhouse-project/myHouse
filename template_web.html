@@ -242,8 +242,6 @@ th.dt-center, td.dt-center { text-align: center; }
 				if (location.hash) current_module = location.hash.replace('#','');
 				load_module(current_module);
 			};
-			// set auto-refresh
-			auto_refresh(conf["gui"]["auto_refresh_min"]*60);
 		});
 	});
 
@@ -315,6 +313,12 @@ th.dt-center, td.dt-center { text-align: center; }
 	// load module
 	function load_module(module_id) {
 		log("info","loading module "+module_id);
+		var module = get_module(module_id);
+		if (module == null) return;
+		// set auto-refresh
+		var minutes = conf["gui"]["auto_refresh_min"]
+		if ("auto_refresh_min" in module) minutes = module["auto_refresh_min"]
+		auto_refresh(minutes*60);
 		// clean up the body
 		$("#body").empty();
 		// load data from the sensors of the current module
@@ -665,17 +669,17 @@ th.dt-center, td.dt-center { text-align: center; }
 				$.post(hostname+"/save_config", {"configuration": JSON.stringify(editor.getValue())}, function (data) {
 					if (data != '"OK"') 
 						notify("danger","Unable to save the configuration")
-					else notify("success","Configuration saved. Restart the service to apply the changes")
+					else notify("success","The configuration has been saved. Restart the service to apply the changes")
 				});
 			}
 		});
 		// configure the restart button
 		$("#restart_service").unbind().on('click',function() {
+			$.get(hostname+"/restart")
 			var notify_object = $.notify('<strong>Restarting the service,</strong> please wait...', {
 				allow_dismiss: false,
 				showProgressbar: true,
 			});
-			$.get(hostname+"/restart")
 			auto_refresh(null);
 			setTimeout(function() {
 				notify_object.update({'type': 'success', 'message': '<strong>Success</strong>, reloading...'});
@@ -1134,7 +1138,7 @@ th.dt-center, td.dt-center { text-align: center; }
 
 	// auto refresh the page
 	function auto_refresh(seconds) {
-		if (seconds == null && refresher) {
+		if ((seconds == null || seconds == 0) && refresher) {
 			clearInterval(refresher);
 			return;
 		}
