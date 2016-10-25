@@ -2,6 +2,7 @@
 from flask import Flask,request,send_from_directory,render_template,current_app
 from flask_compress import Compress
 import logging
+import sys
 import json
 
 import utils
@@ -46,7 +47,10 @@ def save_config():
 # restart the service
 @app.route('/restart')
 def restart():
+	log.info("Restarting the service...")
+	shutdown_server()
 	utils.run_command(conf['constants']['service_location']+" restart")
+	sys.exit(0)
 
 # return the internet status
 @app.route('/internet_status')
@@ -99,6 +103,13 @@ def error(error):
 	message = request.path+": "+str(error)
 	log.warning(message)
 	return message
+
+# shutdown the web server
+def shutdown_server():
+	func = request.environ.get('werkzeug.server.shutdown')
+	if func is None:
+		raise RuntimeError('Not running with the Werkzeug Server')
+	func()
 
 # run the web server
 def run():

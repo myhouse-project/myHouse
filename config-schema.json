@@ -460,6 +460,10 @@
             "type":"boolean",
             "description":"Generate and send by email a daily digest of the module"
           },
+          "auto_refresh_min":{
+            "type":"integer",
+            "description":"Auto refresh the page every X minutes. If not defined the global GUI setting will be used"
+          },
           "widgets":{
             "type":"array",
             "description":"Widgets for the GUI to be presented for this module",
@@ -504,6 +508,7 @@
 								"value": "sensor_group_summary"
                             },
                             "group":{
+							  "description":"The group in the format module_id:group_id",
                               "type":"string"
                             }
                           },
@@ -523,6 +528,7 @@
                               "value":"image"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             }
                           },
@@ -542,10 +548,12 @@
                               "value":"sensor_group_timeline"
                             },
                             "group":{
+							  "description":"The group in the format module_id:group_id",
                               "type":"string"
                             },
                             "timeframe":{
                               "type":"string",
+							  "description":"The timeframe to be used for the chart",
                               "enum":[
                                 "recent",
                                 "history",
@@ -571,10 +579,12 @@
                               "value":"chart_short"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             },
                             "timeframe":{
                               "type":"string",
+							  "description":"The timeframe to be used for the chart",
                               "enum":[
                                 "recent",
                                 "history",
@@ -600,6 +610,7 @@
                               "value":"chart_short_inverted"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             },
                             "timeframe":{
@@ -629,12 +640,15 @@
                               "value":"current"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             },
                             "icon":{
+							  "description":"The URL of the icon to display. It can be a sensor called with the trailing /image",
                               "type":"string"
                             },
                             "timestamp":{
+							  "description":"An optional sensor in the format module_id:group_id:sensor_id for the last updated timestamp. If not defined the one belonging to the previously defined sensor will be used",
                               "type":"string"
                             }
                           },
@@ -668,15 +682,20 @@
                               "value":"checkbox"
                             },
                             "display_name":{
+							  "description":"An optional text to describe the purpose of the control",
                               "type":"string"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             },
                             "url":{
+							  "description":"An optional URL to call to e.g. send a message to a sensor",
                               "type":"string"
                             },
                             "disabled":{
+							  "description":"If the control cannot be manipulated by the user (e.g. read only)",
+							  "value": false,
                               "type":"boolean"
                             }
                           },
@@ -695,9 +714,11 @@
                               "value":"input"
                             },
                             "display_name":{
+							  "description":"An optional text to describe the purpose of the control",
                               "type":"string"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             }
                           },
@@ -746,6 +767,7 @@
                               "value":"calendar"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             }
                           },
@@ -765,6 +787,7 @@
                               "value":"data"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             }
                           },
@@ -784,9 +807,11 @@
                               "value":"table"
                             },
                             "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
                             },
                             "columns":{
+							  "description":"The headers of the table in the format column1,column2,etc.",
                               "type":"string"
                             }
                           },
@@ -865,7 +890,7 @@
                   "items":{
                     "type":"string",
                     "title":"Definition",
-                    "description":"Can be either a value or a query in the format module_id:group_id:sensor_id,start_position,end_position (e.g. start_position = -1 and ned_position = -1 is the last value of the sensor"
+                    "description":"Can be either a value or a query in the format module_id:group_id:sensor_id,start_position,end_position[,timestamp] where start_position = -1 and end_position = -1 is the last value of the sensor. When appended the keywork timestamp, the returned value will be the minutes passed by since the time the measure was taken"
                   }
                 },
                 "actions":{
@@ -922,15 +947,20 @@
                           "value":"csv"
                         },
                         "measure":{
+						  "description":"The measure to capture (e.g. TEMP)",
                           "type":"string"
                         },
                         "node_id":{
+						  "description":"The ID of the device (e.g. TA)",
                           "type":"string"
                         },
                         "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
                           "type":"integer"
                         },
                         "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
                           "type":"boolean"
                         }
                       },
@@ -951,12 +981,15 @@
                           "value":"messagebridge"
                         },
                         "measure":{
+						  "description":"The measure to capture (e.g. TEMP)",
                           "type":"string"
                         },
                         "node_id":{
+						  "description":"The ID of the device (e.g. TA)",
                           "type":"string"
                         },
-                        "sleep_min":{
+                        "cycle_sleep_min":{
+						  "description":"For devices with a Generic IO firmware, when the sensor reports AWAKE, put it to sleep for additional X minutes. Should not be defined for other firmware",
                           "type":"integer"
                         }
                       },
@@ -976,9 +1009,11 @@
                           "value":"icloud"
                         },
                         "username":{
+						  "description":"The username of the icloud account",
                           "type":"string"
                         },
                         "devices":{
+						  "description":"An optional list of device names to monitor. If not defined all the devices belonging to the icloud account will be considered",
                           "type":"array",
                           "items":{
                             "type":"string",
@@ -986,9 +1021,12 @@
                           }
                         },
                         "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
                           "type":"integer"
                         },
                         "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
                           "type":"boolean"
                         }
                       },
@@ -1008,18 +1046,24 @@
                           "value":"image"
                         },
                         "url":{
+						  "description":"Download the image from this URL",
                           "type":"string"
                         },
                         "username":{
+						  "description":"Optional username if the URL requires basic authentication",
                           "type":"string"
                         },
                         "password":{
+						  "description":"Optional password if the URL requires basic authentication",
                           "type":"string"
                         },
                         "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
                           "type":"integer"
                         },
                         "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
                           "type":"boolean"
                         }
                       },
@@ -1040,6 +1084,7 @@
                         },
                         "measure":{
                           "type":"string",
+						  "description":"The statistic to retrieve. Set to custom to provide custom commands to run",
                           "enum":[
                             "cpu_user",
                             "cpu_system",
@@ -1055,15 +1100,20 @@
                           ]
                         },
                         "command_poll":{
+						  "description":"The command to run to poll the raw data of the sensor (e.g. top)",
                           "type":"string"
                         },
                         "command_parse":{
+						  "description":"The command to run to parse the the raw data retrieved with command_poll (e.g. awk, sed, etc.)",
                           "type":"string"
                         },
                         "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
                           "type":"integer"
                         },
                         "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
                           "type":"boolean"
                         }
                       },
@@ -1084,6 +1134,7 @@
                         },
                         "measure":{
                           "type":"string",
+                          "description":"The statistic to retrieve",
                           "enum":[
                             "temperature",
                             "humidity",
@@ -1105,12 +1156,16 @@
                           ]
                         },
                         "location":{
-                          "name":"string"
+                          "description":"An optional location in the format latitude,longitude. If not provided the global configuration from plugins will be used",
+                          "type":"string"
                         },
                         "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
                           "type":"integer"
                         },
                         "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
                           "type":"boolean"
                         }
                       },
@@ -1131,17 +1186,22 @@
                         },
                         "measure":{
                           "type":"string",
+                          "description":"The statistic to retrieve",
                           "enum":[
                             "alerts"
                           ]
                         },
                         "location":{
-                          "name":"string"
+                          "description":"An optional location in the format latitude/longitude. If not provided the global configuration from plugins will be used",
+                          "type":"string"
                         },
                         "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
                           "type":"integer"
                         },
                         "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
                           "type":"boolean"
                         }
                       },
@@ -1172,13 +1232,16 @@
                   ],
                   "description":"The format of the data of this sensor"
                 },
+                "single_instance":{
+					"type":"boolean"
+                },
                 "series":{
                   "type":"array",
                   "description":"Series to be added to the charts in the GUI",
                   "items":{
                     "type":"object",
                     "title":"Series",
-                    "description":"Set of highcharts properites (http://api.highcharts.com/highstock) for the series. series_id defines the data to use (e.g. min, max, avg, range)"
+                    "description":"Set of highcharts properites (http://api.highcharts.com/highstock) for the series. The mandatory series_id defines the data to use (e.g. min, max, avg, range)"
                   }
                 }
               },
