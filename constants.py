@@ -37,7 +37,7 @@ constants = {
 	'web_template': "template_web.html",
 	'web_timeout': 10,
 	'web_use_reloader': True,
-	'map_type': 'satellite',
+	'map_type': 'hybrid',
 	'map_size_x': 640,
 	'map_size_y': 640,
 	'bot_brain_file': base_dir+"/bot.txt",
@@ -246,6 +246,19 @@ constants = {
 				'gridLineWidth': 1,
 			},
 		},
+                'chart_sensor_group_timeline_short_history': {
+                        'template': 'master',
+                        'chart': {
+                                'type': 'spline',
+                                'zoomType': 'x',
+                        },
+                        'xAxis': {
+                                'type': 'datetime',
+                                'tickInterval': 1*24*3600*1000,
+                                'tickWidth': 0,
+                                'gridLineWidth': 1,
+                        },
+                },
 		'chart_sensor_group_timeline_recent': {
 			'template': 'master',
                         'chart': {

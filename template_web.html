@@ -478,6 +478,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][layout["type"]]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		// set min/max based on the format
 		if (sensor["format"] == "percentage") options["yAxis"]["max"] = 100;
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
