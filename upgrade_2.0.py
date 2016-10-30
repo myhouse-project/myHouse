@@ -14,7 +14,7 @@ empty_target_db = False
 migrate_history = True
 history_start_timestamp = "-inf"
 history_end_timestamp = utils.now()
-migrate_recent = False
+migrate_recent = True
 
 # database number from which we are migrating
 db_from = 0

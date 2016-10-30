@@ -150,16 +150,20 @@ def run(module_id,rule_id,notify=True):
 			# execute an action
 			if "actions" in rule:
 				for action in rule["actions"]:
-					what,key,value = action.split(',')
+					split = action.split(',')
+				        what = split[0]
+				        key = split[1]
+				        value = split[2]
+				        force = True if len(split) > 3 and split[3] == "force" else False
 					# ensure the target sensor exists
-					split = key.split(":")
-					sensor = utils.get_sensor(split[0],split[1],split[2])
+					key_split = key.split(":")
+					sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
 					if sensor is None: 
 						log.warning("["+rule["rule_id"]+"] invalid sensor "+key)
 						continue
 					# execute the requested action
-					if what == "send": sensors.data_send(split[0],split[1],split[2],value)
-					elif what == "set": sensors.data_set(split[0],split[1],split[2],value)
+					if what == "send": sensors.data_send(key_split[0],key_split[1],key_split[2],value,force=force)
+					elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value)
 			# notify about the alert
 			if notify:
 				log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
