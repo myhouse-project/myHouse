@@ -7,6 +7,7 @@ import copy
 from shutil import copyfile
 from collections import OrderedDict
 import jsonschema
+import os.path
 
 config = None
 
@@ -32,13 +33,15 @@ def load():
         if config is not None: return
 	# load the constants
         const = constants.get_constants()
-        # open the config file and load it
-        with open(const['config_file'], 'r') as file:
-                config_file = file.read()
+        # define the location of the configuration file
+	config_file_location = const['config_file'] if os.path.isfile(const['config_file']) else const['config_file_default']
+	# open the config file and load it
+        with open(config_file_location, 'r') as file:
+                config_file_content = file.read()
 	file.close()
-	config = json.loads(config_file, object_pairs_hook=OrderedDict)
+	config = json.loads(config_file_content, object_pairs_hook=OrderedDict)
         # store the raw configuration into a variable
-        config["config_json"] = config_file
+        config["config_json"] = config_file_content
 	# load config schema
         with open(const['config_file_schema'], 'r') as file:
                 const['config_schema_json'] = file.read()
@@ -63,12 +66,15 @@ def load():
 # save the configuration
 def save(config_string):
 	const = constants.get_constants()
+	# validay the json file
         try:
 		new_config = json.loads(config_string, object_pairs_hook=OrderedDict)
         except ValueError, e:
                 print "unable to save configuration, invalid JSON provided: "+config_string
                 return json.dumps("KO")
+	# create a backup first
 	copyfile(const['config_file'],const['config_file_backup'])
+	# save the new config file
         with open(const['config_file'],'w') as file:
                 file.write(json.dumps(new_config,indent=2))
         file.close()
