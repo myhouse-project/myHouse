@@ -26,7 +26,7 @@ import plugin_icloud
 
 # variables
 plugins = {}
-poll_at_startup = False
+poll_at_startup = True
 
 # initialize the configured plugins
 def init_plugins(start_services):
@@ -391,6 +391,9 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
         if sensor is None:
 	        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
+		return json.dumps("KO")
+	if not hasattr(plugins[sensor["plugin"]["plugin_name"]], 'send'):
+		log.error("the plugin "+sensor["plugin"]["plugin_name"]+" does not allow sending messages")
 		return json.dumps("KO")
 	plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
 	return json.dumps("OK")

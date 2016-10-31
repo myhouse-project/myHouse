@@ -123,9 +123,9 @@ def add_sensor_group_timeline_chart(layout,widget):
 			# ignore range series for realtime charts
 			if layout["timeframe"] == "realtime" and series["series_id"] == "range": continue
 			# reduce the history timeframe for email notifications
-			if layout["timeframe"] == "history": layout["timeframe"] = "short_history"
+			timeframe = "short_history" if layout["timeframe"] == "history" else layout["timeframe"]
 			# add the series to the chart
-			add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,j)
+			add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,j)
 	chart['title']['text'] = widget["display_name"]
         generate_chart(chart,widget["widget_id"])
 
@@ -145,8 +145,8 @@ def add_sensor_chart(layout,widget):
 	for i in range(len(sensor["series"])):
 		series = sensor["series"][i]
                 # reduce the history timeframe for email notifications
-		if layout["timeframe"] == "history": layout["timeframe"] = "short_history"
-		add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,i)
+		timeframe = "short_history" if layout["timeframe"] == "history" else layout["timeframe"]
+		add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,i)
 	chart['title']['text'] = widget["display_name"]
         generate_chart(chart,widget["widget_id"])
 

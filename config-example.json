@@ -1,0 +1,3501 @@
+{
+  "db": {
+    "enabled": true,
+    "hostname": "localhost",
+    "port": 6379,
+    "database": 2
+  },
+  "units": {
+    "imperial": false,
+    "fahrenheit": false
+  },
+  "timeframes": {
+    "realtime_hours": 4,
+    "recent_hours": 24,
+    "history_days": 365,
+    "short_history_days": 30,
+    "forecast_days": 7,
+    "alerter_recent_hours": 24,
+    "alerter_history_days": 7
+  },
+  "gui": {
+    "enabled": true,
+    "compress": true,
+    "url": "http://raspberry.ip/",
+    "port": 80,
+    "default_module": "system",
+    "auto_refresh_min": 5,
+    "debug_console": false,
+    "sections": [
+      "Main",
+      "Sensors",
+      "Actuators",
+      "System",
+      "myHouse"
+    ]
+  },
+  "alerter": {
+    "enabled": true
+  },
+  "sensors": {
+    "enabled": true
+  },
+  "notifications": {
+    "enabled": true,
+    "email": {
+      "enabled": false,
+      "hostname": "localhost",
+      "from": "your@email.com",
+      "to": [
+        "your@email.com"
+      ],
+      "alerts_digest": false,
+      "module_digest": false,
+      "realtime_alerts": false
+    },
+    "slack": {
+      "enabled": false,
+      "bot_name": "housebot",
+      "bot_token": "YOUR_SLACK_API_KEY",
+      "channel": "general",
+      "realtime_alerts": false,
+      "interactive_bot": false
+    }
+  },
+  "logging": {
+    "myHouse": {
+      "level": "info",
+      "filename": "myHouse.log"
+    },
+    "webserver": {
+      "level": "warning",
+      "filename": "web.log"
+    },
+    "scheduler": {
+      "level": "critical",
+      "filename": "myHouse.log"
+    }
+  },
+  "plugins": {
+    "wunderground": {
+      "api_key": "YOUR_API_KEY",
+      "location": "40.71,74.00"
+    },
+    "weatherchannel": {
+      "api_key": "YOUR_API_KEY",
+      "location": "40.71/74.00"
+    },
+    "csv": {
+      "csv_file": "/opt/MessageBridge/CSVLogs/CSV_MessageBridge.csv"
+    },
+    "linux": null,
+    "image": null,
+    "icloud": null,
+    "messagebridge": {
+      "port_listen": 50140,
+      "port_send": 50141
+    }
+  },
+  "modules": [
+    {
+      "module_id": "dashboard",
+      "section_id": "Main",
+      "display_name": "Dashboard",
+      "icon": "fa-pie-chart",
+      "enabled": false,
+      "daily_digest": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "dashboard_external_temperature_summary",
+            "display_name": "External Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "outdoor:temperature:external",
+                "icon": "outdoor/temperature/condition/image?night_day=1"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "outdoor:temperature"
+              }
+            ]
+          },
+          {
+            "widget_id": "dashboard_external_temperature_recent",
+            "display_name": "External Temperature Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:temperature",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "dashboard_internal_temperature_summary",
+            "display_name": "Internal Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:temperature:living_room",
+                "icon": "web/images/home.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "indoor:temperature"
+              }
+            ]
+          },
+          {
+            "widget_id": "boiler_control",
+            "display_name": "Boiler Control",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "icon": "indoor/temperature/boiler_status/image",
+                "timestamp": "boiler:main:heartbeat"
+              },
+              {
+                "type": "separator"
+              },
+              {
+                "type": "checkbox",
+                "display_name": "Boiler Manual Switch",
+                "sensor": "boiler:main:switch",
+                "url": "boiler/main/switch/send/OUTA"
+              },
+              {
+                "type": "input",
+                "display_name": "Target Temperature",
+                "sensor": "boiler:main:max_temperature"
+              },
+              {
+                "type": "checkbox",
+                "display_name": "Scheduler Status",
+                "sensor": "boiler:scheduler:switch",
+                "disabled": true
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "dashboard_webcam_external",
+            "display_name": "Webcam External",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:neighbourhood:1"
+              }
+            ]
+          },
+          {
+            "widget_id": "dashboard_forecast_temperature",
+            "display_name": "Forecast",
+            "enabled": false,
+            "size": 4,
+            "layout": [
+              {
+                "type": "chart_short_inverted",
+                "sensor": "outdoor:forecast:temperature",
+                "timeframe": "forecast"
+              }
+            ]
+          },
+          {
+            "widget_id": "dashboard_forecast_pop",
+            "display_name": "Chance of rain",
+            "enabled": false,
+            "size": 2,
+            "layout": [
+              {
+                "type": "chart_short_inverted",
+                "sensor": "outdoor:forecast:pop",
+                "timeframe": "forecast"
+              }
+            ]
+          },
+          {
+            "widget_id": "dashboard_webcam_first_floor",
+            "display_name": "Webcam First Floor",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:inside:first_floor"
+              }
+            ]
+          }
+        ]
+      ],
+      "rules": [
+        {
+          "rule_id": "sensors_startup",
+          "display_name": "Initializing all the sensors",
+          "enabled": false,
+          "severity": "debug",
+          "run_every": "startup",
+          "conditions": [
+            "status_on == status_on"
+          ],
+          "definitions": {
+            "status_on": 1
+          },
+          "actions": [
+            "set,boiler:main:switch,0",
+            "set,boiler:scheduler:switch,0",
+            "set,indoor:temperature:boiler_status,0",
+            "set,indoor:temperature:boiler_status_prev,0",
+            "send,boiler:main:switch,OUTA0",
+            "set,indoor:alerts:flood_alert_status,0",
+            "set,indoor:alerts:flood,OFF",
+            "set,boiler:main:heartbeat_alert_status,0",
+            "set,boiler:keyfob:keyfob_a,0",
+            "set,boiler:keyfob:keyfob_b,0"
+          ]
+        }
+      ]
+    },
+    {
+      "module_id": "outdoor",
+      "section_id": "Sensors",
+      "display_name": "Outdoor",
+      "icon": "fa-sun-o",
+      "enabled": false,
+      "daily_digest": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "outdoor_forecast_temperature",
+            "display_name": "Forecast: Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "chart_short_inverted",
+                "sensor": "outdoor:forecast:temperature",
+                "timeframe": "forecast"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_forecast_condition",
+            "display_name": "Forecast: Condition",
+            "enabled": false,
+            "size": 2,
+            "layout": [
+              {
+                "type": "chart_short",
+                "sensor": "outdoor:forecast:condition",
+                "timeframe": "forecast"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_forecast_pop",
+            "display_name": "Forecast: Chance of rain",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "chart_short_inverted",
+                "sensor": "outdoor:forecast:pop",
+                "timeframe": "forecast"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_forecast_rain",
+            "display_name": "Forecast: Rain",
+            "enabled": false,
+            "size": 2,
+            "layout": [
+              {
+                "type": "chart_short_inverted",
+                "sensor": "outdoor:forecast:rain",
+                "timeframe": "forecast"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_forecast_snow",
+            "display_name": "Forecast: Snow",
+            "enabled": false,
+            "size": 2,
+            "layout": [
+              {
+                "type": "chart_short_inverted",
+                "sensor": "outdoor:forecast:snow",
+                "timeframe": "forecast"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "outdoor_temperature_summary",
+            "display_name": "Temperature: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "outdoor:temperature:external",
+                "icon": "outdoor/temperature/condition/image"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "outdoor:temperature"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_temperature_recent",
+            "display_name": "Temperature: Recent",
+            "enabled": false,
+            "size": 5,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:temperature",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_precipitation_history",
+            "display_name": "Precipitation: History",
+            "enabled": false,
+            "size": 4,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:precipitation",
+                "timeframe": "history"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_temperature_history",
+            "display_name": "Temperature: History",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:temperature",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "outdoor_wind_summary",
+            "display_name": "Wind: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "outdoor:wind:speed",
+                "icon": "web/images/wind.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "outdoor:wind"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_wind_recent",
+            "display_name": "Wind: Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:wind",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_wind_history",
+            "display_name": "Wind: History",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:wind",
+                "timeframe": "history"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_humidity_summary",
+            "display_name": "Humidity: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "outdoor:humidity:external",
+                "icon": "web/images/humidity.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "outdoor:humidity"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_humidity_recent",
+            "display_name": "Humidity: Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:humidity",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_humidity_history",
+            "display_name": "Humidity: History",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:humidity",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "outdoor_light_summary",
+            "display_name": "Ambient Light: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "outdoor:light:external",
+                "icon": "web/images/light.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "outdoor:light"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_light_recent",
+            "display_name": "Ambient Light: Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:light",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_light_history",
+            "display_name": "Ambient Light: History",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:light",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "outdoor_pressure_summary",
+            "display_name": "Pressure: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "outdoor:pressure:external",
+                "icon": "web/images/pressure.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "outdoor:pressure"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_pressure_recent",
+            "display_name": "Pressure: Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:pressure",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "outdoor_pressure_history",
+            "display_name": "pressure: History",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "outdoor:pressure",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ]
+      ],
+      "rules": [
+        {
+          "rule_id": "weather_alert",
+          "display_name": "%alert_latest%",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "alert_latest != alert_empty",
+            "alert_latest != alert_previous"
+          ],
+          "definitions": {
+            "alert_latest": "outdoor:alerts:weather_alerts,-1,-1",
+            "alert_previous": "outdoor:alerts:weather_alerts,-2,-2",
+            "alert_empty": ""
+          }
+        },
+        {
+          "rule_id": "temperature_max_record",
+          "display_name": "Yesterday outdoor maximum temperature was %temperature_max_yesterday%, higher than the record %record_max_yesterday% (%record_max_yesterday_year%) for that day",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_max_yesterday > record_max_yesterday"
+          ],
+          "definitions": {
+            "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
+            "record_max_yesterday": "outdoor:temperature:record:day:max,-2,-2",
+            "record_max_yesterday_year": "outdoor:temperature:record_year:day:max,-2,-2"
+          }
+        },
+        {
+          "rule_id": "temperature_max_normal",
+          "display_name": "Yesterday outdoor maximum temperature was %temperature_max_yesterday%, higher than %normal_max_yesterday% which I would have expected for this time of the year",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_max_yesterday > normal_max_yesterday"
+          ],
+          "definitions": {
+            "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
+            "normal_max_yesterday": "outdoor:temperature:normal:day:max,-2,-2"
+          }
+        },
+        {
+          "rule_id": "temperature_max_week",
+          "display_name": "Yesterday outdoor maximum temperature %temperature_max_yesterday% was the highest of the last 5 days",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_max_yesterday > temperature_max_week"
+          ],
+          "definitions": {
+            "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
+            "temperature_max_week": "outdoor:temperature:external:day:max,-7,-3"
+          }
+        },
+        {
+          "rule_id": "temperature_min_record",
+          "display_name": "Yesterday outdoor minimum temperature was %temperature_min_yesterday%, lower than the record %record_min_yesterday% (%record_min_yesterday_year%) for that day",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_min_yesterday < record_min_yesterday"
+          ],
+          "definitions": {
+            "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
+            "record_min_yesterday": "outdoor:temperature:record:day:min,-2,-2",
+            "record_min_yesterday_year": "outdoor:temperature:record_year:day:min,-2,-2"
+          }
+        },
+        {
+          "rule_id": "temperature_min_normal",
+          "display_name": "Yesterday outdoor mininum temperature was %temperature_min_yesterday%, lower than %normal_min_yesterday% which I would have expected for this time of the year",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_min_yesterday < normal_min_yesterday"
+          ],
+          "definitions": {
+            "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
+            "normal_min_yesterday": "outdoor:temperature:normal:day:min,-2,-2"
+          }
+        },
+        {
+          "rule_id": "temperature_min_week",
+          "display_name": "Yesterday outdoor min temperature %temperature_min_yesterday% was the lowest of the last 5 days",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_min_yesterday > temperature_min_week"
+          ],
+          "definitions": {
+            "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
+            "temperature_min_week": "outdoor:temperature:external:day:min,-7,-3"
+          }
+        },
+        {
+          "rule_id": "temperature_avg_max_week",
+          "display_name": "Yesterday outdoor average temperature %temperature_avg_yesterday% was the highest of the last five days",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_avg_yesterday > temperature_avg_week"
+          ],
+          "definitions": {
+            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2",
+            "temperature_avg_week": "outdoor:temperature:external:day:avg,-7,-3"
+          }
+        },
+        {
+          "rule_id": "temperature_avg_min_week",
+          "display_name": "Yesterday outdoor average temperature %temperature_avg_yesterday% was the lowest of the last five days",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "temperature_avg_yesterday < temperature_avg_week"
+          ],
+          "definitions": {
+            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2",
+            "temperature_avg_week": "outdoor:temperature:external:day:avg,-7,-3"
+          }
+        },
+        {
+          "rule_id": "high_temperature",
+          "display_name": "Weather is getting too hot, external temperature has reached %temperature_current% during the last hour",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature_current > temperature_threshold"
+          ],
+          "definitions": {
+            "temperature_current": "outdoor:temperature:external:hour:avg,-1,-1",
+            "temperature_threshold": 35
+          }
+        },
+        {
+          "rule_id": "low_temperature",
+          "display_name": "Weather is getting too cold, external temperature has reached %temperature_current% during the last hour",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature_current < temperature_threshold"
+          ],
+          "definitions": {
+            "temperature_current": "outdoor:temperature:external:hour:avg,-1,-1",
+            "temperature_threshold": 0
+          }
+        },
+        {
+          "rule_id": "rain",
+          "display_name": "Expect rain in the next few days",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "rain > no_rain"
+          ],
+          "definitions": {
+            "rain": "outdoor:forecast:rain:day:avg,-5,-1",
+            "no_rain": 0
+          }
+        },
+        {
+          "rule_id": "snow",
+          "display_name": "Expect snow in the next few days",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [
+            "snow > no_snow"
+          ],
+          "definitions": {
+            "snow": "outdoor:forecast:snow:day:avg,-5,-1",
+            "no_snow": 0
+          }
+        },
+        {
+          "rule_id": "temperature_yesterday",
+          "display_name": "Yesterday average temperature outside was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [],
+          "definitions": {
+            "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
+            "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
+            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2"
+          }
+        },
+        {
+          "rule_id": "temperature_today",
+          "display_name": "So far, today's average temperature outside has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "temperature_now": "outdoor:temperature:external,-1,-1",
+            "temperature_max": "outdoor:temperature:external:day:max,-1,-1",
+            "temperature_min": "outdoor:temperature:external:day:min,-1,-1",
+            "temperature_avg": "outdoor:temperature:external:day:avg,-1,-1"
+          }
+        },
+        {
+          "rule_id": "temperature_record",
+          "display_name": "Today's temperature records outside are %temperature_min% (%temperature_min_year%) as minimum, %temperature_max% (%temperature_max_year%) as the maximum",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [],
+          "definitions": {
+            "temperature_max": "outdoor:temperature:record:day:max,-1,-1",
+            "temperature_min": "outdoor:temperature:record:day:min,-1,-1",
+            "temperature_max_year": "outdoor:temperature:record_year:day:max,-1,-1",
+            "temperature_min_year": "outdoor:temperature:record_year:day:min,-1,-1"
+          }
+        },
+        {
+          "rule_id": "forecast_today",
+          "display_name": "Expect for today %condition% weather, temperature between %temperature_min% and %temperature_max% with a chance of rain of %pop%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [],
+          "definitions": {
+            "temperature_min": "outdoor:forecast:temperature:day:min,-5,-5",
+            "temperature_max": "outdoor:forecast:temperature:day:max,-5,-5",
+            "pop": "outdoor:forecast:pop:day:avg,-5,-5",
+            "condition": "outdoor:forecast:condition:day:avg,-5,-5"
+          }
+        },
+        {
+          "rule_id": "forecast_tomorrow",
+          "display_name": "Forecast for tomorrow is %condition% weather, temperature between %temperature_min% and %temperature_max% with a chance of rain of %pop%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "temperature_min": "outdoor:forecast:temperature:day:min,-4,-4",
+            "temperature_max": "outdoor:forecast:temperature:day:max,-4,-4",
+            "pop": "outdoor:forecast:pop:day:avg,-4,-4",
+            "condition": "outdoor:forecast:condition:day:avg,-4,-4"
+          }
+        }
+      ],
+      "sensors": [
+        {
+          "group_id": "forecast",
+          "sensor_id": "temperature",
+          "display_name": "Temperature",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "forecast_temperature",
+            "polling_interval": 60
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "range",
+              "type": "columnrange"
+            }
+          ]
+        },
+        {
+          "group_id": "forecast",
+          "sensor_id": "condition",
+          "display_name": "Condition",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "forecast_condition",
+            "polling_interval": 60
+          },
+          "format": "string",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "flags",
+              "width": 20,
+              "heigth": 20,
+              "y": -80
+            }
+          ]
+        },
+        {
+          "group_id": "forecast",
+          "sensor_id": "pop",
+          "display_name": "Chance of rain",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "forecast_pop",
+            "polling_interval": 60
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "bar"
+            }
+          ]
+        },
+        {
+          "group_id": "forecast",
+          "sensor_id": "rain",
+          "display_name": "Rain",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "forecast_rain",
+            "polling_interval": 60
+          },
+          "format": "length",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "bar"
+            }
+          ]
+        },
+        {
+          "group_id": "forecast",
+          "sensor_id": "snow",
+          "display_name": "Snow",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "forecast_snow",
+            "polling_interval": 60
+          },
+          "format": "length",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "bar"
+            }
+          ]
+        },
+        {
+          "group_id": "alerts",
+          "sensor_id": "weather_alerts",
+          "display_name": "Weather Alert",
+          "plugin": {
+            "plugin_name": "weatherchannel",
+            "measure": "alerts",
+            "polling_interval": 60
+          },
+          "format": "string"
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "external",
+          "display_name": "External",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "TEMP",
+            "node_id": "PA"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          },
+          "bias": 1.5
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "record",
+          "display_name": "Record",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "record_temperature",
+            "polling_interval": 1440
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "min",
+              "type": "spline",
+              "color": "blue",
+              "dashStyle": "ShortDash",
+              "lineWidth": 1,
+              "dataLabels": {
+                "enabled": false
+              }
+            },
+            {
+              "series_id": "max",
+              "type": "spline",
+              "color": "red",
+              "dashStyle": "ShortDash",
+              "lineWidth": 1,
+              "dataLabels": {
+                "enabled": false
+              }
+            }
+          ]
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "normal",
+          "display_name": "Normal",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "normal_temperature",
+            "polling_interval": 1440
+          },
+          "format": "temperature"
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "condition",
+          "display_name": "Condition",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "condition",
+            "polling_interval": 10
+          },
+          "format": "string",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "flags",
+              "onSeries": "external:avg",
+              "width": 15,
+              "heigth": 15
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": false
+          }
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "record_year",
+          "display_name": "Record Year",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "record_temperature_year",
+            "polling_interval": 1440
+          },
+          "format": "int",
+          "group_summary_exclude": true
+        },
+        {
+          "group_id": "precipitation",
+          "sensor_id": "rain",
+          "display_name": "Rain",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "rain",
+            "polling_interval": 120
+          },
+          "format": "length",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "bar"
+            }
+          ]
+        },
+        {
+          "group_id": "precipitation",
+          "sensor_id": "snow",
+          "display_name": "Snow",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "snow",
+            "polling_interval": 120
+          },
+          "format": "length",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "bar"
+            }
+          ]
+        },
+        {
+          "group_id": "wind",
+          "sensor_id": "speed",
+          "display_name": "Wind",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "wind",
+            "polling_interval": 10
+          },
+          "format": "speed",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "wind",
+          "sensor_id": "gust",
+          "display_name": "Wind Gust",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "wind_gust",
+            "polling_interval": 10
+          },
+          "format": "speed",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "wind",
+          "sensor_id": "wind_direction",
+          "display_name": "Wind Direction",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "wind_dir",
+            "polling_interval": 10
+          },
+          "format": "string",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "flags",
+              "onSeries": "speed:avg",
+              "width": 15,
+              "heigth": 15
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": false
+          }
+        },
+        {
+          "group_id": "humidity",
+          "sensor_id": "external",
+          "display_name": "External",
+          "plugin": {
+            "plugin_name": "wunderground",
+            "measure": "humidity",
+            "polling_interval": 10
+          },
+          "format": "humidity",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "light",
+          "sensor_id": "external",
+          "display_name": "External",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "LVAL",
+            "node_id": "LA"
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "pressure",
+          "sensor_id": "external",
+          "display_name": "External",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BAR",
+            "node_id": "PA"
+          },
+          "format": "pressure",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "indoor",
+      "section_id": "Sensors",
+      "display_name": "Indoor",
+      "icon": "fa-home",
+      "enabled": false,
+      "daily_digest": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "living_room_temperature",
+            "display_name": "Living Room Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:temperature:living_room",
+                "icon": "web/images/living_room.png"
+              }
+            ]
+          },
+          {
+            "widget_id": "ground_floor_temperature",
+            "display_name": "Ground Floor Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:temperature:ground_floor",
+                "icon": "web/images/guest_room.png"
+              }
+            ]
+          },
+          {
+            "widget_id": "bedroom_temperature",
+            "display_name": "Bedroom Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:temperature:bedroom",
+                "icon": "web/images/bedroom.png"
+              }
+            ]
+          },
+          {
+            "widget_id": "study_room_temperature",
+            "display_name": "Study Room Temperature",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:temperature:study_room",
+                "icon": "web/images/study_room.png"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "indoor_temperature_summary",
+            "display_name": "Temperature: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_summary",
+                "group": "indoor:temperature"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_temperature_realtime",
+            "display_name": "Temperature: Realtime",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:temperature",
+                "timeframe": "realtime"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_temperature_recent",
+            "display_name": "Temperature: Recent",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:temperature",
+                "timeframe": "recent"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "indoor_temperature_history",
+            "display_name": "Temperature: History",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:temperature",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "indoor_humidity_summary",
+            "display_name": "Humidity: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:humidity:first_floor",
+                "icon": "web/images/humidity.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "indoor:humidity"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_humidity_recent",
+            "display_name": "Humidity: Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:humidity",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_humidity_history",
+            "display_name": "Humidity: History",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:humidity",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "indoor_fridge_summary",
+            "display_name": "Fridge: Summary",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:fridge:refrigerator",
+                "icon": "web/images/fridge.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "indoor:fridge"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_fridge_recent",
+            "display_name": "Fridge: Recent",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:fridge",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_fridge_history",
+            "display_name": "Fridge: History",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:fridge",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "indoor_battery_history",
+            "display_name": "Battery: History",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:battery",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ]
+      ],
+      "rules": [
+        {
+          "rule_id": "indoor_temperature_high",
+          "display_name": "Pay attention, the temperature inside is very high, it has reached %temperature_avg% during the last hour",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature_avg > threshold"
+          ],
+          "definitions": {
+            "temperature_avg": "indoor:temperature:study_room:hour:avg,-1,-1",
+            "threshold": 30
+          }
+        },
+        {
+          "rule_id": "indoor_temperature_low",
+          "display_name": "Pay attention, the temperature inside is very low, it has reached %temperature_avg% during the last hour",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature_avg < threshold"
+          ],
+          "definitions": {
+            "temperature_avg": "indoor:temperature:study_room:hour:avg,-1,-1",
+            "threshold": 18
+          }
+        },
+        {
+          "rule_id": "refrigerator_temperature_high",
+          "display_name": "Pay attention, the temperature of the refrigerator is too high, it has reached %temperature_avg%",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature_avg > threshold"
+          ],
+          "definitions": {
+            "temperature_avg": "indoor:fridge:refrigerator:hour:max,-1,-1",
+            "threshold": 15
+          }
+        },
+        {
+          "rule_id": "freezer_temperature_high",
+          "display_name": "Pay attention, the temperature of the freezer is too high, it has reached %temperature_avg%",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature_avg > threshold"
+          ],
+          "definitions": {
+            "temperature_avg": "indoor:fridge:freezer:hour:max,-1,-1",
+            "threshold": -10
+          }
+        },
+        {
+          "rule_id": "indoor_temperature_yesterday",
+          "display_name": "Yesterday first floor average temperature was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "temperature_max_yesterday": "indoor:temperature:study_room:day:max,-2,-2",
+            "temperature_min_yesterday": "indoor:temperature:study_room:day:min,-2,-2",
+            "temperature_avg_yesterday": "indoor:temperature:study_room:day:avg,-2,-2"
+          }
+        },
+        {
+          "rule_id": "indoor_temperature_today",
+          "display_name": "So far, today's first floor average temperature has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "temperature_now": "indoor:temperature:study_room,-1,-1",
+            "temperature_max": "indoor:temperature:study_room:day:max,-1,-1",
+            "temperature_min": "indoor:temperature:study_room:day:min,-1,-1",
+            "temperature_avg": "indoor:temperature:study_room:day:avg,-1,-1"
+          }
+        },
+        {
+          "rule_id": "ground_floor_temperature",
+          "display_name": "In the ground floor, the average temperature today has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "temperature_now": "indoor:temperature:ground_floor,-1,-1",
+            "temperature_max": "indoor:temperature:ground_floor:day:max,-1,-1",
+            "temperature_min": "indoor:temperature:ground_floor:day:min,-1,-1",
+            "temperature_avg": "indoor:temperature:ground_floor:day:avg,-1,-1"
+          }
+        },
+        {
+          "rule_id": "fridge_temperature",
+          "display_name": "The current temperature of the refrigerator is %refrigerator_temperature%, the temperature of the freezer is %freezer_temperature%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "refrigerator_temperature": "indoor:fridge:refrigerator,-1,-1",
+            "freezer_temperature": "indoor:fridge:freezer,-1,-1"
+          }
+        },
+        {
+          "rule_id": "flood_alert_on",
+          "display_name": "Pay attention, we have a flood alert indoor!",
+          "enabled": false,
+          "severity": "alert",
+          "run_every": "minute",
+          "conditions": [
+            "flood_status == flood_alert",
+            "flood_alert_status == status_off"
+          ],
+          "definitions": {
+            "flood_status": "indoor:alerts:flood,-1,-1",
+            "flood_alert_status": "indoor:alerts:flood_alert_status,-1,-1",
+            "flood_alert": "ALRT",
+            "status_off": 0
+          },
+          "actions": [
+            "set,indoor:alerts:flood_alert_status,1"
+          ]
+        },
+        {
+          "rule_id": "flood_alert_off",
+          "display_name": "Feel safe, no more flood alert indoor",
+          "enabled": false,
+          "severity": "alert",
+          "run_every": "minute",
+          "conditions": [
+            "flood_status == no_flood",
+            "flood_alert_status == status_on"
+          ],
+          "definitions": {
+            "flood_status": "indoor:alerts:flood,-1,-1",
+            "flood_alert_status": "indoor:alerts:flood_alert_status,-1,-1",
+            "no_flood": "OFF",
+            "status_on": 1
+          },
+          "actions": [
+            "set,indoor:alerts:flood_alert_status,0"
+          ]
+        }
+      ],
+      "sensors": [
+        {
+          "group_id": "alerts",
+          "sensor_id": "flood",
+          "display_name": "Flood Alert",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "FLOOD",
+            "node_id": "FA"
+          },
+          "format": "string"
+        },
+        {
+          "group_id": "alerts",
+          "sensor_id": "flood_alert_status",
+          "format": "int"
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "living_room",
+          "display_name": "Living Room",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "TEMP",
+            "node_id": "HB"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "ground_floor",
+          "display_name": "Ground Floor",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "TEMP",
+            "node_id": "HA"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "bedroom",
+          "display_name": "Bedroom",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "TEMP",
+            "node_id": "TC"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "study_room",
+          "display_name": "Study Room",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "cat /sys/bus/w1/devices/28-0000067b9508/w1_slave",
+            "command_parse": "grep -o -E 't=[0-9]+' | sed 's/t=//'|awk '{printf \"%.1f\",$0/1000}'",
+            "polling_interval": 10
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          },
+          "bias": -1.5
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "boiler_status",
+          "display_name": "Boiler Status",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "OUTA",
+            "node_id": "GA"
+          },
+          "format": "int",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "flags",
+              "onSeries": "living_room:avg",
+              "width": 15,
+              "heigth": 15
+            }
+          ],
+          "summarize": {
+            "avg": false,
+            "min_max": true
+          },
+          "group_summary_exclude": true
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "boiler_status_prev",
+          "format": "int",
+          "group_summary_exclude": true
+        },
+        {
+          "group_id": "humidity",
+          "sensor_id": "first_floor",
+          "display_name": "First Floor",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "RHUM",
+            "node_id": "HB"
+          },
+          "format": "humidity",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "humidity",
+          "sensor_id": "ground_floor",
+          "display_name": "Ground Floor",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "RHUM",
+            "node_id": "HA"
+          },
+          "format": "humidity",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "fridge",
+          "sensor_id": "refrigerator",
+          "display_name": "Refrigerator",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "TEMP",
+            "node_id": "TA"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "fridge",
+          "sensor_id": "freezer",
+          "display_name": "Freezer",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "TEMP",
+            "node_id": "TB"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "temperature_refrigerator",
+          "display_name": "Temperature Refrigerator",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "TA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "step": true
+            },
+            {
+              "value": 2,
+              "color": "red",
+              "dashStyle": "shortdash",
+              "width": 2,
+              "label": {
+                "text": "Battery Low"
+              }
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "temperature_freezer",
+          "display_name": "Temperature Freezer",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "TB"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "temperature_bedroom",
+          "display_name": "Temperature Bedroom",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "TC"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "humidity_ground_floor",
+          "display_name": "Temperature/Humidity Ground Floor",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "HA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "humidity_first_floor",
+          "display_name": "Temperature/Humidity First Floor",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "HB"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "light",
+          "display_name": "Ambient Light",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "LA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "step": true,
+              "type": "line"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "pressure",
+          "display_name": "Pressure/Temperature External",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "PA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "step": true,
+              "type": "line"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "flood",
+          "display_name": "Flood",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "FA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "step": true,
+              "type": "line"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "switch",
+          "display_name": "Tilt Switch",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "SA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "step": true,
+              "type": "line"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "battery",
+          "sensor_id": "boiler",
+          "display_name": "Boiler Switch",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BATT",
+            "node_id": "GA"
+          },
+          "format": "voltage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "webcams",
+      "section_id": "Sensors",
+      "display_name": "Webcams",
+      "icon": "fa-video-camera",
+      "enabled": true,
+      "daily_digest": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "webcams_neighbourhood_1",
+            "display_name": "Neighbourhood: 1",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:neighbourhood:1"
+              }
+            ]
+          },
+          {
+            "widget_id": "webcams_neighbourhood_2",
+            "display_name": "Neighbourhood: 2",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:neighbourhood:2"
+              }
+            ]
+          },
+          {
+            "widget_id": "webcams_neighbourhood_3",
+            "display_name": "Neighbourhood: 3",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:neighbourhood:3"
+              }
+            ]
+          },
+          {
+            "widget_id": "webcams_neighbourhood_4",
+            "display_name": "Neighbourhood: 4",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:neighbourhood:4"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "webcams_indoor",
+            "display_name": "webcam",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "webcams:inside:first_floor"
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+          "group_id": "neighbourhood",
+          "sensor_id": "1",
+          "display_name": "Webcam 1",
+          "plugin": {
+            "plugin_name": "image",
+            "url": "http://www.mylivestreams.com/images/camera/large_10724.jpg",
+            "polling_interval": 20
+          },
+          "format": "image",
+          "single_instance": true
+        },
+        {
+          "group_id": "neighbourhood",
+          "sensor_id": "2",
+          "display_name": "Webcam 2",
+          "plugin": {
+            "plugin_name": "image",
+            "url": "http://wirednewyork.com/images/webcams/wired-new-york-webcam1.jpg",
+            "polling_interval": 20
+          },
+          "format": "image",
+          "single_instance": true
+        },
+        {
+          "group_id": "neighbourhood",
+          "sensor_id": "3",
+          "display_name": "Webcam 3",
+          "plugin": {
+            "plugin_name": "image",
+            "url": "http://www.mylivestreams.com/images/camera/large_10059.jpg",
+            "polling_interval": 20
+          },
+          "format": "image",
+          "single_instance": true
+        },
+        {
+          "group_id": "neighbourhood",
+          "sensor_id": "4",
+          "display_name": "Webcam 4",
+          "plugin": {
+            "plugin_name": "image",
+            "url": "http://wirednewyork.com/images/webcams/wired-new-york-webcam2-fleet-week.jpg",
+            "polling_interval": 20
+          },
+          "format": "image",
+          "single_instance": true
+        },
+        {
+          "group_id": "inside",
+          "sensor_id": "first_floor",
+          "display_name": "First Floor",
+          "plugin": {
+            "plugin_name": "image",
+            "url": "http://webcam/snapshot.cgi",
+            "username": "guest",
+            "password": "",
+            "polling_interval": 20
+          },
+          "format": "image",
+          "single_instance": true
+        }
+      ]
+    },
+    {
+      "module_id": "where_are_we",
+      "section_id": "Sensors",
+      "display_name": "Where are we?",
+      "icon": "fa-map-marker",
+      "enabled": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "location",
+            "display_name": "Location",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "image",
+                "sensor": "where_are_we:location:icloud"
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+          "group_id": "location",
+          "sensor_id": "icloud",
+          "display_name": "Location",
+          "plugin": {
+            "plugin_name": "icloud",
+            "username": "your@email.com",
+            "poll_on_demand": true
+          },
+          "format": "image",
+          "single_instance": true
+        }
+      ]
+    },
+    {
+      "module_id": "system",
+      "section_id": "System",
+      "display_name": "Status",
+      "icon": "fa-linux",
+      "enabled": true,
+      "daily_digest": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "system_cpu_summary",
+            "display_name": "CPU: Summary",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "system:cpu:cpu_user",
+                "icon": "web/images/cpu.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "system:cpu"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_cpu_recent",
+            "display_name": "CPU: Recent",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:cpu",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_cpu_history",
+            "display_name": "CPU: History",
+            "enabled": true,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:cpu",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "system_memory_summary",
+            "display_name": "Memory: Summary",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "system:memory:ram",
+                "icon": "web/images/memory.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "system:memory"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_memory_recent",
+            "display_name": "Memory: Recent",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:memory",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_memory_history",
+            "display_name": "Memory: History",
+            "enabled": true,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:memory",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "system_load_summary",
+            "display_name": "Load: Summary",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "system:load:load_1",
+                "icon": "web/images/load.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "system:load"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_load_recent",
+            "display_name": "Load: Recent",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:load",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_load_history",
+            "display_name": "Load: History",
+            "enabled": true,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:load",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "system_network_connections_summary",
+            "display_name": "Network Connections: Summary",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "system:network:connections",
+                "icon": "web/images/network.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "system:network"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_network_connections_recent",
+            "display_name": "Network Connections: Recent",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:network",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_network_connections_history",
+            "display_name": "Network Connections: History",
+            "enabled": true,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:network",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "system_temperature_summary",
+            "display_name": "Temperature: Summary",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "system:temperature:temperature",
+                "icon": "web/images/temperature.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "system:temperature"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_temperature_recent",
+            "display_name": "Temperature: Recent",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:temperature",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "system_temperature_history",
+            "display_name": "Temperature: History",
+            "enabled": true,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:temperature",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "system_database_history",
+            "display_name": "Database: History",
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "system:myhouse_database:database",
+                "icon": "web/images/database.png"
+              },
+              {
+                "type": "sensor_group_timeline",
+                "group": "system:myhouse_database",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ]
+      ],
+      "rules": [
+        {
+          "rule_id": "cpu_user_high",
+          "display_name": "The CPU utilization has been too high during the last hour, %cpu_max% (user)",
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "cpu_max > threshold"
+          ],
+          "definitions": {
+            "cpu_max": "system:cpu:cpu_user:hour:max,-1,-1",
+            "threshold": 10
+          }
+        },
+        {
+          "rule_id": "cpu_system_high",
+          "display_name": "The CPU utilization has been too high during the last hour, %cpu_max% (system)",
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "cpu_max > threshold"
+          ],
+          "definitions": {
+            "cpu_max": "system:cpu:cpu_system:hour:max,-1,-1",
+            "threshold": 10
+          }
+        },
+        {
+          "rule_id": "load_high",
+          "display_name": "The CPU load (%load_max%) has been too high during the last hour",
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "load_max > threshold"
+          ],
+          "definitions": {
+            "load_max": "system:load:load_1:hour:max,-1,-1",
+            "threshold": 1
+          }
+        },
+        {
+          "rule_id": "too_many_connections",
+          "display_name": "We had up to %connections% network connections during the last hour, a bit too much",
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "connections > threshold"
+          ],
+          "definitions": {
+            "connections": "system:network:connections:hour:max,-1,-1",
+            "threshold": 100
+          }
+        },
+        {
+          "rule_id": "too_many_services",
+          "display_name": "I see %services% network services running right now",
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "services > threshold"
+          ],
+          "definitions": {
+            "services": "system:network:services:hour:max,-1,-1",
+            "threshold": 15
+          }
+        },
+        {
+          "rule_id": "system_temperature_high",
+          "display_name": "The temperature of the system is too high, it has reached %temperature% during the last hour",
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "hour",
+          "conditions": [
+            "temperature > threshold"
+          ],
+          "definitions": {
+            "temperature": "system:temperature:temperature:hour:avg,-1,-1",
+            "threshold": 50
+          }
+        }
+      ],
+      "sensors": [
+        {
+          "group_id": "cpu",
+          "sensor_id": "cpu_user",
+          "display_name": "CPU User",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "cpu_user",
+            "polling_interval": 10
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "cpu",
+          "sensor_id": "cpu_system",
+          "display_name": "CPU System",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "cpu_system",
+            "polling_interval": 10
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "memory",
+          "sensor_id": "ram",
+          "display_name": "RAM",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "ram_used",
+            "polling_interval": 10
+          },
+          "format": "size",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "load",
+          "sensor_id": "load_1",
+          "display_name": "Load 1 min",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "load_1",
+            "polling_interval": 10
+          },
+          "format": "float",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "network",
+          "sensor_id": "services",
+          "display_name": "Services",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "network_services",
+            "polling_interval": 10
+          },
+          "format": "int",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "network",
+          "sensor_id": "connections",
+          "display_name": "Connections",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "network_connections",
+            "polling_interval": 10
+          },
+          "format": "int",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "temperature",
+          "sensor_id": "temperature",
+          "display_name": "Temperature",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "temperature",
+            "polling_interval": 10
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "myhouse_database",
+          "sensor_id": "database",
+          "display_name": "Database Size",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "ls -alh /var/lib/redis/",
+            "command_parse": "grep dump.rdb|awk '{print $5}' |grep -o '[0-9.]\\+'",
+            "polling_interval": 30
+          },
+          "format": "size",
+          "series": [
+            {
+              "series_id": "max",
+              "type": "line",
+              "step": true
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "alerts",
+      "section_id": "Main",
+      "display_name": "Alerts",
+      "icon": "fa-bell-o",
+      "enabled": true,
+      "widgets": [
+        [
+          {
+            "widget_id": "alerts",
+            "display_name": "History",
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "alerts"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "module_id": "boiler",
+      "section_id": "Actuators",
+      "display_name": "Boiler",
+      "icon": "fa-fire",
+      "enabled": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "boiler_control",
+            "display_name": "Boiler Control",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "icon": "indoor/temperature/boiler_status/image",
+                "timestamp": "boiler:main:heartbeat"
+              },
+              {
+                "type": "separator"
+              },
+              {
+                "type": "checkbox",
+                "display_name": "Boiler Manual Switch",
+                "sensor": "boiler:main:switch",
+                "url": "boiler/main/switch/send/OUTA"
+              },
+              {
+                "type": "input",
+                "display_name": "Target Temperature",
+                "sensor": "boiler:main:max_temperature"
+              },
+              {
+                "type": "separator"
+              },
+              {
+                "type": "checkbox",
+                "display_name": "Scheduler Status",
+                "sensor": "boiler:scheduler:switch",
+                "disabled": true
+              }
+            ]
+          },
+          {
+            "widget_id": "calendar",
+            "display_name": "Boiler Scheduler",
+            "enabled": false,
+            "size": 9,
+            "layout": [
+              {
+                "type": "calendar",
+                "sensor": "boiler:scheduler:calendar"
+              }
+            ]
+          }
+        ]
+      ],
+      "rules": [
+        {
+          "rule_id": "boiler_status",
+          "display_name": "The boiler status is %boiler_status%, the main switch is set to %main_switch%, the scheduler switch to %scheduler_switch%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "boiler_status": "indoor:temperature:boiler_status,-1,-1",
+            "main_switch": "boiler:main:switch,-1,-1",
+            "scheduler_switch": "boiler:scheduler:switch,-1,-1"
+          }
+        },
+        {
+          "rule_id": "boiler_main_on",
+          "display_name": "Turning on the boiler",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {},
+          "actions": [
+            "set,boiler:main:switch,1",
+            "send,boiler:main:switch,OUTA1"
+          ]
+        },
+        {
+          "rule_id": "boiler_main_off",
+          "display_name": "Turning off the boiler",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {},
+          "actions": [
+            "set,boiler:main:switch,0",
+            "send,boiler:main:switch,OUTA0"
+          ]
+        },
+        {
+          "rule_id": "boiler_off_max_temperature",
+          "display_name": "I'm turning off the boiler because the current temperature %temperature% is higher than %max_temperature%",
+          "enabled": false,
+          "severity": "warning",
+          "run_every": "minute",
+          "conditions": [
+            "main_switch == status_on",
+            "temperature > max_temperature"
+          ],
+          "definitions": {
+            "main_switch": "boiler:main:switch,-1,-1",
+            "status_on": 1,
+            "temperature": "indoor:temperature:living_room,-1,-1",
+            "max_temperature": "boiler:main:max_temperature,-1,-1"
+          },
+          "actions": [
+            "set,boiler:main:switch,0",
+            "send,boiler:main:switch,OUTA0"
+          ]
+        },
+        {
+          "rule_id": "boiler_on_schedule",
+          "display_name": "I'm turning on the boiler as scheduled since the current temperature %temperature% is lower than the target %calendar%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "calendar != is_null",
+            "main_switch == status_off",
+            "scheduler_switch == status_off",
+            "temperature < calendar"
+          ],
+          "definitions": {
+            "temperature": "indoor:temperature:living_room,-1,-1",
+            "calendar": "boiler:scheduler:calendar,-1,-1",
+            "is_null": 0,
+            "main_switch": "boiler:main:switch,-1,-1",
+            "scheduler_switch": "boiler:scheduler:switch,-1,-1",
+            "status_off": 0
+          },
+          "actions": [
+            "set,boiler:scheduler:switch,1",
+            "send,boiler:main:switch,OUTA1"
+          ]
+        },
+        {
+          "rule_id": "boiler_off_schedule",
+          "display_name": "I'm turning off the boiler as scheduled. The temperature is now %temperature%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "calendar == is_null",
+            "main_switch == status_off",
+            "scheduler_switch == status_on"
+          ],
+          "definitions": {
+            "temperature": "indoor:temperature:living_room,-1,-1",
+            "calendar": "boiler:scheduler:calendar,-1,-1",
+            "is_null": 0,
+            "main_switch": "boiler:main:switch,-1,-1",
+            "scheduler_switch": "boiler:scheduler:switch,-1,-1",
+            "status_on": 1,
+            "status_off": 0
+          },
+          "actions": [
+            "set,boiler:scheduler:switch,0",
+            "send,boiler:main:switch,OUTA0"
+          ]
+        },
+        {
+          "rule_id": "boiler_off_schedule_high_temperature",
+          "display_name": "I'm turning off the boiler because the current temperature %temperature% is higher than the scheduled target %calendar%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "calendar != is_null",
+            "main_switch == status_off",
+            "scheduler_switch == status_on",
+            "temperature > calendar"
+          ],
+          "definitions": {
+            "temperature": "indoor:temperature:living_room,-1,-1",
+            "calendar": "boiler:scheduler:calendar,-1,-1",
+            "is_null": 0,
+            "main_switch": "boiler:main:switch,-1,-1",
+            "scheduler_switch": "boiler:scheduler:switch,-1,-1",
+            "status_on": 1,
+            "status_off": 0
+          },
+          "actions": [
+            "set,boiler:scheduler:switch,0",
+            "send,boiler:main:switch,OUTA0"
+          ]
+        },
+        {
+          "rule_id": "sensor_battery",
+          "display_name": "Requesting battery status to the boiler sensor",
+          "enabled": false,
+          "severity": "debug",
+          "run_every": "day",
+          "conditions": [
+            "status_on == status_on"
+          ],
+          "definitions": {
+            "status_on": 1
+          },
+          "actions": [
+            "send,boiler:main:switch,BATT"
+          ]
+        },
+        {
+          "rule_id": "boiler_sensor_heartbeat",
+          "display_name": "Last time I've heard from the boiler sensor was %minutes_since% ago",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "minutes_since": "boiler:main:heartbeat,-1,-1,timestamp"
+          }
+        },
+        {
+          "rule_id": "boiler_sensor_lost_alert_on",
+          "display_name": "The boiler sensor became unreachable, last time I've heard from it was %minutes_since% ago",
+          "enabled": false,
+          "severity": "alert",
+          "run_every": "minute",
+          "conditions": [
+            "minutes_since > threshold",
+            "heartbeat_alert_status == status_off"
+          ],
+          "definitions": {
+            "minutes_since": "boiler:main:heartbeat,-1,-1,timestamp",
+            "threshold": 10,
+            "heartbeat_alert_status": "boiler:main:heartbeat_alert_status,-1,-1",
+            "status_off": 0
+          },
+          "actions": [
+            "set,boiler:main:heartbeat_alert_status,1"
+          ]
+        },
+        {
+          "rule_id": "boiler_sensor_lost_alert_off",
+          "display_name": "The boiler sensor is now reachable again",
+          "enabled": false,
+          "severity": "alert",
+          "run_every": "minute",
+          "conditions": [
+            "minutes_since < threshold",
+            "heartbeat_alert_status == status_on"
+          ],
+          "definitions": {
+            "minutes_since": "boiler:main:heartbeat,-1,-1,timestamp",
+            "threshold": 10,
+            "heartbeat_alert_status": "boiler:main:heartbeat_alert_status,-1,-1",
+            "status_on": 1
+          },
+          "actions": [
+            "set,boiler:main:heartbeat_alert_status,0"
+          ]
+        },
+        {
+          "rule_id": "boiler_status_on",
+          "display_name": "The boiler is now on",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "boiler_status == status_on",
+            "boiler_status_prev == status_off"
+          ],
+          "definitions": {
+            "boiler_status": "indoor:temperature:boiler_status,-1,-1",
+            "boiler_status_prev": "indoor:temperature:boiler_status_prev,-1,-1",
+            "status_on": 1,
+            "status_off": 0
+          },
+          "actions": [
+            "set,indoor:temperature:boiler_status_prev,1"
+          ]
+        },
+        {
+          "rule_id": "boiler_status_off",
+          "display_name": "The boiler is now off",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "boiler_status == status_off",
+            "boiler_status_prev == status_on"
+          ],
+          "definitions": {
+            "boiler_status": "indoor:temperature:boiler_status,-1,-1",
+            "boiler_status_prev": "indoor:temperature:boiler_status_prev,-1,-1",
+            "status_on": 1,
+            "status_off": 0
+          },
+          "actions": [
+            "set,indoor:temperature:boiler_status_prev,0"
+          ]
+        },
+        {
+          "rule_id": "keyfob_a_boiler_on",
+          "display_name": "Turning on the boiler as requested by keyfob A",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "keyfob_status == status_on"
+          ],
+          "definitions": {
+            "keyfob_status": "boiler:keyfob:keyfob_a,-1,-1",
+            "status_on": "B"
+          },
+          "actions": [
+            "set,boiler:main:switch,1",
+            "send,boiler:main:switch,OUTA1",
+            "set,boiler:keyfob:keyfob_a,0"
+          ]
+        },
+        {
+          "rule_id": "keyfob_a_boiler_off",
+          "display_name": "Turning off the boiler as requested by keyfob A",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "keyfob_status == status_off"
+          ],
+          "definitions": {
+            "keyfob_status": "boiler:keyfob:keyfob_a,-1,-1",
+            "status_off": "D"
+          },
+          "actions": [
+            "set,boiler:main:switch,0",
+            "send,boiler:main:switch,OUTA0",
+            "set,boiler:keyfob:keyfob_a,0"
+          ]
+        },
+        {
+          "rule_id": "keyfob_b_boiler_on",
+          "display_name": "Turning on the boiler as requested by keyfob B",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "keyfob_status == status_on"
+          ],
+          "definitions": {
+            "keyfob_status": "boiler:keyfob:keyfob_b,-1,-1",
+            "status_on": "B"
+          },
+          "actions": [
+            "set,boiler:main:switch,1",
+            "send,boiler:main:switch,OUTA1",
+            "set,boiler:keyfob:keyfob_b,0"
+          ]
+        },
+        {
+          "rule_id": "keyfob_a_boiler_off",
+          "display_name": "Turning off the boiler as requested by keyfob B",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "keyfob_status == status_off"
+          ],
+          "definitions": {
+            "keyfob_status": "boiler:keyfob:keyfob_b,-1,-1",
+            "status_off": "D"
+          },
+          "actions": [
+            "set,boiler:main:switch,0",
+            "send,boiler:main:switch,OUTA0",
+            "set,boiler:keyfob:keyfob_b,0"
+          ]
+        },
+        {
+          "rule_id": "boiler_sensor_recovering",
+          "display_name": "Trying to recover the boiler sensor",
+          "enabled": false,
+          "severity": "debug",
+          "run_every": "minute",
+          "conditions": [
+            "heartbeat_alert_status == status_on"
+          ],
+          "definitions": {
+            "heartbeat_alert_status": "boiler:main:heartbeat_alert_status,-1,-1",
+            "status_on": 1
+          },
+          "actions": [
+            "send,boiler:main:switch,SLEEP300S,force"
+          ]
+        }
+      ],
+      "sensors": [
+        {
+          "group_id": "main",
+          "sensor_id": "switch",
+          "display_name": "Boiler main Switch",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "node_id": "GA",
+            "cycle_sleep_min": 5
+          },
+          "format": "int",
+          "summarize": {
+            "avg": false,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "main",
+          "sensor_id": "heartbeat",
+          "display_name": "Boiler Heartbeat",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "AWAKE",
+            "node_id": "GA"
+          },
+          "format": "string"
+        },
+        {
+          "group_id": "main",
+          "sensor_id": "heartbeat_alert_status",
+          "format": "int"
+        },
+        {
+          "group_id": "main",
+          "sensor_id": "max_temperature",
+          "display_name": "Target Temperature",
+          "format": "temperature"
+        },
+        {
+          "group_id": "scheduler",
+          "sensor_id": "calendar",
+          "display_name": "Boiler Scheduler",
+          "format": "calendar",
+          "single_instance": true
+        },
+        {
+          "group_id": "scheduler",
+          "sensor_id": "switch",
+          "display_name": "Scheduler Switch",
+          "format": "int",
+          "summarize": {
+            "avg": false,
+            "min_max": true
+          }
+        },
+        {
+          "group_id": "keyfob",
+          "sensor_id": "keyfob_a",
+          "display_name": "Keyfob A",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BUTTON",
+            "node_id": "KA"
+          },
+          "format": "string",
+          "single_instance": true,
+          "series": []
+        },
+        {
+          "group_id": "keyfob",
+          "sensor_id": "keyfob_b",
+          "display_name": "Keyfob B",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BUTTON",
+            "node_id": "KB"
+          },
+          "format": "string",
+          "single_instance": true,
+          "series": []
+        },
+        {
+          "group_id": "keyfob",
+          "sensor_id": "keyfob_b",
+          "display_name": "Keyfob B",
+          "plugin": {
+            "plugin_name": "messagebridge",
+            "measure": "BUTTON",
+            "node_id": "KB"
+          },
+          "format": "string",
+          "single_instance": true,
+          "series": []
+        }
+      ]
+    },
+    {
+      "module_id": "network",
+      "section_id": "System",
+      "display_name": "Local Network",
+      "icon": "fa-exchange",
+      "enabled": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "dhcp_lease",
+            "display_name": "Current DHCP Lease",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "table",
+                "sensor": "network:dnsmasq:lease",
+                "columns": "Lease Time,MAC Address,IP Address,Hostname"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "static_dhcp",
+            "display_name": "Static DHCP Mapping",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "table",
+                "sensor": "network:dnsmasq:dhcp",
+                "columns": "MAC Address,Hostname,IP Address"
+              }
+            ]
+          },
+          {
+            "widget_id": "static_dns",
+            "display_name": "Static DNS Mapping",
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "table",
+                "sensor": "network:dnsmasq:dns",
+                "columns": "IP Address,Hostname"
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+          "group_id": "dnsmasq",
+          "sensor_id": "lease",
+          "display_name": "DHCP Lease",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "cat /var/log/dnsmasq.leases",
+            "command_parse": "sed 's/ /|_|/g'",
+            "poll_on_demand": true
+          },
+          "format": "string",
+          "single_instance": true
+        },
+        {
+          "group_id": "dnsmasq",
+          "sensor_id": "dhcp",
+          "display_name": "DHCP Mapping",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "cat /etc/dnsmasq.dhcp",
+            "command_parse": "sed 's/dhcp-host=//'|sed 's/,/|_|/g'",
+            "poll_on_demand": true
+          },
+          "format": "string",
+          "single_instance": true
+        },
+        {
+          "group_id": "dnsmasq",
+          "sensor_id": "dns",
+          "display_name": "DNS Mapping",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "cat /etc/dnsmasq.dns",
+            "command_parse": "sed 's/\t/|_|/g'",
+            "poll_on_demand": true
+          },
+          "format": "string",
+          "single_instance": true
+        }
+      ]
+    },
+    {
+      "module_id": "logwatch",
+      "section_id": "System",
+      "display_name": "Log Analysis",
+      "icon": "fa-line-chart",
+      "enabled": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "logwatch",
+            "display_name": "Yesterday",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "data",
+                "sensor": "logwatch:logs:yesterday"
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+          "group_id": "logs",
+          "sensor_id": "yesterday",
+          "display_name": "LogWatch",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "logwatch --range yesterday --output stdout --format text",
+            "command_parse": "cat",
+            "polling_interval": 1440
+          },
+          "format": "string",
+          "single_instance": true
+        }
+      ]
+    },
+    {
+      "module_id": "logs",
+      "section_id": "myHouse",
+      "display_name": "Logs",
+      "icon": "fa-file-text",
+      "enabled": true,
+      "widgets": [
+        [
+          {
+            "widget_id": "logs_myhouse",
+            "display_name": "myHouse",
+            "enabled": false,
+            "size": 12,
+            "layout": [
+              {
+                "type": "table",
+                "sensor": "logs:myhouse:main",
+                "columns": "Date,Function,Severity,Message"
+              }
+            ]
+          }
+        ],
+        [
+          {
+            "widget_id": "logs_messages",
+            "display_name": "/var/log/messages",
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "table",
+                "sensor": "logs:system:messages",
+                "columns": "Date,Module,Message"
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+          "group_id": "myhouse",
+          "sensor_id": "main",
+          "display_name": "myHouse",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "tail -500 /opt/myHouse/logs/myHouse.log",
+            "command_parse": "perl -ne '/^\\[([^\\]]+)\\] \\[([^\\]]+)\\] (\\w+): (.+)$/;print \"$1|_|$2|_|$3|_|$4\\n\"'",
+            "poll_on_demand": true
+          },
+          "format": "string"
+        },
+        {
+          "group_id": "system",
+          "sensor_id": "messages",
+          "display_name": "Messages",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "tail -500 /var/log/messages",
+            "command_parse": "perl -ne '/^(\\S+ \\S+ \\S+) \\S+ (\\S+): (.+)$/;print \"$1|_|$2|_|$3\\n\"'",
+            "poll_on_demand": true
+          },
+          "format": "string"
+        }
+      ]
+    },
+    {
+      "module_id": "configuration",
+      "section_id": "myHouse",
+      "display_name": "Configuration",
+      "icon": "fa-wrench",
+      "enabled": true,
+      "auto_refresh_min": 0,
+      "widgets": [
+        [
+          {
+            "widget_id": "configuration_editor",
+            "display_name": "Editor",
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "configuration"
+              }
+            ]
+          }
+        ]
+      ]
+    }
+  ]
+}
