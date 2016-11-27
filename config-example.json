@@ -63,6 +63,8 @@
     }
   },
   "logging": {
+    "rotate_size_mb": 5,
+    "rotate_count": 5,
     "myHouse": {
       "level": "info",
       "filename": "myHouse.log"

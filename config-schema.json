@@ -274,6 +274,14 @@
       "type":"object",
       "description":"Logging module configuration",
       "properties":{
+	     "rotate_size_mb":{
+              "type":"integer",
+              "description":"Rotate the log file when larger than the configured megabytes"
+         },
+	     "rotate_count":{
+              "type":"integer",
+              "description":"Number of backup log files to keep once rotated"
+         },
         "myHouse":{
           "type":"object",
           "description":"myHouse logging",
@@ -330,6 +338,8 @@
         }
       },
       "required":[
+	    "rotate_size_mb",
+		"rotate_count",
         "myHouse",
         "webserver",
         "scheduler"
