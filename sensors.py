@@ -26,7 +26,6 @@ import plugin_icloud
 
 # variables
 plugins = {}
-poll_at_startup = True
 
 # initialize the configured plugins
 def init_plugins(start_services):
@@ -256,7 +255,7 @@ def schedule_all():
 				# schedule polling
 				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["plugin"]["polling_interval"])+" minutes")
 				# run it now first
-				if poll_at_startup: schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+				if conf["sensors"]["poll_at_startup"]: schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                                 # then schedule it for each refresh interval
        	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["plugin"]["polling_interval"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
                         # schedule an expire job every day
