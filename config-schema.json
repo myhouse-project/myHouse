@@ -151,10 +151,15 @@
         "enabled":{
           "type":"boolean",
           "description":"Enable the module"
+        },
+		"data_expire_days":{
+		  "description":"After how many days current measures and hourly data can be purged out of the database. Daily measures will be kept forever",
+		  "type":"integer"
         }
       },
       "required":[
-        "enabled"
+        "enabled",
+		"data_expire_days"
       ]
     },
     "sensors":{
@@ -168,11 +173,21 @@
         "poll_at_startup":{
           "type":"boolean",
           "description":"Poll all the sensors when at startup"
+        },
+		"cache_expire_min":{
+		  "description":"For how long raw data polled from the sensors will be cached so to prevent multiple concurrent retrieval of the same data",
+		  "type":"integer"
+        },
+		"data_expire_days":{
+		  "description":"After how many days current measures and hourly data can be purged out of the database. Daily measures will be kept forever",
+		  "type":"integer"
         }
       },
       "required":[
         "enabled",
-		"poll_at_startup"
+		"poll_at_startup",
+		"cache_expire_min",
+		"data_expire_days"
       ]
     },
     "notifications":{
@@ -412,8 +427,27 @@
           "description":"Image plugin configuration"
         },
         "icloud":{
-          "type":"null",
-          "description":"iCloud plugin configuration"
+          "type":"object",
+          "description":"iCloud plugin configuration",
+          "properties":{
+            "map_type":{
+              "type":"string",
+              "description":"The google map to use (e.g. satellite,hybrid,terrain,roadmap)"
+            },
+            "map_size_x":{
+              "type":"integer",
+              "description":"The map x size in pixel"
+            },
+            "map_size_y":{
+              "type":"integer",
+              "description":"The map y size in pixel"
+            }
+          },
+          "required":[
+            "map_type",
+            "map_size_x",
+			"map_size_y"
+          ]
         },
         "messagebridge":{
           "type":"object",
@@ -1071,6 +1105,10 @@
 						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
 						  "value": false,
                           "type":"boolean"
+                        },
+						"cache_expire_min":{
+						  "description":"Optional per-sensor validity of the polling cache in minutes",
+						  "type":"integer"
                         }
                       },
                       "additionalProperties":false,

@@ -32,7 +32,7 @@ def poll(sensor):
 	# retrieve the devices
 	devices = icloud.devices
 	# for each device
-	map = DecoratedMap(maptype=conf["constants"]["map_type"],size_x=conf["constants"]["map_size_x"],size_y=conf["constants"]["map_size_y"])
+	map = DecoratedMap(maptype=conf["plugins"]["icloud"]["map_type"],size_x=conf["plugins"]["icloud"]["map_size_x"],size_y=conf["plugins"]["icloud"]["map_size_y"])
 	for i, device in enumerate(devices):
 		device = devices[i]
 		if "devices" in sensor["plugin"] and device["name"] not in sensor["plugin"]["devices"]: continue
@@ -40,7 +40,8 @@ def poll(sensor):
 		location = device.location()
 		if location is None: continue
 		# add the marker to the map
-		map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=device["name"][0]))
+		label = device["name"][0].upper()
+		map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=label))
 	# download the map
 	url = map.generate_url()
 	try:
