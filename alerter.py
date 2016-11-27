@@ -6,6 +6,7 @@ import time
 import json
 import datetime
 import re
+import copy
 
 import utils
 import db
@@ -98,81 +99,101 @@ def is_sensor(definition):
 
 # evaluate if the given alert has to trigger
 def run(module_id,rule_id,notify=True):
+	alert_text = ""
 	try: 
 		module = utils.get_module(module_id)
-		for rule in module["rules"]:
-			if not rule["enabled"]: continue
+		for rule_template in module["rules"]:
+			if not rule_template["enabled"]: continue
 			# retrive the rule for the given rule_id
-	        	if rule["rule_id"] != rule_id: continue
-			# for each definition retrieve the data
-			definitions = {}
-			suffix = {}
-			for definition in rule["definitions"]:
-				if is_sensor(rule["definitions"][definition]):
-					# check if the sensor exists
-					split = rule["definitions"][definition].split(',')
-					key = split[0]
-					start = split[1]
-					end = split[2]
-		                        key_split = key.split(":")
-		                        sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
-		                        if sensor is None:
-		                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
-		                                continue
-					# retrieve and store the data
-					definitions[definition] = get_data(sensor,rule["definitions"][definition])
-					if len(definitions[definition]) == 0: 
-						log.error("invalid data from sensor "+key)
-						continue
-					# store the suffix
-					suffix[definition] = conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
-				else: 
-					definitions[definition] = rule["definitions"][definition]
-			# for each condition check if it is true
-			evaluation = True
-			for condition in rule["conditions"]:
-				condition = re.sub(' +',' ',condition)
-				a,operator,b = condition.split(' ')
-				sub_evaluation = is_true(definitions[a],operator,definitions[b])
-				log.debug("["+module_id+"]["+rule_id+"] evaluating "+a+" ("+str(definitions[a])+") "+operator+" "+b+" ("+str(definitions[b])+"): "+str(sub_evaluation))
-				if not sub_evaluation: evaluation = False
-			log.debug("["+module_id+"]["+rule_id+"] evaluates to "+str(evaluation))
-			# evaluate the conditions
-			if not evaluation: continue
-			# alert has triggered, prepare the alert text
-			alert_text = rule["display_name"]
-			for definition in rule["definitions"]:
-				value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]
-				# add the suffix
-				if is_sensor(rule["definitions"][definition]) and minutes_since in rule["definitions"][definition]: value = str(value)+"min"
-				elif is_sensor(rule["definitions"][definition]): value = str(value)+suffix[definition]
-				alert_text = alert_text.replace("%"+definition+"%",str(value))
-			# execute an action
-			if "actions" in rule:
-				for action in rule["actions"]:
-					split = action.split(',')
-				        what = split[0]
-				        key = split[1]
-				        value = split[2]
-				        force = True if len(split) > 3 and split[3] == "force" else False
-					# ensure the target sensor exists
-					key_split = key.split(":")
-					sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
-					if sensor is None: 
-						log.warning("["+rule["rule_id"]+"] invalid sensor "+key)
-						continue
-					# execute the requested action
-					if what == "send": sensors.data_send(key_split[0],key_split[1],key_split[2],value,force=force)
-					elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value)
-			# notify about the alert
-			if notify:
-				log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
-				if rule["severity"] != "debug":
-					db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
-					notifications.notify(alert_text)
-			return alert_text
+	        	if rule_template["rule_id"] != rule_id: continue
+			# for each variable (if provided) run a different evaluation
+			variables = [""]
+			variable_sensor = None
+			if "for" in rule_template: variables = rule_template["for"]
+			for variable in variables:
+				# ensure the variable is a valid sensor
+				if variable != "":
+					variable_split = variable.split(":")
+					variable_sensor = utils.get_sensor(variable_split[0],variable_split[1],variable_split[2])
+					if variable_sensor is None:
+						log.error("invalid variable sensor "+variable)
+                                                continue
+				# restore the template
+				rule = copy.deepcopy(rule_template)
+				# for each definition retrieve the data
+				definitions = {}
+				suffix = {}
+				for definition in rule["definitions"]:
+					if is_sensor(rule["definitions"][definition]):
+						rule["definitions"][definition] = rule["definitions"][definition].replace("%i%",variable)
+						# check if the sensor exists
+						split = rule["definitions"][definition].split(',')
+						key = split[0]
+						start = split[1]
+						end = split[2]
+			                        key_split = key.split(":")
+			                        sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
+			                        if sensor is None:
+			                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
+			                                continue
+						# retrieve and store the data
+						definitions[definition] = get_data(sensor,rule["definitions"][definition])
+						if len(definitions[definition]) == 0: 
+							log.error("invalid data from sensor "+key)
+							continue
+						# store the suffix
+						suffix[definition] = conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
+					else: 
+						definitions[definition] = rule["definitions"][definition]
+				# for each condition check if it is true
+				evaluation = True
+				for condition in rule["conditions"]:
+					condition = re.sub(' +',' ',condition)
+					a,operator,b = condition.split(' ')
+					sub_evaluation = is_true(definitions[a],operator,definitions[b])
+					log.debug("["+module_id+"]["+rule_id+"] evaluating "+a+" ("+str(definitions[a])+") "+operator+" "+b+" ("+str(definitions[b])+"): "+str(sub_evaluation))
+					if not sub_evaluation: evaluation = False
+				log.debug("["+module_id+"]["+rule_id+"] evaluates to "+str(evaluation))
+				# evaluate the conditions
+				if not evaluation: continue
+				# alert has triggered, prepare the alert text
+				alert_text = rule["display_name"]
+				# replace the variable if needed
+				if variable_sensor is not None: alert_text = alert_text.replace("%i%",variable_sensor["display_name"])
+				# replace the definitions placeholders
+				for definition in rule["definitions"]:
+					value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]
+					# add the suffix
+					if is_sensor(rule["definitions"][definition]) and minutes_since in rule["definitions"][definition]: value = str(value)+" minutes"
+					elif is_sensor(rule["definitions"][definition]): value = str(value)+suffix[definition]
+					alert_text = alert_text.replace("%"+definition+"%",str(value))
+				# execute an action
+				if "actions" in rule:
+					for action in rule["actions"]:
+						action = action.replace("%i%",variable)
+						split = action.split(',')
+					        what = split[0]
+					        key = split[1]
+					        value = split[2]
+					        force = True if len(split) > 3 and split[3] == "force" else False
+						# ensure the target sensor exists
+						key_split = key.split(":")
+						sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
+						if sensor is None: 
+							log.warning("["+rule["rule_id"]+"] invalid sensor "+key)
+							continue
+						# execute the requested action
+						if what == "send": sensors.data_send(key_split[0],key_split[1],key_split[2],value,force=force)
+						elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value)
+				# notify about the alert
+				if notify:
+					log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
+					if rule["severity"] != "debug":
+						db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
+						notifications.notify(alert_text)
         except Exception,e:
                 log.warning("error while running rule "+module_id+":"+rule_id+": "+utils.get_exception(e))
+	return alert_text
 
 
 # purge old data from the database
@@ -232,5 +253,3 @@ if __name__ == '__main__':
         else:
                 # <module_id> <rule_id>
                 run(sys.argv[1],sys.argv[2])
-
-

@@ -95,7 +95,7 @@ def translate_response(action):
 	if what == "text":
 		response["content"] = request[utils.randint(0,len(request)-1)]
 	elif what == "rule":
-		response["content"] = add_prefix(alerter.run(request[0],request[1],False))
+		response["content"] = add_prefix(alerter.run(request[0],request[1],notify=False))
 	elif what == "chart":
 		response["type"] = "chart"
 		response["content"] = request[0]+","+request[1]

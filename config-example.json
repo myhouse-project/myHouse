@@ -679,7 +679,7 @@
           "severity": "info",
           "run_every": "day",
           "conditions": [
-            "temperature_min_yesterday > temperature_min_week"
+            "temperature_min_yesterday < temperature_min_week"
           ],
           "definitions": {
             "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
@@ -1469,7 +1469,12 @@
         },
         {
           "rule_id": "indoor_temperature_low",
-          "display_name": "Pay attention, the temperature inside is very low, it has reached %temperature_avg% during the last hour",
+		  "for": [
+				"indoor:temperature:study_room",
+				"indoor:temperature:living_room",
+				"indoor:temperature:bedroom"
+		  ],
+          "display_name": "Pay attention, the temperature inside is very low, %i% has reached %temperature_avg% during the last hour",
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -1477,7 +1482,7 @@
             "temperature_avg < threshold"
           ],
           "definitions": {
-            "temperature_avg": "indoor:temperature:study_room:hour:avg,-1,-1",
+            "temperature_avg": "%i%:hour:avg,-1,-1",
             "threshold": 18
           }
         },
