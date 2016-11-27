@@ -60,7 +60,7 @@ def load():
 	try:
 		jsonschema.validate(json.loads(config["config_json"]),json.loads(const['config_schema_json']))
 	except Exception,e:
-		print "Error loading the confiugration file: "+str(e)
+		print "Error loading the configuration file: "+str(e)
 		sys.exit(1)
 
 # save the configuration

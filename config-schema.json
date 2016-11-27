@@ -164,10 +164,15 @@
         "enabled":{
           "type":"boolean",
           "description":"Enable the module"
+        },
+        "poll_at_startup":{
+          "type":"boolean",
+          "description":"Poll all the sensors when at startup"
         }
       },
       "required":[
-        "enabled"
+        "enabled",
+		"poll_at_startup"
       ]
     },
     "notifications":{
@@ -696,11 +701,19 @@
                               "type":"string"
                             },
                             "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
+							  "description":"The sensor to attach to the checkbox, in the format module_id:group_id:sensor_id",
                               "type":"string"
                             },
-                            "url":{
-							  "description":"An optional URL to call to e.g. send a message to a sensor",
+                            "send":{
+							  "description":"An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
+                              "type":"string"
+                            },
+                            "send_on":{
+							  "description":"An optional URL to call when the value is 1. No value is appended to the URL",
+                              "type":"string"
+                            },
+                            "send_off":{
+							  "description":"An optional URL to call when the value is 0. No value is appended to the URL",
                               "type":"string"
                             },
                             "disabled":{
@@ -729,6 +742,10 @@
                             },
                             "sensor":{
 							  "description":"The sensor in the format module_id:group_id:sensor_id",
+                              "type":"string"
+                            },
+                            "send":{
+							  "description":"An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
                               "type":"string"
                             }
                           },
