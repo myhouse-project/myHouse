@@ -202,7 +202,7 @@ def expire():
         for stat in [':alert',':warning',':info']:
                 key = conf["constants"]["db_schema"]["alerts"]+stat
                 if db.exists(key):
-                        deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["alerts_expire_days"]*conf["constants"]["1_day"])
+                        deleted = db.deletebyscore(key,"-inf",utils.now()-conf["alerter"]["data_expire_days"]*conf["constants"]["1_day"])
                         log.debug("expiring from "+stat+" "+str(total)+" items")
                         total = total + deleted
         log.info("expired "+str(total)+" items")

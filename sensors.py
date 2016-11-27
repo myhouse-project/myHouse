@@ -99,7 +99,8 @@ def save(sensor,force=False):
 		data = db.range(sensor["db_cache"],withscores=True)
 		cache_timestamp = data[0][0]
 	# if too old, refresh it
-	if force or utils.now() - cache_timestamp > conf['constants']['cache_expire_min']*conf["constants"]["1_minute"]:
+	cache_expire_min = sensor["plugin"]["cache_expire_min"] if "plugin" in sensor and "cache_expire_min" in sensor["plugin"] else conf["sensors"]["cache_expire_min"]
+	if force or (utils.now() - cache_timestamp) > cache_expire_min*conf["constants"]["1_minute"]:
 		# if an exception occurred, skip this sensor
 		if poll(sensor) is None: return
 	# get the parsed data
@@ -170,7 +171,7 @@ def expire(sensor):
 	for stat in ["",':hour:min',':hour:avg',':hour:max']:
 		key = sensor['db_sensor']+stat
 		if db.exists(key):
-			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["constants"]["sensor_data_expire_days"]*conf["constants"]["1_day"])
+			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["sensors"]["data_expire_days"]*conf["constants"]["1_day"])
 			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+stat+" "+str(total)+" items")
 			total = total + deleted
 	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")

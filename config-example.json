@@ -35,11 +35,14 @@
     ]
   },
   "alerter": {
-    "enabled": true
+    "enabled": true,
+	"data_expire_days": 5
   },
   "sensors": {
     "enabled": true,
-	"poll_at_startup": true
+	"poll_at_startup": true,
+	"cache_expire_min": 1,
+	"data_expire_days": 5
   },
   "notifications": {
     "enabled": true,
@@ -93,7 +96,11 @@
     },
     "linux": null,
     "image": null,
-    "icloud": null,
+    "icloud": {
+		"map_type": "hybrid",
+		"map_size_x": 640,
+		"map_size_y": 640
+	},
     "messagebridge": {
       "port_listen": 50140,
       "port_send": 50141
