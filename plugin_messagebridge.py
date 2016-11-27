@@ -24,14 +24,25 @@ default_measure = "__measure__"
 # register a new sensor against this plugin
 def register(sensor):
 	if sensor['plugin']['plugin_name'] != 'messagebridge': return
+	# create a data structure for each node_id
 	if sensor['plugin']['node_id'] not in nodes: nodes[sensor['plugin']['node_id']] = {}
-	if "measure" not in sensor['plugin']: sensor['plugin']['measure'] = default_measure
-	if sensor['plugin']['measure'] not in nodes[sensor['plugin']['node_id']]: nodes[sensor['plugin']['node_id']][sensor['plugin']['measure']] = {}
-	# add the sensor to the sensors list
-	nodes[sensor['plugin']['node_id']][sensor['plugin']['measure']] = sensor
-	log.debug("["+__name__+"]["+sensor['plugin']['node_id']+"]["+sensor['plugin']['measure']+"] registered sensor "+sensor['module_id']+":"+sensor['sensor_id']+":"+sensor['sensor_id'])
-	# initialize the sensor
-	if "cycle_sleep_min" in sensor["plugin"]: init(sensor)
+	# if no measures are provided, set it to the default_measure
+	if "measure" not in sensor['plugin'] and "measures" not in sensor['plugin']: sensor['plugin']['measure'] = default_measure
+	# merge the measures array with the single value measure
+	measures = sensor['plugin']['measures'] if "measures" in sensor['plugin'] else [sensor['plugin']['measure']]
+	# for each measure to register
+	for measure in measures:
+		# check if the measure has already been registered
+		if measure in nodes[sensor['plugin']['node_id']]:
+			log.warning("["+__name__+"]["+sensor['plugin']['node_id']+"]["+measure+"] already registered, skipping")
+			continue
+		# create a data structure for each measure of each node_id
+		nodes[sensor['plugin']['node_id']][measure] = {}
+		# add the sensor to the nodes list
+		nodes[sensor['plugin']['node_id']][measure] = sensor
+		log.debug("["+__name__+"]["+sensor['plugin']['node_id']+"]["+measure+"] registered sensor "+sensor['module_id']+":"+sensor['sensor_id']+":"+sensor['sensor_id'])
+		# initialize the sensor
+		if "cycle_sleep_min" in sensor["plugin"]: init(sensor)
 
 # initialize a sensor when just started or when in an unknown status
 def init(sensor):
