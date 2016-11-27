@@ -764,16 +764,24 @@ th.dt-center, td.dt-center { text-align: center; }
 						}
 					};
 				}(tag,new_value,type));
-				// if there is a url to visit
-				if ("url" in layout) {
-					$.getJSON(layout["url"]+new_value,function(tag,new_value,type) {
-					return function (data) {
-						if (data != "OK") {
-							// handle errors
-							log("warning","error to visit "+layout["url"]+new_value);
-						}
-					};
-					}(tag,new_value,type));
+				// if there is message to send
+				var send_types = ["send","send_on","send_off"]
+				for (var i in send_types) {
+					var send_type = send_types[i]
+					if (! (send_type in layout)) continue;
+					// by default attach the new_value to the "send" url
+					var url = layout["send"]+new_value;
+					// if send_on or send_off, just use the url
+					if (send_type == "send_on" && new_value == 1) url = layout["send_on"];
+					if (send_type == "send_off" && new_value == 0) url = layout["send_off"];
+					$.getJSON(url,function(url) {
+						return function (data) {
+							if (data != "OK") {
+								// handle errors
+								log("warning","error to visit "+url);
+							}
+						};
+					}(url));
 				}
 			};
 		}(tag+"_"+type,sensor_url,type));

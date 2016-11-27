@@ -38,7 +38,8 @@
     "enabled": true
   },
   "sensors": {
-    "enabled": true
+    "enabled": true,
+	"poll_at_startup": true
   },
   "notifications": {
     "enabled": true,
@@ -2808,7 +2809,7 @@
                 "type": "checkbox",
                 "display_name": "Boiler Manual Switch",
                 "sensor": "boiler:main:switch",
-                "url": "boiler/main/switch/send/OUTA"
+                "send": "boiler/main/switch/send/OUTA"
               },
               {
                 "type": "input",
