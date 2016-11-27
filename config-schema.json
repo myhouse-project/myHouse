@@ -873,6 +873,14 @@
                   "type":"string",
                   "description":"Rule ID, must be unique across all the modules"
                 },
+                "for":{
+				  "description":"An optional list of sensors in the format module_id:group_id,sensor_id to cycle through and apply the same conditions. When the placeholder %i% is used across the rule, it will be replaced by the actual sensor",
+                  "type":"array",
+                  "items":{
+					"type":"string",
+                    "title":"Sensor"
+				  }
+                },
                 "display_name":{
                   "type":"string",
                   "description":"The text of alert then the rule triggers"
