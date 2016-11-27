@@ -1011,6 +1011,14 @@
 						  "description":"The measure to capture (e.g. TEMP)",
                           "type":"string"
                         },
+                        "measures":{
+						  "description":"A list of measures to capture",
+                          "type":"array",
+                          "items":{
+                            "type":"string",
+                            "title":"Measure"
+                          }
+                        },
                         "node_id":{
 						  "description":"The ID of the device (e.g. TA)",
                           "type":"string"
