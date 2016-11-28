@@ -17,9 +17,9 @@ history_end_timestamp = utils.now()
 migrate_recent = True
 
 # database number from which we are migrating
-db_from = 0
+db_from = 1
 # database number into which we are migrating
-db_to = 1
+db_to = 2
 
 # keys to migrate history (from key -> to key)
 # destination key format: myHouse:<module_id>:<group_id>:<sensor_id>

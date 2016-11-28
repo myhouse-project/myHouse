@@ -102,9 +102,14 @@
 		"map_size_y": 640
 	},
     "messagebridge": {
+	  "enabled": true,
       "port_listen": 50140,
       "port_send": 50141
-    }
+    },
+	"rtl_433": {
+	  "enabled": false,
+      "command": "rtl_433"
+	}	
   },
   "modules": [
     {

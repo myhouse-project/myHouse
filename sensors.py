@@ -23,6 +23,7 @@ import plugin_image
 import plugin_csv
 import plugin_messagebridge
 import plugin_icloud
+import plugin_rtl_433
 
 # variables
 plugins = {}
@@ -40,6 +41,7 @@ def init_plugins(start_services):
 		elif name == "icloud": plugin = plugin_icloud
 	        elif name == "csv": plugin = plugin_csv
 	        elif name == "messagebridge": plugin = plugin_messagebridge
+		elif name == "rtl_433": plugin = plugin_rtl_433
                 if plugin is None:
                         log.error("plugin "+name+" not supported")
                         continue
