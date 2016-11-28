@@ -25,7 +25,8 @@ default_measure = "__measure__"
 def register(sensor):
 	if sensor['plugin']['plugin_name'] != 'messagebridge': return
 	# create a data structure for each node_id
-	if sensor['plugin']['node_id'] not in nodes: nodes[sensor['plugin']['node_id']] = {}
+	node_id = sensor['plugin']['node_id']
+	if node_id not in nodes: nodes[node_id] = {}
 	# if no measures are provided, set it to the default_measure
 	if "measure" not in sensor['plugin'] and "measures" not in sensor['plugin']: sensor['plugin']['measure'] = default_measure
 	# merge the measures array with the single value measure
@@ -33,19 +34,20 @@ def register(sensor):
 	# for each measure to register
 	for measure in measures:
 		# check if the measure has already been registered
-		if measure in nodes[sensor['plugin']['node_id']]:
-			log.warning("["+__name__+"]["+sensor['plugin']['node_id']+"]["+measure+"] already registered, skipping")
+		if measure in nodes[node_id]:
+			log.warning("["+__name__+"]["+node_id+"]["+measure+"] already registered, skipping")
 			continue
 		# create a data structure for each measure of each node_id
-		nodes[sensor['plugin']['node_id']][measure] = {}
+		nodes[node_id][measure] = {}
 		# add the sensor to the nodes list
-		nodes[sensor['plugin']['node_id']][measure] = sensor
-		log.debug("["+__name__+"]["+sensor['plugin']['node_id']+"]["+measure+"] registered sensor "+sensor['module_id']+":"+sensor['sensor_id']+":"+sensor['sensor_id'])
+		nodes[node_id][measure] = sensor
+		log.debug("["+__name__+"]["+node_id+"]["+measure+"] registered sensor "+sensor['module_id']+":"+sensor['group_id']+":"+sensor['sensor_id'])
 		# initialize the sensor
 		if "cycle_sleep_min" in sensor["plugin"]: init(sensor)
 
 # initialize a sensor when just started or when in an unknown status
 def init(sensor):
+	if not plugin_conf["enabled"]: return
 	# turn all the output off
         tx(sensor,["OUTA0","OUTB0","OUTC0","OUTD0"],True)
 	# put it to sleep
@@ -53,6 +55,7 @@ def init(sensor):
 
 # send a message to the sensor
 def send(sensor,data,force=False):
+	if not plugin_conf["enabled"]: return
         # retrieve the sensor
         node_id = sensor["plugin"]["node_id"]
         if node_id not in nodes: return
@@ -67,6 +70,7 @@ def send(sensor,data,force=False):
 
 # transmit a message to a sensor
 def tx(sensor,data,service_message=False):
+	if not plugin_conf["enabled"]: return
         node_id = sensor["plugin"]["node_id"]
         if not service_message: log.info("["+sensor["module_id"]+"]["+sensor["sensor_id"]+"]["+node_id+"] sending message: "+str(data))
         # create a socket
@@ -91,6 +95,7 @@ def sleep(sensor):
 
 # run the plugin service
 def run():
+	if not plugin_conf["enabled"]: return
 	log.debug("["+__name__+"] listening for UDP datagrams on port "+str(plugin_conf['port_listen']))
 	# bind to the network
 	sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)

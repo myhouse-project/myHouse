@@ -413,10 +413,7 @@
               "type":"string",
               "description":"Location of the CSV file"
             }
-          },
-          "required":[
-            "csv_file"
-          ]
+          }
         },
         "linux":{
           "type":"null",
@@ -453,6 +450,10 @@
           "type":"object",
           "description":"Wirelessthings/Ciseco Messagebridge plugin configuration",
           "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the service"
+            },
             "port_listen":{
               "type":"integer",
               "description":"Listen to this port from messagebridge updates"
@@ -463,8 +464,27 @@
             }
           },
           "required":[
+			"enabled",
             "port_listen",
             "port_send"
+          ]
+        },
+        "rtl_433":{
+          "type":"object",
+          "description":"rtl_433 plugin configuration",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the service"
+            },
+            "command":{
+              "type":"string",
+              "description":"The command for running rtl_433 followed by any required command line arguments. -F json will appended by default"
+            }
+          },
+          "required":[
+			"enabled",
+            "command"
           ]
         }
       },
@@ -475,7 +495,8 @@
         "linux",
         "image",
         "icloud",
-        "messagebridge"
+        "messagebridge",
+		"rtl_433"
       ]
     },
     "modules":{
@@ -1015,12 +1036,24 @@
 						  "enum": [ "csv" ],
                           "value":"csv"
                         },
-                        "measure":{
-						  "description":"The measure to capture (e.g. TEMP)",
+                        "csv_file":{
+						  "description":"Location of the CSV file. If not provided the one in the global plugin settings will be used",
                           "type":"string"
                         },
                         "node_id":{
-						  "description":"The ID of the device (e.g. TA)",
+						  "description":"An optional name of the device is to filter out unwanted items from the csv file",
+                          "type":"string"
+                        },
+                        "node_id_index":{
+						  "description":"The position (index) of the node_id in the csv file",
+                          "type":"integer"
+                        },
+                        "measure":{
+						  "description":"An optional prefix of the measure (e.g. TEMP) to strip out",
+                          "type":"string"
+                        },
+                        "measure_index":{
+						  "description":"The position (index) of the measure in the csv file",
                           "type":"string"
                         },
                         "polling_interval":{
@@ -1036,8 +1069,7 @@
                       "additionalProperties":false,
                       "required":[
                         "plugin_name",
-                        "measure",
-                        "node_id"
+                        "measure_index"
                       ]
                     },
                     {
@@ -1290,6 +1322,32 @@
                       "required":[
                         "plugin_name",
                         "measure"
+                      ]
+                    },
+					{
+                      "title":"rtl_433",
+                      "description":"Look for a specific sensor from rtl_433 output and retrieve a measure",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+						  "enum": [ "rtl_433" ],
+                          "value":"rtl_433"
+                        },
+                        "measure":{
+                          "type":"string",
+                          "description":"The key whose value has to be retrieved"
+                        },
+                        "search":{
+                          "description":"A list of key/value pairs to search in the JSON output for identifying a specific sensor",
+                          "type":"object",
+						  "properties": {
+						  }
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "search"
                       ]
                     }
                   ]
