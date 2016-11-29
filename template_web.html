@@ -707,7 +707,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		var type = layout["type"]
 		tag = tag.replace("#","")
 		// define the HTML inputs
-		checkbox_html = '<div class="input-group"><div class="checkbox checkbox-slider--a checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div>'
+		checkbox_html = '<div class="input-group"><div class="checkbox checkbox-slider--%style% checkbox-slider-lg"><label><input type="checkbox" id="'+tag+'_checkbox"><span></span></label></div></div>'
 		input_html = '<div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div>'
 		tag = "#"+tag
 		// add the label
@@ -727,6 +727,9 @@ th.dt-center, td.dt-center { text-align: center; }
 			});
 		} 
 		else if (type == "checkbox") {
+			style = "a";
+			if ("style" in layout) style = layout["style"]
+			checkbox_html = checkbox_html.replace("%style%",style);
 			// add the checkbox
 			$(body).append(checkbox_html);	
 		}
