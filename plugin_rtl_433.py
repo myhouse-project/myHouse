@@ -42,6 +42,9 @@ def register(sensor):
 
 # run the plugin service
 def run():
+	if not plugin_conf["enabled"]: return
+	# kill rtl_433 if running
+	utils.run_command("killall rtl_433")
 	# run rtl_433 and handle the output
 	command = plugin_conf['command']+" "+command_arguments
 	log.debug("["+__name__+"] running command "+command)
@@ -82,7 +85,7 @@ def run():
 					# create the measure data structure
 					measure_data = {}
 					date = datetime.datetime.strptime(json_output["time"],"%Y-%m-%d %H:%M:%S") if "time" in json_output else utils.now()
-					measure_data["timestamp"] = utils.timezone(utils.timezone(utils.timezone(int(time.mktime(date.timetuple())))))
+					measure_data["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
 					measure_data["key"] = sensor["sensor_id"]
 					value = json_output[measure] if measure in json_output else default_value
 					measure_data["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])

@@ -775,6 +775,10 @@
 							  "description":"If the control cannot be manipulated by the user (e.g. read only)",
 							  "value": false,
                               "type":"boolean"
+                            },
+                            "style":{
+							  "description":"Optional style of the checkbox. 'a': rectangular with text, 'b': iOS style, 'c': material like",
+                              "type":"string"
                             }
                           },
                           "additionalProperties":false,
@@ -1039,6 +1043,14 @@
                         "csv_file":{
 						  "description":"Location of the CSV file. If not provided the one in the global plugin settings will be used",
                           "type":"string"
+                        },
+                        "date_format":{
+						  "description":"The format of the date according to https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior",
+                          "type":"string"
+                        },
+                        "date_index":{
+						  "description":"The position (index) of the date in the csv file",
+                          "type":"integer"
                         },
                         "node_id":{
 						  "description":"An optional name of the device is to filter out unwanted items from the csv file",
