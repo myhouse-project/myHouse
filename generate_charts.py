@@ -3,6 +3,7 @@ import copy
 import json
 import requests
 import sys
+from motionless import LatLonMarker,DecoratedMap
 
 import utils
 import logger
@@ -16,16 +17,24 @@ export_data = {"width": 500, "async" : False, "type": conf['constants']['chart_e
 debug = False
 
 # debug http requests
-try:
-	import http.client as http_client
-except ImportError:
-	# Python 2
-	import httplib as http_client
-http_client.HTTPConnection.debuglevel = 1
+if debug:
+	try:
+		import http.client as http_client
+	except ImportError:
+		# Python 2
+		import httplib as http_client
+	http_client.HTTPConnection.debuglevel = 1
 
 # capitalize the first letter
 def capitalizeFirst(string):
 	return string.capitalize()
+
+# return an image not available picture
+def get_image_unavailable():
+        with open(conf["constants"]["image_unavailable"],'r') as file:
+                data = base64.b64encode(file.read())
+        file.close()
+        return data
 
 # save the image to disk
 def save_to_file(r,filename):
@@ -39,7 +48,6 @@ def generate_chart(options,filename,is_stock_chart=False):
 	data = copy.deepcopy(export_data)
         data["options"] = json.dumps(options)
 	if is_stock_chart: data["constr"] = "StockChart"
-	print data
         r = requests.post(export_url, data=data)
 	save_to_file(r,filename)
 
@@ -172,6 +180,28 @@ def add_sensor_image(layout,widget):
 	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,widget["widget_id"])
 
+# add a map widget
+def add_sensor_map(layout,widget):
+        split = utils.split_sensor(layout,"sensor")
+        if split is None: return
+        module_id = split[0]
+        group_id = split[1]
+        sensor_id = split[2]
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        sensor_url = module_id+"/"+group_id+"/"+sensor_id
+	# setup the map
+	map = DecoratedMap(maptype=conf["gui"]["map_type"],size_x=conf["gui"]["map_size_x"],size_y=conf["gui"]["map_size_y"])
+        # retrieve the data
+        locations = json.loads(utils.web_get(hostname+sensor_url+"/current"))
+	# add the marker to the map
+	for device in locations:
+		location = locations[device]
+		map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=location["label"]))
+	# download the map
+	url = map.generate_url()	
+        r = requests.get(url)
+        save_to_file(r,widget["widget_id"])
+
 # load all the widgets of the given module
 def run(module_id,requested_widget=None,generate_chart=True):
 	module = utils.get_module(module_id)
@@ -201,6 +231,9 @@ def run(module_id,requested_widget=None,generate_chart=True):
 				elif layout["type"] == "chart_short" or layout["type"] == "chart_short_inverted": 
 					if generate_chart: add_sensor_chart(layout,widget)
 					break
+                                elif layout["type"] == "map":
+                                        if generate_chart: add_sensor_map(layout,widget)
+                                        break
 				else: 
 					chart_generated = False
 					continue
