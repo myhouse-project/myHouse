@@ -1000,7 +1000,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				return function (data) {
 					// get the series template
 					var series = $.extend(true,{}, sensor['series'][series_index]);
-					var null_value = null
+					var null_value = null;
 					if ("null_value" in series) null_value = series["null_value"]
 					// set the name and the id
 					series['name'] = sensor['display_name']+" "+sensor['series'][series_index]['series_id'];
@@ -1013,7 +1013,7 @@ th.dt-center, td.dt-center { text-align: center; }
 					if ("type" in sensor['series'][series_index] && sensor['series'][series_index]['type'] == "flags") {
 						flags = [];
 						for (var i = 0; i < data.length; i++) {
-							if (data[i][1] == null_value || data[i][1] == null || data[i][1] == "") continue;
+							if (data[i][1] === null_value || data[i][1] === null || data[i][1] === "") continue;
 							flags[i] = {'x': data[i][0], 'shape': 'circlepin', 'title': '<img width="'+series['width']+'" heigth="'+series['heigth']+'" src="web/images/'+sensor['sensor_id']+"_"+data[i][1]+'.png">'};
 						}
 						series['data'] = flags;
