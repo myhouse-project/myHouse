@@ -13,6 +13,15 @@ conf = config.get_config()
 hostname = 'http://127.0.0.1:'+str(conf['gui']['port'])+'/'
 export_url = 'https://export.highcharts.com/'
 export_data = {"width": 500, "async" : False, "type": conf['constants']['chart_extension']}
+debug = False
+
+# debug http requests
+try:
+	import http.client as http_client
+except ImportError:
+	# Python 2
+	import httplib as http_client
+http_client.HTTPConnection.debuglevel = 1
 
 # capitalize the first letter
 def capitalizeFirst(string):
@@ -30,6 +39,7 @@ def generate_chart(options,filename,is_stock_chart=False):
 	data = copy.deepcopy(export_data)
         data["options"] = json.dumps(options)
 	if is_stock_chart: data["constr"] = "StockChart"
+	print data
         r = requests.post(export_url, data=data)
 	save_to_file(r,filename)
 

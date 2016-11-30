@@ -13,7 +13,7 @@
 ### END INIT INFO
 
 DAEMON_PATH="#base_dir#"
-DAEMON="python main.py"
+DAEMON="python myHouse.py"
 DAEMONOPTS=""
 DEAMONLOGS="/dev/null"
 
