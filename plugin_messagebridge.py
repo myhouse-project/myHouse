@@ -90,6 +90,7 @@ def tx(sensor,data,service_message=False):
 # send a sensor to sleep
 def sleep(sensor):
 	sleep_min = sensor["plugin"]["cycle_sleep_min"]*60
+	time.sleep(1)
         tx(sensor,"SLEEP"+str(sleep_min).zfill(3)+"S",False)
 
 
