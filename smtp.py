@@ -13,7 +13,7 @@ conf = config.get_config()
 # attach the image to the given message
 def attach_image(msg,image):
         with open(image['filename'], 'r') as file:
-                img = MIMEImage(file.read())
+                img = MIMEImage(file.read(),_subtype="png")
                 file.close()
                 img.add_header('Content-ID', '<{}>'.format(image['id']))
                 msg.attach(img)
