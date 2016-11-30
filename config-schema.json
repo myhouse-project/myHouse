@@ -131,6 +131,34 @@
             "type":"string",
             "title":"Menu section"
           }
+        },
+        "maps":{
+          "type":"object",
+          "description":"Maps properties",
+          "properties":{
+            "type":{
+              "type":"string",
+              "description":"The google map to use (e.g. satellite,hybrid,terrain,roadmap)"
+            },
+            "size_x":{
+              "type":"integer",
+              "description":"The map x size in pixel"
+            },
+            "size_y":{
+              "type":"integer",
+              "description":"The map y size in pixel"
+            },
+	        "api_key":{
+              "type":"string",
+              "description":"Google Maps API key (get one from https://developers.google.com/maps/documentation/javascript/get-api-key)"
+            }
+          },
+          "required":[
+            "type",
+			"size_x",
+			"size_y",
+			"api_key"
+          ]
         }
       },
       "required":[
@@ -424,27 +452,8 @@
           "description":"Image plugin configuration"
         },
         "icloud":{
-          "type":"object",
-          "description":"iCloud plugin configuration",
-          "properties":{
-            "map_type":{
-              "type":"string",
-              "description":"The google map to use (e.g. satellite,hybrid,terrain,roadmap)"
-            },
-            "map_size_x":{
-              "type":"integer",
-              "description":"The map x size in pixel"
-            },
-            "map_size_y":{
-              "type":"integer",
-              "description":"The map y size in pixel"
-            }
-          },
-          "required":[
-            "map_type",
-            "map_size_x",
-			"map_size_y"
-          ]
+          "type":"null",
+          "description":"iCloud plugin configuration"
         },
         "messagebridge":{
           "type":"object",
@@ -595,6 +604,26 @@
                             "type":{
                               "type":"string",
 							  "enum": [ "image" ],
+                              "value":"image"
+                            },
+                            "sensor":{
+							  "description":"The sensor in the format module_id:group_id:sensor_id",
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "sensor"
+                          ]
+                        },
+                        {
+                          "title":"map",
+                          "description":"Add a map for a given sensor",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+							  "enum": [ "map" ],
                               "value":"image"
                             },
                             "sensor":{
@@ -1049,11 +1078,11 @@
                           "type":"string"
                         },
                         "date_index":{
-						  "description":"The position (index) of the date in the csv file",
+						  "description":"The position (index) of the date (UTC) in the csv file",
                           "type":"integer"
                         },
                         "node_id":{
-						  "description":"An optional name of the device is to filter out unwanted items from the csv file",
+						  "description":"An optional name of the device to filter out unwanted items from the csv file",
                           "type":"string"
                         },
                         "node_id_index":{

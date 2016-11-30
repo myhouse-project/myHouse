@@ -6,20 +6,13 @@ import os
 import base64
 from pyicloud import PyiCloudService
 from pyicloud.cmdline import main
-from motionless import LatLonMarker,DecoratedMap
+import json
 
 import utils
 import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
-
-# return an image not available picture
-def get_image_unavailable():
-	with open(conf["constants"]["image_unavailable"],'r') as file:
-        	data = base64.b64encode(file.read())
-	file.close()
-	return data
 
 # poll the sensor
 def poll(sensor):
@@ -31,37 +24,37 @@ def poll(sensor):
 		return ""
 	# retrieve the devices
 	devices = icloud.devices
-	# for each device
-	map = DecoratedMap(maptype=conf["plugins"]["icloud"]["map_type"],size_x=conf["plugins"]["icloud"]["map_size_x"],size_y=conf["plugins"]["icloud"]["map_size_y"])
-	for i, device in enumerate(devices):
-		device = devices[i]
-		if "devices" in sensor["plugin"] and device["name"] not in sensor["plugin"]["devices"]: continue
-		# retrieve the location
-		location = device.location()
-		if location is None: continue
-		# add the marker to the map
-		label = device["name"][0].upper()
-		map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=label))
-	# download the map
-	url = map.generate_url()
-	try:
-		data = utils.web_get(url,binary=True)
-        except Exception,e:
-                log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to visit "+url+": "+utils.get_exception(e))
-		return ""
-	# return empty if the data is not binary
-	if "<html" in data.lower() or data == "": return ""
-	# return the data, if binary return the base64 encoding
-	return base64.b64encode(data)
+	locations = {}
+        # for each device
+        for i, device in enumerate(devices):
+                device = devices[i]
+                if "devices" in sensor["plugin"] and device["name"] not in sensor["plugin"]["devices"]: continue
+                # retrieve the location
+                location = device.location()
+                if location is None: continue
+		# keep the raw location
+		locations[device["name"]] = location
+	return json.dumps(locations)
 
 # parse the data
 def parse(sensor,data):
+	data = json.loads(data)
+	locations = {}
+	# for each device normalize the data for a map 
+	for device in data:
+		location = {}
+		location["timestamp"] = utils.timestamp2date(int(data[device]["timeStamp"]/1000))
+		location["latitude"] = data[device]["latitude"]
+		location["longitude"] = data[device]["longitude"]
+		location["type"] = data[device]["positionType"]
+		location["label"] = device[0].upper()
+		location["accuracy"] = data[device]["horizontalAccuracy"]
+		location["invalid"] = data[device]["isOld"]
+		locations[device] = location
 	measures = []
 	measure = {}
 	measure["key"] = sensor["sensor_id"]
-	measure["value"] = data
-	# if expecting an image and no data or an error is returned, return a placeholder
-	if measure["value"] == "": measure["value"] = get_image_unavailable()
+	measure["value"] = json.dumps(locations)
 	measures.append(measure)
         return measures
 
