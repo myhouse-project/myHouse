@@ -14,7 +14,8 @@ plugin_conf = conf['plugins']['csv']
 # poll the sensor
 def poll(sensor):
 	# read and return the content of file (in json)
-	with open(plugin_conf['csv_file']) as file:
+	filename = sensor["plugin"]["csv_file"] if "csv_file" in sensor["plugin"] else plugin_conf['csv_file']
+	with open(filename) as file:
 		data = json.dumps(file.readlines())
 	file.close()
 	return data
@@ -29,23 +30,29 @@ def parse(sensor,data):
 	for line in data:
 		entry = line.split(',')
 		measure = {}
-		# split the values
-		node_id = entry[1]
-		value = entry[2]
-		# skip if the entry is not related to the node_id and measure we are looking for
-		if node_id != sensor['plugin']['node_id']: continue
-		if not value.startswith(sensor['plugin']['measure']): continue
+		# if a node_id is defined, filter based on it
+		if "node_id" in sensor["plugin"] and entry[sensor["plugin"]["node_id_index"+1]] != sensor["plugin"]["node_id"]: continue
+		# if a measure prefix is defined, filter based on it
+		if "measure" in sensor["plugin"] and not entry[sensor["plugin"]["measure_index"+1]].startswith(sensor['plugin']['measure']): continue
 		# generate the timestamp
-		date = datetime.datetime.strptime(entry[0],"%d %b %Y %H:%M:%S +0000")
-		measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
+		if "date_index" in sensor["plugin"]:
+			date = datetime.datetime.strptime(entry[sensor["plugin"]["date_index"+1]],sensor["plugin"]["date_format"])
+			measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
+		else: measure["timestamp"] = utils.now()
+		# set the key as the sensor_id
 		measure["key"] = sensor["sensor_id"]
 		# strip out the measure from the value
-		measure["value"] = float(value.replace(sensor['plugin']['measure'],""))
+		value = entry[sensor["plugin"]["measure_index"+1]]
+		# if a measure prefix was defined, remove it
+		if "measure" in sensor["plugin"]: value.replace(sensor['plugin']['measure'],"")
+		# set the value
+		measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
 		measures.append(measure)
         return measures
 
 # return the cache schema
 def cache_schema(sensor):
 	# cache the entire file
-	return plugin_conf['csv_file']
+	filename = sensor["plugin"]["csv_file"] if "csv_file" in sensor["plugin"] else plugin_conf['csv_file']
+	return filename
 
