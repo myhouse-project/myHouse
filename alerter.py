@@ -186,6 +186,7 @@ def run(module_id,rule_id,notify=True):
 						if what == "send": sensors.data_send(key_split[0],key_split[1],key_split[2],value,force=force)
 						elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value)
 				# notify about the alert
+				if rule["severity"] == "none": notify = False
 				if notify:
 					log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
 					if rule["severity"] != "debug":

@@ -24,6 +24,7 @@ import plugin_csv
 import plugin_messagebridge
 import plugin_icloud
 import plugin_rtl_433
+import plugin_gpio
 
 # variables
 plugins = {}
@@ -42,6 +43,7 @@ def init_plugins(start_services):
 	        elif name == "csv": plugin = plugin_csv
 	        elif name == "messagebridge": plugin = plugin_messagebridge
 		elif name == "rtl_433": plugin = plugin_rtl_433
+		elif name == "gpio": plugin = plugin_gpio
                 if plugin is None:
                         log.error("plugin "+name+" not supported")
                         continue
@@ -305,6 +307,9 @@ def data_get_current_timestamp(module_id,group_id,sensor_id):
 # return the data of a requested sensor based on the timeframe and stat requested
 def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"] and timeframe == "realtime":
+                # the sensor needs to be polled on demand
+                run(module_id,group_id,sensor_id,"save")
         data = []
         # get the parameters for the requested timeframe
         if timeframe == "realtime":
@@ -412,5 +417,8 @@ if __name__ == '__main__':
 		# run the command for the given sensor
 		# <module_id> <group_id> <sensor_id> <action>
 		init_plugins(False)
-		run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
+		sensor = utils.get_sensor(sys.argv[1],sys.argv[2],sys.argv[3])
+		if sensor is None: 
+			log.info("invalid sensor provided")
+		else: run(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
 

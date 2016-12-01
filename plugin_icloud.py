@@ -43,7 +43,7 @@ def parse(sensor,data):
 	# for each device normalize the data for a map 
 	for device in data:
 		location = {}
-		location["timestamp"] = utils.timestamp2date(int(data[device]["timeStamp"]/1000))
+		location["date"] = utils.timestamp2date(utils.timezone(int(data[device]["timeStamp"]/1000)))
 		location["latitude"] = data[device]["latitude"]
 		location["longitude"] = data[device]["longitude"]
 		location["type"] = data[device]["positionType"]

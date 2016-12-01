@@ -84,8 +84,9 @@ def run():
 					sensor = node[measure]
 					# create the measure data structure
 					measure_data = {}
-					date = datetime.datetime.strptime(json_output["time"],"%Y-%m-%d %H:%M:%S") if "time" in json_output else utils.now()
-					measure_data["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
+					if "time" in json_output:
+						date = datetime.datetime.strptime(json_output["time"],"%Y-%m-%d %H:%M:%S")
+						measure_data["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
 					measure_data["key"] = sensor["sensor_id"]
 					value = json_output[measure] if measure in json_output else default_value
 					measure_data["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
