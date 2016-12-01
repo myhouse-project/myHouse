@@ -22,6 +22,8 @@ def install_deps():
         log.debug(utils.run_command("apt-get install python-redis"))
         log.info("Installing python-numphy...")
         log.debug(utils.run_command("apt-get install python-numpy"))
+        log.info("Installing python-rpi.gpio...")
+        log.debug(utils.run_command("apt-get install python-rpi.gpio"))
         log.info("Installing python-apscheduler...")
         log.debug(utils.run_command("pip install APScheduler"))
         log.info("Installing python-slackclient...")

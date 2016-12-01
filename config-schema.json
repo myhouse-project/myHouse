@@ -495,6 +495,26 @@
 			"enabled",
             "command"
           ]
+        },
+        "gpio":{
+          "type":"object",
+          "description":"GPIO plugin configuration",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the service"
+            },
+            "mode":{
+				"type": "string",
+				"description":"Use the pin (board) or the channel (bcm) numbering system",
+				"enum": [ "bcm","board" ],
+				"value": "board"
+            }
+          },
+          "required":[
+			"enabled",
+            "mode"
+          ]
         }
       },
       "required":[
@@ -505,7 +525,8 @@
         "image",
         "icloud",
         "messagebridge",
-		"rtl_433"
+		"rtl_433",
+		"gpio"
       ]
     },
     "modules":{
@@ -1389,6 +1410,64 @@
                       "required":[
                         "plugin_name",
                         "search"
+                      ]
+                    },
+					{
+                      "title":"gpio",
+                      "description":"Interact with the GPIO to capture input and send output signal",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+						  "enum": [ "gpio" ],
+                          "value":"gpio"
+                        },
+                        "pin":{
+						  "description":"The pin of the GPIO to use based on the numbering system defined in the global plugin configuration",
+                          "type":"integer"
+                        },
+                        "setup":{
+						  "description":"Setup the pin as input or output",
+                          "type":"string",
+						  "enum": [ "input","output" ],
+                          "value":"input"
+                        },
+                        "pull_up_down":{
+						  "description":"As an input, optional pull up/pull down resistor",
+                          "type":"string",
+						  "enum": [ "up","down" ],
+                          "value":"down"
+                        },
+                        "edge_detect":{
+						  "description":"As an input, wait for a low/high edge instead of constantly polling the sensor",
+                          "type":"string",
+						  "enum": [ "rising","falling","both" ],
+                          "value":"rising"
+                        },
+                        "bounce_time":{
+						  "description":"As an input, optional bounce time in milliseconds to ignore furhter edge detection",
+                          "type":"integer"
+                        },
+                        "polling_interval":{
+						  "description":"As an input, poll the sensor every X minutes",
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+						  "description":"As an input, do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
+                          "type":"boolean"
+                        },
+                        "initial_value":{
+						  "description":"As an output, optionally set the initial value to low or high",
+                          "type":"string",
+						  "enum": [ "low","high" ],
+                          "value":"low"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "plugin_name",
+                        "pin",
+						"setup"
                       ]
                     }
                   ]
