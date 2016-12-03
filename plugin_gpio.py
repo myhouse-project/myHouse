@@ -39,7 +39,6 @@ def register(sensor):
         # setup the channel
         GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
         # add callbacks
-        bouncetime = sensor["plugin"]["bouncetime"] if "bouncetime" in sensor["plugin"] else 0
         edge_detect = sensor["plugin"]["edge_detect"]
 	if edge_detect == "rising" or edge_detect == "both": GPIO.add_event_detect(pin, GPIO.RISING, callback=event_high_callback)
 	if edge_detect == "falling" or edge_detect == "both": GPIO.add_event_detect(pin, GPIO.FALLING, callback=event_low_callback)

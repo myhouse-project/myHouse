@@ -1001,6 +1001,7 @@
                 "severity":{
                   "type":"string",
                   "enum":[
+                    "none",
                     "debug",
                     "info",
                     "warning",
@@ -1442,10 +1443,6 @@
                           "type":"string",
 						  "enum": [ "rising","falling","both" ],
                           "value":"rising"
-                        },
-                        "bounce_time":{
-						  "description":"As an input, optional bounce time in milliseconds to ignore furhter edge detection",
-                          "type":"integer"
                         },
                         "polling_interval":{
 						  "description":"As an input, poll the sensor every X minutes",
