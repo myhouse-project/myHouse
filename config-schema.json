@@ -905,6 +905,10 @@
                             "sensor":{
 							  "description":"The sensor in the format module_id:group_id:sensor_id",
                               "type":"string"
+                            },
+                            "default_value":{
+							  "description":"The default value for new entries in the calendar",
+                              "type":"string"
                             }
                           },
                           "additionalProperties":false,

@@ -960,7 +960,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		// configure default value
 		scheduler.attachEvent("onBeforeLightbox", function (id){
 			var event = scheduler.getEvent(id);
-			event.text = "25";
+			event.text = ""
+			if ("default_value" in layout) event.text = layout["default_value"];
 			return true;
 		});
 		// configure the event template
