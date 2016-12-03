@@ -62,6 +62,12 @@ def set(key,value,timestamp):
 	if not conf['db']['enabled']: return 0
 	return db.zadd(key,timestamp,value)
 
+# set a single value into the db
+def set_simple(key,value):
+        db = connect()
+        log.debug("set "+str(key))
+        db.set(key,str(value))
+
 # get a single value from the db
 def get(key):
         db = connect()
@@ -115,10 +121,15 @@ def init():
 	db = connect()
 	# check the version
 	version_key = conf["constants"]["db_schema"]["version"]
-	if not exists(version_key): set(version_key,conf["constants"]["version"],None)
+	if not exists(version_key): 
+		log.error("run the upgrade.py script first to upgrade the database (expecting v"+str(conf["constants"]["version"])+" but found v1.0")
+		return False
 	else:
 		version = float(get(version_key))
-		if version != conf["constants"]["version"]: log.warning("database version mismatch (expecting v"+str(conf["constants"]["version"])+" but found v"+str(version)+")")
+		if version != conf["constants"]["version"]: 
+			log.error("run the upgrade.py script first to upgrade the database (expecting v"+str(conf["constants"]["version"])+" but found v"+str(version)+")")
+			return False
+	return True
 
 # main
 if __name__ == '__main__':

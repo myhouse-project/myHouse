@@ -32,17 +32,23 @@
       "Actuators",
       "System",
       "myHouse"
-    ]
+    ],
+    "maps": {
+      "size_x": 640,
+      "api_key": "YOUR_API_KEY",
+      "type": "hybrid",
+      "size_y": 640
+    }
   },
   "alerter": {
     "enabled": true,
-	"data_expire_days": 5
+    "data_expire_days": 5
   },
   "sensors": {
     "enabled": true,
-	"poll_at_startup": true,
-	"cache_expire_min": 1,
-	"data_expire_days": 5
+    "poll_at_startup": true,
+    "cache_expire_min": 1,
+    "data_expire_days": 5
   },
   "notifications": {
     "enabled": true,
@@ -96,20 +102,20 @@
     },
     "linux": null,
     "image": null,
-    "icloud": {
-		"map_type": "hybrid",
-		"map_size_x": 640,
-		"map_size_y": 640
-	},
+    "icloud": null,
     "messagebridge": {
-	  "enabled": true,
+      "enabled": false,
       "port_listen": 50140,
       "port_send": 50141
     },
-	"rtl_433": {
-	  "enabled": false,
-      "command": "rtl_433"
-	}	
+    "rtl_433": {
+      "command": "/usr/local/bin/rtl_433",
+      "enabled": false
+    },
+    "gpio": {
+      "enabled": false,
+      "mode": "bcm"
+    }
   },
   "modules": [
     {
@@ -186,7 +192,8 @@
                 "type": "checkbox",
                 "display_name": "Boiler Manual Switch",
                 "sensor": "boiler:main:switch",
-                "url": "boiler/main/switch/send/OUTA"
+                "send_on": "boiler/main/switch/send/OUTA1",
+                "send_off": "boiler/main/switch/send/OUTA0"
               },
               {
                 "type": "input",
@@ -1481,11 +1488,11 @@
         },
         {
           "rule_id": "indoor_temperature_low",
-		  "for": [
-				"indoor:temperature:study_room",
-				"indoor:temperature:living_room",
-				"indoor:temperature:bedroom"
-		  ],
+          "for": [
+            "indoor:temperature:study_room",
+            "indoor:temperature:living_room",
+            "indoor:temperature:bedroom"
+          ],
           "display_name": "Pay attention, the temperature inside is very low, %i% has reached %temperature_avg% during the last hour",
           "enabled": false,
           "severity": "warning",
@@ -2255,8 +2262,7 @@
             "username": "your@email.com",
             "poll_on_demand": true
           },
-          "format": "image",
-          "single_instance": true
+          "format": "string"
         }
       ]
     },
@@ -3292,6 +3298,261 @@
         }
       ]
     },
+{
+      "module_id": "alarm",
+      "section_id": "Actuators",
+      "display_name": "Alarm",
+      "icon": "fa-bullhorn",
+      "enabled": false,
+      "widgets": [
+		[
+          {
+            "widget_id": "alarm_status",
+            "display_name": "Alarm Status",
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "icon": "alarm/main/alarm_status/image",
+                "timestamp": "alarm:main:alarm_status"
+              },
+              {
+                "type": "checkbox",
+                "sensor": "alarm:main:alarm_status"
+              }
+            ]
+          },
+          {
+            "widget_id": "alarm_sensors_realtime",
+            "display_name": "Sensors: Realtime",
+            "enabled": true,
+            "size": 9,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "alarm:sensors",
+                "timeframe": "realtime"
+              }
+            ]
+          }
+		],
+        [
+          {
+            "widget_id": "pir_first_floor",
+            "display_name": "Indoor first floor sensor",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "icon": "web/images/indoor.png",
+                "timestamp": "alarm:sensors:pir_first_floor"
+              },
+              {
+                "type": "checkbox",
+				"style": "b",
+                "sensor": "alarm:sensors:pir_first_floor_armed"
+              }
+            ]
+          },
+          {
+            "widget_id": "pir_study_room",
+            "display_name": "Indoor study room sensor",
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "icon": "web/images/indoor.png",
+                "timestamp": "alarm:sensors:pir_study_room"
+              },
+              {
+                "type": "checkbox",
+				"style": "b",
+                "sensor": "alarm:sensors:pir_study_room_armed"
+              }
+            ]
+          }
+		]
+	  ],
+      "rules": [
+        {
+          "rule_id": "alarm_status",
+          "display_name": "The alarm status is %alarm_status%",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {
+            "alarm_status": "alarm:main:alarm_status,-1,-1"
+          }
+        },
+        {
+          "rule_id": "alarm_set_on",
+          "display_name": "The alarm has been armed",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+			"alarm_set_on == status_on"
+		  ],
+          "definitions": {
+            "alarm_set_on": "alarm:main:alarm_set_on,-1,-1",
+            "status_on": 1
+          },
+          "actions": [
+            "set,alarm:main:alarm_set_on,0",
+			"set,alarm:main:alarm_status,1"
+          ]
+		},
+		{
+          "rule_id": "alarm_set_off",
+          "display_name": "The alarm has been disarmed",
+          "enabled": false,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+			"alarm_set_off == status_on"
+		  ],
+          "definitions": {
+            "alarm_set_off": "alarm:main:alarm_set_off,-1,-1",
+            "status_on": 1
+          },
+          "actions": [
+            "set,alarm:main:alarm_set_off,0",
+			"set,alarm:main:alarm_status,0"
+          ]
+		},
+        {
+          "rule_id": "alarm",
+		  "for": [
+			"alarm:sensors:pir_study_room",
+			"alarm:sensors:door_ground_floor"
+		  ],
+          "display_name": "Alarm! The sensor %i% has triggered",
+          "enabled": false,
+          "severity": "alert",
+          "run_every": "minute",
+          "conditions": [
+			"sensor_armed == status_on",
+			"sensor == status_on",
+			"alarm_status == status_on"
+		  ],
+          "definitions": {
+			"sensor_armed": "%i%_armed,-1,-1",
+			"sensor": "%i%,-1,-1",
+			"alarm_status": "alarm:main:alarm_status,-1,-1",
+            "status_on": 1
+          }
+		},
+        {
+          "rule_id": "sensor_reset",
+		  "for": [
+			"alarm:sensors:pir_study_room",
+			"alarm:sensors:door_ground_floor"
+		  ],
+          "display_name": "Resetting the alarm sensor %i% to its normal state",
+          "enabled": false,
+          "severity": "debug",
+          "run_every": "minute",
+          "conditions": [
+			"sensor_status == status_on"
+		  ],
+          "definitions": {
+            "sensor_status": "%i%,-1,-1",
+            "status_on": 1
+          },
+          "actions": [
+            "set,%i%,0"
+          ]
+		}
+	  ],
+	  "sensors": [
+        {
+          "group_id": "sensors",
+          "sensor_id": "pir_ground_floor",
+          "display_name": "PIR ground floor",
+          "plugin": {
+            "plugin_name": "rtl_433",
+            "search": {
+				"model": "Generic Sensor",
+				"id": "3a 11 4c"
+			}
+          },
+          "format": "int",
+          "series": [
+            {
+              "series_id": "on",
+              "type": "line",
+              "step": true
+            }
+          ]
+        },
+        {
+          "group_id": "sensors",
+          "sensor_id": "pir_study_room",
+          "display_name": "PIR study room",
+          "plugin": {
+            "plugin_name": "gpio",
+			"setup": "input",
+			"pin": 21,
+			"pull_up_down": "down",
+			"edge_detect": "rising"
+          },
+          "format": "int",
+          "series": [
+            {
+              "series_id": "on",
+              "type": "line",
+              "step": true
+            }
+          ]
+        },
+        {
+          "group_id": "sensors",
+          "sensor_id": "pir_ground_floor_armed",
+          "format": "int"
+        },
+        {
+          "group_id": "sensors",
+          "sensor_id": "pir_study_room_armed",
+          "format": "int"
+        },
+        {
+          "group_id": "main",
+          "sensor_id": "alarm_set_on",
+          "display_name": "Alarm On",
+          "plugin": {
+            "plugin_name": "rtl_433",
+            "search": {
+				"model": "Generic Sensor",
+				"id": "01 09 c0"
+			}
+          },
+          "format": "int"
+        },
+        {
+          "group_id": "main",
+          "sensor_id": "alarm_set_off",
+          "display_name": "Alarm Off",
+          "plugin": {
+            "plugin_name": "rtl_433",
+            "search": {
+				"model": "Generic Sensor",
+				"id": "00 08 0c"
+			}
+          },
+          "format": "int"
+        },
+        {
+          "group_id": "main",
+          "sensor_id": "alarm_status",
+          "display_name": "Alarm Status",
+          "format": "int"
+        }
+	  ]
+	},
     {
       "module_id": "network",
       "section_id": "System",

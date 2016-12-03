@@ -12,13 +12,13 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 
-plugin_conf = conf['plugins']['gpio']
-pins = {}
-
-# setup the GPIO
-GPIO.setwarnings(False)
-mode = GPIO.BCM if plugin_conf["mode"] == "bcm" else GPIO.BOARD
-GPIO.setmode(mode)
+if "gpio" in conf['plugins']: 
+	plugin_conf = conf['plugins']['gpio']
+	pins = {}
+	# setup the GPIO
+	GPIO.setwarnings(False)
+	mode = GPIO.BCM if plugin_conf["mode"] == "bcm" else GPIO.BOARD
+	GPIO.setmode(mode)
 
 # register a new sensor against this plugin
 def register(sensor):

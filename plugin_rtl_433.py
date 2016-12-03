@@ -15,11 +15,12 @@ import sensors
 
 # nodes[<search>][<measure>] = sensor
 # e.g. nodes["{'model':'THGR122N','id':134}"]["temperature_C"]
-nodes = {}
-plugin_conf = conf['plugins']['rtl_433']
-default_measure = "__measure__"
-default_value = 1
-command_arguments = "-F json -U"
+if "rtl_433" in conf['plugins']:
+	nodes = {}
+	plugin_conf = conf['plugins']['rtl_433']
+	default_measure = "__measure__"
+	default_value = 1
+	command_arguments = "-F json -U"
 
 # register a new sensor against this plugin
 def register(sensor):
