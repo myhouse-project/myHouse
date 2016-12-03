@@ -13,20 +13,25 @@ conf = config.get_config()
 import sensors
 
 plugin_conf = conf['plugins']['gpio']
+pins = {}
 
 # setup the GPIO
 GPIO.setwarnings(False)
-mode = GPIO.BCM if plugin_conf["mode"] == "BCM" else GPIO.BOARD
+mode = GPIO.BCM if plugin_conf["mode"] == "bcm" else GPIO.BOARD
 GPIO.setmode(mode)
 
 # register a new sensor against this plugin
 def register(sensor):
 	if not plugin_conf["enabled"]: return
-	# register only input pins with "edge_detect" configured
 	if sensor['plugin']['plugin_name'] != 'gpio': return
 	if sensor['plugin']['setup'] != "input": return
 	if "edge_detect" not in sensor['plugin']: return
+	# register the sensor
 	pin = sensor['plugin']['pin']
+	if pin in pins:
+		log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] pin "+str(pin)+" already registered, skipping")
+		return
+	pins[pin] = sensor
         # set pull up / down resistor
 	pull_up_down = None
         if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "up": pull_up_down = GPIO.PUD_UP
@@ -43,7 +48,7 @@ def register(sensor):
 # handle the callbacks
 def save(pin,value):
 	sensor = pins[pin]
-	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] GPIO input on pin "+str(sensor["plugin"]["pin"])+" is now "+str(value))
+	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] GPIO input on pin "+str(pin)+" is now "+str(value))
 	measures = []
 	measure = {}
 	measure["key"] = sensor["sensor_id"]
@@ -53,12 +58,11 @@ def save(pin,value):
 
 # receive callback when a rising edge is detected
 def event_high_callback(pin):
-	print "ok"
-	save(channel,1)
+	save(pin,1)
 
 # receive a callback when a falling edge is detected
 def event_low_callback(pin):
-	save(channel,0)	
+	save(pin,0)	
 
 # run the plugin service
 def run():
