@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import time
 import datetime
+import sys
 
 import utils
 import logger
@@ -19,7 +20,8 @@ import notifications
 def run():
 	log.info("Welcome to myHouse v"+conf["constants"]["version_string"])
 	# initialize the database
-	db.init()
+	initialized = db.init()	
+	if not initialized: sys.exit(1)
 	# start the scheduler
 	schedule.start()
 	# schedule all sensors

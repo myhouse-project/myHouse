@@ -12,22 +12,22 @@ import os.path
 config = None
 
 # return all the configuration settings as an object
-def get_config():
+def get_config(validate=True):
 	# load the configuration from the file
-        load()
+        load(validate)
         return config
 
 # return all the configuration settings as a json object
-def get_json_config():
-        return json.dumps(get_config(), default=lambda o: o.__dict__)
+def get_json_config(validate=True):
+        return json.dumps(get_config(validate), default=lambda o: o.__dict__)
 
 # reload the configuration
-def reload(): 
+def reload(validate=True): 
 	config = None
-	load()
+	load(validate)
 
 # load the configuration from file
-def load():
+def load(validate):
 	# if the config is already loaded return
 	global config
         if config is not None: return
@@ -57,11 +57,12 @@ def load():
         # attach the constants
         config['constants'] = const
 	# validate the configuration against the schema
-	try:
-		jsonschema.validate(json.loads(config["config_json"]),json.loads(const['config_schema_json']))
-	except Exception,e:
-		print "The configuration file is not compliant with the schema or the schema is incorrect: "+str(e)
-		sys.exit(1)
+	if validate:
+		try:
+			jsonschema.validate(json.loads(config["config_json"]),json.loads(const['config_schema_json']))
+		except Exception,e:
+			print "The configuration file is not compliant with the schema or the schema is incorrect: "+str(e)
+			sys.exit(1)
 
 # save the configuration
 def save(config_string):
