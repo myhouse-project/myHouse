@@ -13,7 +13,7 @@ conf = config.get_config()
 
 hostname = 'http://127.0.0.1:'+str(conf['gui']['port'])+'/'
 export_url = 'https://export.highcharts.com/'
-export_data = {"width": 500, "async" : False, "type": conf['constants']['chart_extension']}
+export_data = {"width": 500, "type": conf['constants']['chart_extension']}
 debug = False
 
 # debug http requests
