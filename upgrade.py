@@ -241,7 +241,7 @@ def main():
 	else: version = db.get(version_key)
 	print "Detected version: "+version
 	if version == conf["constants"]["version"]: exit("Already running the latest version ("+str(version)+"). Exiting.")
-#	if version == "1.0": upgrade_2_0()
-#	if version == "2.0": upgrade_2_1()
-	upgrade_2_1()
+	if version == "1.0": upgrade_2_0()
+	if version == "2.0": upgrade_2_1()
+
 main()

@@ -1,7 +1,4 @@
-==============
-myHouse
-==============
-Home monitoring and automation suite for Raspberry Pi
+[TOC]
 
 Features
 ===========
@@ -14,7 +11,7 @@ Features
 
 How it works 
 ===========
-Think of myHouse as a framework for automating your house. The first step is to **configure the sensors** you want to collect data from. Included in the package, there are already a number of plugins (e.g. to collect weather statistics, information from the linux box when it runs, retrieving images from the Internet, your GPS position from icloud, data collected by Wirelessthings/Ciseco sensors, etc.) and you can easily add your own plugins.
+Think of myHouse as a framework for automating your house. The first step is to **configure the sensors** you want to collect data from. Included in the package, there are already a number of plugins (e.g. to collect weather statistics, information from the linux box when it runs, retrieving images from the Internet, your GPS position from icloud, data collected by Wirelessthings/Ciseco sensors, interacting with the GPIO, leveraging rtl_433, etc.) and you can easily add your own plugins.
 Once your sensors are configured and data has been collecting, the suite automatically calculates for every hour and for every day minimum/maximum/average values so to present only summarized information without overloading with unnecessary data.
 
 What will be presented in the web interface is completely up to you. You can **define your own modules**, chose your icons and **configure all the widgets** that will be presented in the order you like the most. The statistics elaborated by the tool can be presented in a number of ways: timeline charts for different group of sensors with recent or historical data, current measures and minimum/maximum values for today and yesterday are just some of the examples. From the interface your **actuators can be controlled** as well: thanks to input fields, switches and a fully-featured scheduler, you can meet easily whatever requirements you might have.
@@ -34,7 +31,9 @@ In my own myHouse, I have configured the following **sensors**:
 - GPS position of the family's members from icloud
 - Snapshots from multiple indoor and outdoor webcams
 - A number of system statistics from the raspberry pi hosting the application
-
+- Radio sensors from my legacy alarm system using rtl_433
+- A PIR sensor attached to the raspberry GPIO
+ 
 I have configured then the following modules and **widgets**:
 
 - Dashboard
@@ -61,6 +60,9 @@ I have configured then the following modules and **widgets**:
 - Boiler
 	- Boiler status, manual switch to power it on/off and target temperature to reach while on
 	- Calendar to schedule when the boiler has to automatically turns on and off
+- Alarm
+    - Alarm status and manual switch to arm the system which is automatically set to the status of the physical alarm main unit
+    - PIRs, smoke detectors, gas detectors, magnetic sensors. Each sensor can be armed indivirually and reports the last time it has triggered
 - System Status:
 	- CPU current measure, summary of today/yesterday, recent and historical timeline charts
 	- Memory current measure, summary of today/yesterday, recent and historical timeline charts
@@ -93,6 +95,8 @@ I have finally configured the following **rules**:
     - CPU utilization/System load/temperature too high
 - Boiler module:
     - Turning the boiler on/off when scheduled, requested, or when the indoor temperature is too low/high
+- Alarm module:
+    - Arm/disarm the system when the main legacy unit is armed/disarmed, notify when an armed sensor has triggered while the alarm is armed
 
 I have eventually configured a number of **rules without conditions** (that are used by the bot for its basic knowledge) reporting upon current weather conditions, temperature, boiler status, etc.
 
@@ -103,7 +107,7 @@ Installing
     - download and install all the required dependencies
     - create a service script, copy into /etc/init.d/myHouse and configured it to start at boot time
     - start the service
-- Access the web interface (e.g. http://your-raspberry-pi.ip)
+- Access the web interface (e.g. <http://your-raspberry-pi.ip>)
 
 Uninstalling
 -----------------
@@ -114,17 +118,18 @@ The dependencies, the database and all the other files belonging to myHouse will
 		
 Upgrading
 ---------------
-- From 1.x to 2.0:
-    - There is no automatic way to migrate the configuration since its format has completely changed across the versions. 
-        - Move your settings manually into the config.json file
-    - Data can be migrated using the provided upgrade_2.0.py script. 
-        - Open the file and edit the variables on top first. Select what you want to migrate (recent data, history, etc.), the source and target databases and where each database's key has to be migrated into
-        - Please note the script will migrate the data into a new database, it will not upgrade the existing v1.x database
+- Stop the service
+- Copy the files of the new version in the directory where myHouse is installed, overwriting the existing files.
+- Run as root the upgrade.py script
+- Follow the instructions on the screen
+- A backup copy of the configuration file and the database will be saved under the tmp directory
+- Start the service
 
 Configuring
 ==========
-The entire configuration of the suite is within the **config.json** file, of course in a JSON format (http://www.json.org/). If the file does not exist, **config-example.json** will be used instead. It is highly recommended to copy config-example.json into config.json at the first use and customize the latter.
-The configuration itself is pretty articulated this is why it is highly recommended to review the **config-schema.json file for a detailed explanation of the different options and combinations available**. Alternatively, the configuration editor available from within the web interface allows to build your own configuration graphically. Either way, the resulting file is checked against the schema to ensure the configuration is correct upon startup. A service restart (e.g. sudo /etc/init.d/myHouse restart) is required to apply any change.
+The entire configuration of the suite is within the **config.json** file, of course in a JSON format (<http://www.json.org/>). If the file does not exist, **config-example.json** will be used instead. 
+**NOTE: It is highly recommended to copy config-example.json into config.json at the first use and customize the latter**.
+The configuration itself is pretty articulated this is why it is highly recommended to review the **config-schema.json file for a detailed explanation of the different options and combinations available**. Alternatively, the configuration editor available from within the web interface allows to build your own configuration graphically (upon saving, a copy of the previous configuration is stored into the **config.bak** file). Either way, the resulting file is checked against the schema to ensure the configuration is correct upon startup. A service restart (e.g. sudo /etc/init.d/myHouse restart) is required to apply any change.
 
 The logic behind the configuration file is pretty simple: there is a generic configuration first (where the database is, what is the mailserver, which recipient to send notifications to, how to connect to Slack, what and where to log, etc.) followed by a number of custom modules. Each **module** is an entry in the menu of the web interface and has three main sections:
 
@@ -137,6 +142,7 @@ The logic behind the configuration file is pretty simple: there is a generic con
 	- a layout, e.g. multiple components within the same widgeta. The most common components are:
 		- sensor_group_summary: generate a chart with min/max for each sensor of the specified group for today and yesterday
 		- image: add an image from a sensor
+		- map: generate an interactive map based on the data of a sensor
 		- sensor_group_timeline: generate a chart with a timeline of the given timeframe for the sensors belonging to the given group
 		- chart_short/chart_short_inverted: generate a chart with a limited size with the data from a single sensor
 		- current: generate a header with the current measure of a sensor and an icon
@@ -157,42 +163,61 @@ The logic behind the configuration file is pretty simple: there is a generic con
 
 Plugins
 -----------
-There are two types of plugin supported by the software: pull (the sensor is pulled at regular time intervals) or push (the plugin is kept running and when a new measure is received, the main engine is notified). The following plugins are part of the distribution:
+Each plugin can support input (retrieve data from a sensor), output (send data to an actuator) or both.
+For input, data can be retrived in two ways: pull (the sensor is pulled at regular time intervals) or push (the plugin is kept running and when a new measure is received, the main engine is notified). The following out of the box plugins are part of the software:
 
-- wunderground: retrieve from Weather Underground the requested measure (e.g. temperature, pressure, weather condition, forecast, etc. review config-schema.json for the full list):
-    - request a valid API key from https://www.wunderground.com/weather/api/
+Plugin Name  | Input | Output
+------------- | ------------- | -------------
+wunderground   | Yes (pull) | No
+weatherchannel  | Yes (pull) | No
+messagebridge  | Yes (push) | Yes
+csv  | Yes (pull) | No
+image  | Yes (pull) | No
+icloud  | Yes (pull) | No
+linux  | Yes (pull) |Yes
+rtl_433  | Yes (push) | No
+gpio | Yes (pull/push) | Yes
+
+- **wunderground**: retrieve from Weather Underground the requested measure (e.g. temperature, pressure, weather condition, forecast, etc. review config-schema.json for the full list):
+    - request a valid API key from <https://www.wunderground.com/weather/api/>
     - set the latitude/longitude in the global plugin configuration or within each plugin settings
-- weatherchannel: retrieve from Weather Channel weather alerts:
+- **weatherchannel**: retrieve from Weather Channel weather alerts:
     - set the latitude/longitude in the global plugin configuration or within each plugin settings
     - create a rule to be alerted when the latest weather alert is not empty
-- messagebridge: listen for updates from Wirelessthings/ciseco sensors and read the measure of the configured node:
+-** messagebridge**: listen for updates from Wirelessthings/ciseco sensors and read the measure of the configured node:
     - the is no polling interval to configure for this plugin since updates are sent real-time by the wirelessthings messagebridge component. 
     - it can also instruct Generic IO firmware to sleep when awake
     - can be used to send messages to a sensor
-    - ensure messagebridge is running (https://github.com/WirelessThings/WirelessThings-LaunchPad)
-- csv: parse a csv file
-    - the current implementation is for parsing the CSV_MessageBridge.csv file from Wirelessthings messagebridge
-    - it can be used as a template for parsing custom csv files
-- image: retrive an image from a given url
+    - ensure messagebridge is running (<https://github.com/WirelessThings/WirelessThings-LaunchPad>)
+- **csv**: parse a csv file
+    - it can be used for parsing custom csv files
+- **image**: retrive an image from a given url
     - basic HTTP authentication is supported
-- icloud: retrive from icloud the location of an IOS device:
+- **icloud**: retrive from icloud the location of an IOS device:
     - run python plugin_icloud.py --username=youricloudemail@email.com to configure the plugin and store the icloud password within the keystore first
-    - if family sharing is set up (https://support.apple.com/en-us/HT201060) you will have visibility over all the devices
+    - if family sharing is set up (<https://support.apple.com/en-us/HT201060>) you will have visibility over all the devices
     - a list of devices to display can be configured
-- linux: execute a command on the raspberry pi to poll a sensor:
+    - The data retrieved can be represented with a "map" type widget. The current position as well the tracking of the last few coordinates will be shown
+- **linux**: execute a command on the raspberry pi to poll a sensor:
     - it can be either a pre-defined measure (review the config-schema.json for the full list) or a custom command
     - can be used to poll sensors directly attached to the GPIO of the raspberry pi
+- **rtl_433**: run rtl_433 in the background and look for a specific sensor from its output to retrieve a measure
+    - rtl_433 turns a Realtek RTL2832 based DVB dongle into a 433.92MHz generic data receiver
+    - rtl_433 must be installed from <https://github.com/merbanan/rtl_433>
+    - the device must support a json output 
+- **gpio**: Interact with the raspberry's GPIO to capture input from the configured pins or send output signals
+    - an input pin can be either periodically polled or can automatically trigger when a high/low edge is detected
 
-"Push" plugins must implement a "run" method (which will be called at startup to keep the plugin running in background) and a "register" method (for registering suitable sensors against the plugin). When a new measure is available, it must call the "store" method of sensors.py to save the data.
-"Pull" plugins must instead implement a "poll" method (to retrieve the raw data from the sensor) and a "parse" method (to parse the raw the data previously polled). The main engine will be responsible to periodically invoke poll and parse and hence storing the new measure. Raw data polled for different sensor will be cached so to prevent multiple concurrent retrieval of the same data.
-Plugins implementing a "send" method can send messages to their supported actuators.
+For input, "Push" plugins must implement a "run()" method (which will be called at startup to keep the plugin running in background) and a "register(sensor)" method (for registering suitable sensors against the plugin). When a new measure is available, it must call the "store" method of sensors.py to save the data.
+"Pull" plugins must instead implement a "poll(sensor)" method (to retrieve the raw data from the sensor), a "parse(sensor,data)" method (to parse the raw the data previously polled) and optionally a "cache_schema(sensor)" method to cache raw data so preventing different sensors to poll for the same data concurrently. The main engine will be responsible to periodically invoke poll and parse and hence storing the new measure. 
+For input plugins, they must implement a "send(sensor,data)" that will be invoked to send a message to their supported actuators.
 
 Configuring your Slack bot
 ---------------------------------------
 
-- Create a dedicated Slack team for your family (https://slack.com/) or login to an existing one
+- Create a dedicated Slack team for your family (<https://slack.com/>) or login to an existing one
 - Create a new Slack bot user:
-    - go to https://api.slack.com/bot-users 
+    - go to <https://api.slack.com/bot-users>
     - click on "Creating a new bot user" from "Custom bot users"
     - give your bot a name (e.g. housebot)
     - select your bot icon
@@ -204,6 +229,19 @@ Configuring your Slack bot
     - every widget from which an image can be generated (e.g. a timeline chart)
     - the bot.txt file which maps some keywords to random answers for a basic, static interaction
 - Based on the question the bot checks what possible answer contains most of the expected keywords and if confident enough it will reply accordingly.
+
+F.A.Q.
+==========
+**Q: How can I retrieve a measure from a generic web page without writing an ad-hoc plugin?**
+**A**: a generic HTTP plugin has not been implemented since the retrieved HTML would likely require ad-hoc parsing. It is recommended to configure the "linux" plugin instead, running wget or curl as "command_poll" and extract the measure by using in "command_parse" a combination of awk, perl, sed, etc. to  extract the relevant data from the raw HTML.
+
+**Q: How can I integrate myHouse with a ESP8266 device?**
+**A**: there are a number of ways to integrate a ESP8266 (<https://en.wikipedia.org/wiki/ESP8266>) device with myHouse:
+1. Configure the device to report new measures to myHouse by calling the URL <http://myhouse/_module_id_/_group_id_/_sensor_id_/set/_value_> (preferred)
+2. Have a webserver running on the device and configure myHouse to periodically poll the measure (the device must be always on)
+3. Configure the device to send the measure with a UDP broadcast in a format that the "messagebridge" plugin can understand (requires Wirelessthings messagebridge to be installed and running)
+4. Write your own plugin to retrieve the measure from the device with the mechanism of your choice
+
 
 About myHouse
 =============
@@ -228,38 +266,41 @@ The last technical requirement I had was to make the solution as **lighter as po
 
 Need help?
 ----------------
-- The documentation is available at the following location: https://sourceforge.net/p/my-house/wiki/
-- Report any bug or feature request at the following location: https://sourceforge.net/p/my-house/tickets/
-- Download the latest release from the following location: https://sourceforge.net/projects/my-house/files/
+- The documentation is available at the following location: <https://sourceforge.net/p/my-house/wiki/>
+- Report any bug or feature request at the following location: <https://sourceforge.net/p/my-house/tickets/>
+- Download the latest release from the following location: <https://sourceforge.net/projects/my-house/files/>
 
 Third-party software
 -----------------------------
 myHouse makes use of the following third-party software components:
 
 - Python for the entire backend, including the following libraries:
-	- flask for the webserver (http://flask.pocoo.org/)
-	- numpy for calculating the average out of an array of values (http://www.numpy.org/)
-	- APScheduler for scheduling all the recurrent tasks (https://apscheduler.readthedocs.io/en/latest/)
-	- slackclient for interacting with Slack (https://github.com/slackhq/python-slackclient)
-	- simplejson for more detailed json syntax checks (https://simplejson.readthedocs.io/en/latest/)
-	- fuzzywuzzy for fuzzy string matching (https://github.com/seatgeek/fuzzywuzzy)
-	- pyicloud for interacting with the Applie iCloud service (https://github.com/picklepete/pyicloud)
-	- motionless for generating static maps images out of Google Maps (https://github.com/ryancox/motionless)
-	- flask-compress to provide gzip compression to flask (https://github.com/libwilliam/flask-compress)
-	- jsonschema to validate the JSON configuration file (https://pypi.python.org/pypi/jsonschema)
+	- flask for the webserver (<http://flask.pocoo.org/>)
+	- numpy for calculating the average out of an array of values (<http://www.numpy.org/>)
+	- APScheduler for scheduling all the recurrent tasks (<https://apscheduler.readthedocs.io/en/latest/>)
+	- slackclient for interacting with Slack (<https://github.com/slackhq/python-slackclient>)
+	- simplejson for more detailed json syntax checks (<https://simplejson.readthedocs.io/en/latest/>)
+	- fuzzywuzzy for fuzzy string matching (<https://github.com/seatgeek/fuzzywuzzy>)
+	- pyicloud for interacting with the Applie iCloud service (<https://github.com/picklepete/pyicloud>)
+	- motionless for generating static maps images out of Google Maps (<https://github.com/ryancox/motionless>)
+	- flask-compress to provide gzip compression to flask (<https://github.com/libwilliam/flask-compress>)
+	- jsonschema to validate the JSON configuration file (<https://pypi.python.org/pypi/jsonschema>)
+	- rpi.gpio to interact with the raspberry GPIO (<https://pypi.python.org/pypi/RPi.GPIO>)
+	- rtl_433 fro turning a Realtek RTL2832 based DVB dongle into a 433.92MHz generic data receiver (<https://github.com/merbanan/rtl_433>)
 - HTML and Javacript for the frontend, including the following libraries:
-	- jQuery for event handling (https://jquery.com/)
-	- Bootstrap for enhanced user experience (http://getbootstrap.com/)
-	- AdminLTE as the web template (https://almsaeedstudio.com/themes/AdminLTE/index2.html)
-	- Highcharts/HighStock for the charts (http://www.highcharts.com/products/highstock)
-	- Font Awesome for the icons (http://fontawesome.io/icons/)
-	- Bootstrap Notify for on-screen notifications (http://bootstrap-notify.remabledesigns.com/)
-	- JSON Editor for the configuration editor widget (http://jeremydorn.com/json-editor/)
-	- Touchspin for the input spinner component (http://www.virtuosoft.eu/code/bootstrap-touchspin/)
-	- Titatoggle for the checkbox component (http://kleinejan.github.io/titatoggle/)
-	- Datatables for the tables (https://datatables.net/)
-	- dhtmlxScheduler for the scheduler (https://dhtmlx.com/docs/products/dhtmlxScheduler/)
-- Redis for the database (http://redis.io/)
+	- jQuery for event handling (<https://jquery.com/>)
+	- Bootstrap for enhanced user experience (<http://getbootstrap.com/>)
+	- AdminLTE as the web template (<https://almsaeedstudio.com/themes/AdminLTE/index2.html>)
+	- Highcharts/HighStock for the charts (<http://www.highcharts.com/products/highstock>)
+	- Font Awesome for the icons (<http://fontawesome.io/icons/>)
+	- Bootstrap Notify for on-screen notifications (<http://bootstrap-notify.remabledesigns.com/>)
+	- JSON Editor for the configuration editor widget (<http://jeremydorn.com/json-editor/>)
+	- Touchspin for the input spinner component (<http://www.virtuosoft.eu/code/bootstrap-touchspin/>)
+	- Titatoggle for the checkbox component (<http://kleinejan.github.io/titatoggle/>)
+	- Datatables for the tables (<https://datatables.net/>)
+	- dhtmlxScheduler for the scheduler (<https://dhtmlx.com/docs/products/dhtmlxScheduler/>)
+	- gmaps.js to use the potential of Google Maps in a simple way (<https://hpneo.github.io/gmaps/>)
+- Redis for the database (<http://redis.io/>)
 
 Changelog
 ---------------
@@ -278,3 +319,11 @@ Changelog
     - Added support for actuators
     - Added installation and service scripts
     - Added automatic data expiration from the database
+- v2.1:
+    - Added a "gpio" plugin to interact with the raspberry's GPIO for capturing input and sending output signals
+    - Added a "rtl_433" plugin to capture measures from generic radio sensor
+    - Enhanced the "csv" plugin to support generic csv formatted files
+    - Enhanced the "icloud" plugin to display an interactive map and the tracking data of the latest positions
+    - Enhanced the rule engine to allow executing the same rule for a set of sensors
+    - Consolidated the upgrade script
+    - Fixed several bugs
