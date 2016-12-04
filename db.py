@@ -122,8 +122,8 @@ def init():
 	# check the version
 	version_key = conf["constants"]["db_schema"]["version"]
 	if not exists(version_key): 
-		log.error("run the upgrade.py script first to upgrade the database (expecting v"+str(conf["constants"]["version"])+" but found v1.0")
-		return False
+		set_simple(version_key,conf["constants"]["version"])
+		return True
 	else:
 		version = float(get(version_key))
 		if version != conf["constants"]["version"]: 
