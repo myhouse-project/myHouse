@@ -72,3 +72,6 @@ def cache_schema(sensor):
 	command = commands[sensor['plugin']['measure']]['command_poll'] if sensor['plugin']['measure'] in commands else sensor['plugin']['command_poll']
 	return command
 
+# run a command
+def send(sensor,data):
+	utils.run_command(data)
