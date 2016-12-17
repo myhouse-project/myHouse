@@ -144,7 +144,11 @@ def run():
 						slack_message(channel,oracle.get_wait_message())
 						# generate the chart
 						module_id,widget_id = response["content"].split(",")
-						widgets = generate_charts.run(module_id,widget_id)
+						try: 
+							widgets = generate_charts.run(module_id,widget_id)
+						except Exception,e:
+							log.warning("unable to generate the chart for "+module_id+":"+widget_id+": "+utils.get_exception(e))
+							continue
 						# upload the chart to the channel
 						if len(widgets) > 0:
 							filename = utils.get_widget_chart(widgets[0])

@@ -190,16 +190,17 @@ def add_sensor_map(layout,widget):
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
         sensor_url = module_id+"/"+group_id+"/"+sensor_id
 	# setup the map
-	map = DecoratedMap(maptype=conf["gui"]["map_type"],size_x=conf["gui"]["map_size_x"],size_y=conf["gui"]["map_size_y"])
+	map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
         # retrieve the data
         locations = json.loads(utils.web_get(hostname+sensor_url+"/current"))
 	# add the marker to the map
 	for device in locations:
-		location = locations[device]
-		map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=location["label"]))
+		device = json.loads(device)
+		for device_name,location in device.iteritems():
+			map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=location["label"]))
 	# download the map
-	url = map.generate_url()	
-        r = requests.get(url)
+	url = map.generate_url()
+        r = requests.get(url,verify=False)
         save_to_file(r,widget["widget_id"])
 
 # load all the widgets of the given module

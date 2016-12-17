@@ -61,7 +61,8 @@ def learn_config():
 					widget = module["widgets"][i][j]
 					for k in range(len(widget["layout"])):
 						layout = widget["layout"][k]
-						if layout["type"] != "image" and not layout["type"].startswith("chart_") and not layout["type"].startswith("sensor_"): continue
+						# ignore if not an image, a chart or a sensor timeline
+						if layout["type"] != "image" and layout["type"] != "map" and not layout["type"].startswith("chart_") and not layout["type"].startswith("sensor_"): continue
 	                			r["layout"] = copy.deepcopy(r["module"])
 			                        r["layout"].extend(["chart","widget",widget["widget_id"],widget["display_name"],layout["type"]])
 						context = module["module_id"]+"|"+widget["widget_id"]
