@@ -52,7 +52,7 @@ commands = {
 # poll the sensor
 def poll(sensor):
 	command = commands[sensor['plugin']['measure']]['command_poll'] if sensor['plugin']['measure'] in commands else sensor['plugin']['command_poll']
-	return utils.run_command(command)
+	return utils.run_command(command,timeout=conf["plugins"]["linux"]["timeout"])
 
 # parse the data
 def parse(sensor,data):
@@ -61,7 +61,7 @@ def parse(sensor,data):
 	measures = []
         measure = {}
         measure["key"] = sensor["sensor_id"]
-	parsed = utils.run_command("echo '"+data+"' |"+command)
+	parsed = utils.run_command("echo '"+data+"' |"+command,timeout=conf["plugins"]["linux"]["timeout"])
 	measure["value"] = utils.normalize(parsed,conf["constants"]["formats"][sensor["format"]]["formatter"])
         # append the measure and return it
         measures.append(measure)
@@ -74,4 +74,4 @@ def cache_schema(sensor):
 
 # run a command
 def send(sensor,data):
-	utils.run_command(data)
+	utils.run_command(data,timeout=conf["plugins"]["linux"]["timeout"])

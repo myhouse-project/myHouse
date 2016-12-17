@@ -100,7 +100,9 @@
     "csv": {
       "csv_file": "/opt/MessageBridge/CSVLogs/CSV_MessageBridge.csv"
     },
-    "linux": null,
+    "linux": {
+      "timeout": 30
+	},
     "image": null,
     "icloud": null,
     "messagebridge": {
