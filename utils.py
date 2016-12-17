@@ -234,13 +234,18 @@ def split_sensor(widget,key):
         return split
 
 # run a command and return the output
-def run_command(command):
+def run_command(command,timeout=conf["constants"]["linux_timeout"]):
         log.debug("Executing "+command)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = ''
-        for line in process.stdout.readlines():
-                output = output+line
-        return output.rstrip()
+	for t in xrange(timeout):
+		time.sleep(1)
+		if process.poll() is not None:
+			for line in process.stdout.readlines():
+				output = output+line
+			return output.rstrip()
+	process.kill()
+	return ""
 
 # determine if it is night
 def is_night():
@@ -272,4 +277,5 @@ def speed_unit(speed):
 # return the file path of a given widget id
 def get_widget_chart(widget_id):
 	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']
+
 

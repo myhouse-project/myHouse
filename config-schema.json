@@ -444,8 +444,14 @@
           }
         },
         "linux":{
-          "type":"null",
-          "description":"Linux plugin configuration"
+          "type":"object",
+          "description":"Linux plugin configuration",
+          "properties":{
+            "timeout":{
+              "type":"integer",
+              "description":"Timeout in seconds when running a linux command"
+            }
+          }
         },
         "image":{
           "type":"null",

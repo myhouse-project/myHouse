@@ -34,6 +34,7 @@ constants = {
 	'web_dir': base_dir+"/web",
 	'web_template': "template_web.html",
 	'web_timeout': 10,
+	'linux_timeout': 30,
 	'web_use_reloader': True,
 	'bot_brain_file': base_dir+"/bot.txt",
 	'chart_extension': 'png',
