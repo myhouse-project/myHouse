@@ -123,6 +123,7 @@ def run(module_id,rule_id,notify=True):
 				# for each definition retrieve the data
 				definitions = {}
 				suffix = {}
+				valid_data = True
 				for definition in rule["definitions"]:
 					if is_sensor(rule["definitions"][definition]):
 						rule["definitions"][definition] = rule["definitions"][definition].replace("%i%",variable)
@@ -135,16 +136,20 @@ def run(module_id,rule_id,notify=True):
 			                        sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
 			                        if sensor is None:
 			                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
-			                                continue
+							valid_data = False
+			                                break
 						# retrieve and store the data
 						definitions[definition] = get_data(sensor,rule["definitions"][definition])
 						if len(definitions[definition]) == 0: 
-							log.error("invalid data from sensor "+key)
-							continue
+							log.debug("invalid data from sensor "+key)
+							valid_data = False
+							break
 						# store the suffix
 						suffix[definition] = conf["constants"]["formats"][sensor["format"]]["suffix"].encode('utf-8')
 					else: 
 						definitions[definition] = rule["definitions"][definition]
+				# if not all the data is valid, return
+				if not valid_data: continue
 				# for each condition check if it is true
 				evaluation = True
 				for condition in rule["conditions"]:
