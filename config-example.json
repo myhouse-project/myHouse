@@ -793,21 +793,22 @@
         },
         {
           "rule_id": "temperature_yesterday",
-          "display_name": "Yesterday average temperature outside was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
-          "enabled": false,
+          "display_name": "Yesterday average temperature outside was %temperature_avg_yesterday% with a %condition_avg_yesterday% weather, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
+          "enabled": true,
           "severity": "info",
           "run_every": "day",
           "conditions": [],
           "definitions": {
             "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
             "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
-            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2"
+            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2",
+			"condition_avg_yesterday": "outdoor:temperature:condition:day:avg,-2,-2"
           }
         },
         {
           "rule_id": "temperature_today",
-          "display_name": "So far, today's average temperature outside has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
-          "enabled": false,
+          "display_name": "So far, today's average temperature outside has been %temperature_avg% with a %condition_avg% weather, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "enabled": true,
           "severity": "info",
           "run_every": "never",
           "conditions": [],
@@ -815,7 +816,8 @@
             "temperature_now": "outdoor:temperature:external,-1,-1",
             "temperature_max": "outdoor:temperature:external:day:max,-1,-1",
             "temperature_min": "outdoor:temperature:external:day:min,-1,-1",
-            "temperature_avg": "outdoor:temperature:external:day:avg,-1,-1"
+            "temperature_avg": "outdoor:temperature:external:day:avg,-1,-1",
+			"condition_avg": "outdoor:temperature:condition:day:avg,-1,-1"
           }
         },
         {
