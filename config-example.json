@@ -3675,6 +3675,69 @@
         }
       ]
     },
+	{
+      "module_id": "power",
+      "section_id": "System",
+      "display_name": "Reboot/Shutdown",
+      "icon": "fa-power-off",
+      "enabled": true,
+      "widgets": [
+        [
+          {
+            "widget_id": "reboot",
+            "display_name": "Reboot the system",
+            "enabled": true,
+            "size": 4,
+			"offset": 1,
+            "layout": [
+              {
+                "type": "button",
+				"display_name": "Reboot",
+                "send": "power/command/reboot/run/poll"
+              }
+            ]
+          },
+          {
+            "widget_id": "shutdown",
+            "display_name": "Shutdown the system",
+            "enabled": true,
+            "size": 4,
+			"offset": 2,
+            "layout": [
+              {
+                "type": "button",
+				"display_name": "Shutdown",
+                "send": "power/command/shutdown/run/poll"
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+          "group_id": "command",
+          "sensor_id": "reboot",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "reboot"
+          },
+          "format": "string",
+          "single_instance": true
+        },
+        {
+          "group_id": "command",
+          "sensor_id": "shutdown",
+          "plugin": {
+            "plugin_name": "linux",
+            "measure": "custom",
+            "command_poll": "shutdown"
+          },
+          "format": "string",
+          "single_instance": true
+        }
+      ]
+    },
     {
       "module_id": "logs",
       "section_id": "myHouse",

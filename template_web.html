@@ -392,6 +392,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			else if (layout["type"] == "checkbox") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "separator") add_html_separator(tag+"_body",tag+"_body_"+i,layout)
+			else if (layout["type"] == "button") add_button(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
 			else if (layout["type"] == "configuration") add_configuration_widget(tag+"_body",layout)
 			else if (layout["type"] == "data") add_sensor_data(tag+"_body",layout)
@@ -816,6 +817,31 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(body).append("<hr>");
 	}
 	
+	// add a button
+	function add_button(body,tag,layout) {
+		tag = tag.replace("#","")
+		// define the button
+		input_html = '<div class="input-group"><button type="button" class="btn btn-primary btn-lg" id="'+tag+'_input">'+layout["display_name"]+'</button></div>'
+		tag = "#"+tag
+		// add it to the page
+		$(body).append(input_html);
+		// act on click
+		$(tag+"_input").click(function(tag,url) {
+			return function () {
+				$(tag).removeClass("btn-primary")
+				$.getJSON(url,function(url) {
+						return function (data) {
+							$(tag).addClass("btn-primary")
+							if (data != "OK") {
+								// handle errors
+								log("warning","error to visit "+url);
+							}
+						};
+				}(url));
+			};
+		}(tag+"_input",layout["send"]));
+	}
+	
 	// add a html control
 	function add_html_control(body,tag,layout) {
 		var type = layout["type"]
@@ -825,7 +851,6 @@ th.dt-center, td.dt-center { text-align: center; }
 		input_html = '<div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div>'
 		tag = "#"+tag
 		// add the label
-		//if ("display_name" in layout) $(body).append('<div class="row"><div class="col-sm-6 col-sm-offset-3">'+layout["display_name"]+'</div></div>');
 		if ("display_name" in layout) $(body).append('<div class="text-center">'+layout["display_name"]+'</div>');
 		// add the HTML of the requested input
 		if (type == "input") {
