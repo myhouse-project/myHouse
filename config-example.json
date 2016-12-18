@@ -3453,6 +3453,30 @@
           "actions": [
             "set,%i%,0"
           ]
+		},
+        {
+          "rule_id": "alarm_on",
+          "display_name": "The alarm has been armed",
+          "enabled": true,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {},
+          "actions": [
+            "set,alarm:main:alarm_status,1"
+          ]
+		},
+        {
+          "rule_id": "alarm_off",
+          "display_name": "The alarm has been disarmed",
+          "enabled": true,
+          "severity": "info",
+          "run_every": "never",
+          "conditions": [],
+          "definitions": {},
+          "actions": [
+            "set,alarm:main:alarm_status,0"
+          ]
 		}
 	  ],
 	  "sensors": [
