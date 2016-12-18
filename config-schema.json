@@ -597,6 +597,10 @@
                     "type":"integer",
                     "description":"The size of the widget. Each row has size 12"
                   },
+                  "offset":{
+                    "type":"integer",
+                    "description":"The optional offset ot the widget position on the row"
+                  },
                   "layout":{
                     "type":"array",
                     "description":"Each widget can have multiple objects in its layout",

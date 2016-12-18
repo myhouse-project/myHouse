@@ -343,7 +343,9 @@ th.dt-center, td.dt-center { text-align: center; }
 				if (! widget["enabled"]) continue;
 				// add an empty widget template
 				tag = "#"+widget["widget_id"];
-				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"]));
+				var offset = 0;
+				if ("offset" in widget) offset = widget["offset"]
+				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"],offset));
 				// load the widget
 				load_widget(tag,widget)
 				// configure the refresh button
@@ -1005,11 +1007,11 @@ th.dt-center, td.dt-center { text-align: center; }
 	**/	
 	
 	// return an empty HTML widget template
-	function get_widget_template(tag,title,size) {
+	function get_widget_template(tag,title,size,offset) {
 		tag = tag.replace("#","")
 		// define the widget HTML
 		var html = '\
-					<div class="col-md-#size#">\
+					<div class="col-md-#size# col-md-offset-#offset#">\
 							<div class="box box-solid box-primary">\
 								<div class="box-header">\
 									<h3 class="box-title">#title#</h3>\
@@ -1029,6 +1031,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				';		
 		// replace the placeholders with the provided input
 		html = html.replaceAll("#size#",size);
+		html = html.replaceAll("#offset#",offset);
 		html = html.replaceAll("#title#",title);
 		html = html.replaceAll("#tag#",tag);
 		return html;

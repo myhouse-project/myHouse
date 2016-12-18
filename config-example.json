@@ -3326,21 +3326,6 @@
             ]
           },
           {
-            "widget_id": "alarm_sensors_realtime",
-            "display_name": "Sensors: Realtime",
-            "enabled": true,
-            "size": 9,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "alarm:sensors",
-                "timeframe": "realtime"
-              }
-            ]
-          }
-		],
-        [
-          {
             "widget_id": "pir_first_floor",
             "display_name": "Indoor first floor sensor",
             "enabled": false,
