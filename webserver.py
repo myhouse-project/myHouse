@@ -90,6 +90,11 @@ def sensor_send(module_id,group_id,sensor_id,value):
 	force = True if request.args.get('force') else False
         return sensors.data_send(module_id,group_id,sensor_id,value,force=force)
 
+# read or save the measure of a given sensor
+@app.route('/<module_id>/<group_id>/<sensor_id>/run/<action>')
+def sensor_run(module_id,group_id,sensor_id,action):
+        return sensors.data_run(module_id,group_id,sensor_id,action)
+
 # return the alerts
 @app.route('/alerts/<severity>/<timeframe>')
 def alerts_get_data(severity,timeframe):

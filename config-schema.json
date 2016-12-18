@@ -655,7 +655,7 @@
                             "type":{
                               "type":"string",
 							  "enum": [ "map" ],
-                              "value":"image"
+                              "value":"map"
                             },
                             "sensor":{
 							  "description":"The sensor in the format module_id:group_id:sensor_id",
@@ -666,6 +666,31 @@
                           "required":[
                             "type",
                             "sensor"
+                          ]
+                        },
+                        {
+                          "title":"button",
+                          "description":"Add a button",
+                          "properties":{
+                            "type":{
+                              "type":"string",
+							  "enum": [ "button" ],
+                              "value":"button"
+                            },
+                            "display_name":{
+							  "description":"The text to display on the button",
+                              "type":"string"
+                            },
+                            "send":{
+							  "description":"A URL to call when the button is pressed to e.g. send a message to a sensor",
+                              "type":"string"
+                            }
+                          },
+                          "additionalProperties":false,
+                          "required":[
+                            "type",
+                            "send",
+							"display_name"
                           ]
                         },
                         {

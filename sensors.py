@@ -396,6 +396,7 @@ def data_set(module_id,group_id,sensor_id,value):
 def data_send(module_id,group_id,sensor_id,value,force=False):
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] sending message: "+str(value))
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	sensor = init_sensor(sensor,module_id)
         if sensor is None:
 	        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
 		return json.dumps("KO")
@@ -404,6 +405,17 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 		return json.dumps("KO")
 	plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
 	return json.dumps("OK")
+
+# manually run a command for a sensor
+def data_run(module_id,group_id,sensor_id,action):
+        log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] executing: "+str(action))
+	init_plugins(False)
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        if sensor is None:
+                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
+                return json.dumps("KO")
+	run(module_id,group_id,sensor_id,action)
+        return json.dumps("OK")
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
