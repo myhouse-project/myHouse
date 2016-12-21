@@ -206,16 +206,45 @@
 		  "description":"For how long raw data polled from the sensors will be cached so to prevent multiple concurrent retrieval of the same data",
 		  "type":"integer"
         },
-		"data_expire_days":{
-		  "description":"After how many days current measures and hourly data can be purged out of the database. Daily measures will be kept forever",
-		  "type":"integer"
+        "retention":{
+          "type":"object",
+          "description":"Define global retention policies",
+          "properties":{
+			"realtime_new_only":{
+				"type":"boolean",
+				"description":"If set to true, only the measures with a newer timestamp than the latest entry will be added to the database"
+			},
+			"realtime_count":{
+				"type":"integer",
+				"description":"How many instances of current measures to keep in the database. 0 for keeping them all"
+			},
+            "realtime_days":{
+              "type":"integer",
+              "description":"After how many days current measures are purged out of the database. 0 for keeping forever"
+            },
+            "recent_days":{
+              "type":"integer",
+              "description":"After how many days hourly data are purged out of the database. 0 for keeping forever"
+            },
+            "history_days":{
+              "type":"integer",
+              "description":"After how many days daily data are purged out of the database. 0 for keeping forever"
+            }
+          },
+          "required":[
+			"realtime_new_only",
+			"realtime_count",
+            "realtime_days",
+			"recent_days",
+			"history_days"
+          ]
         }
       },
       "required":[
         "enabled",
 		"poll_at_startup",
 		"cache_expire_min",
-		"data_expire_days"
+		"retention"
       ]
     },
     "notifications":{
@@ -1527,9 +1556,32 @@
                   ],
                   "description":"The format of the data of this sensor"
                 },
-                "single_instance":{
-					"type":"boolean"
-                },
+				"retention":{
+					"type":"object",
+					"description":"Define the sensor retention policies. If not set the global preferences would apply",
+					"properties":{
+						"realtime_new_only":{
+							"type":"boolean",
+							"description":"If set to true, only the measures with a newer timestamp than the latest entry will be added to the database"
+						},
+						"realtime_count":{
+							"type":"integer",
+							"description":"How many instances of current measures to keep in the database. 0 for keeping them all"
+						},
+						"realtime_days":{
+							"type":"integer",
+							"description":"After how many days current measures are purged out of the database. 0 for keeping forever"
+						},
+						"recent_days":{
+							"type":"integer",
+							"description":"After how many days hourly data are purged out of the database. 0 for keeping forever"
+						},
+						"history_days":{
+							"type":"integer",
+							"description":"After how many days daily data are purged out of the database. 0 for keeping forever"
+						}
+					}
+				},
                 "series":{
                   "type":"array",
                   "description":"Series to be added to the charts in the GUI",

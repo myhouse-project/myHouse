@@ -123,12 +123,27 @@ def store(sensor,measures):
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# delete previous values if needed
-		if "single_instance" in sensor and sensor["single_instance"]: db.delete(key)
+		realtime_count = conf["sensors"]["retention"]["realtime_count"]
+		if "retention" in sensor and "realtime_count" in sensor["retention"]: realtime_count = sensor["retention"]["realtime_count"]
+		if realtime_count > 0:
+			db.deletebyrank(key,0,-1-realtime_count)
+		# if only measures with a newer timestamp than the latest can be added, apply the policy
+		realtime_new_only = conf["sensors"]["retention"]["realtime_new_only"]
+		if "retention" in sensor and "realtime_new_only" in sensor["retention"]: realtime_new_only = sensor["retention"]["realtime_new_only"]
+		if realtime_new_only:
+			# retrieve the latest measure's timestamp
+			last = db.range(key,-1,-1)
+			if len(last) > 0:
+				last_timestamp = last[0][0]
+				# if the measure's timestamp is older, skip it
+				if measure["timestamp"] < last_timestamp:
+					log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") old event, ignoring "+measure["key"]+": "+str(measure["value"]))
+					continue
 		# check if there is already a value stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
 			# same value and same timestamp, do not store
-			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") ignoring "+measure["key"]+": "+str(measure["value"]))
+			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") already in the database, ignoring "+measure["key"]+": "+str(measure["value"]))
 			continue
 		# apply the bias of the sensor if configured
 		if "bias" in sensor: measure["value"] = measure["value"]+sensor["bias"]
@@ -172,12 +187,28 @@ def summarize(sensor,timeframe,start,end):
 # purge old data from the database
 def expire(sensor):
 	total = 0
-	for stat in ["",':hour:min',':hour:avg',':hour:max']:
-		key = sensor['db_sensor']+stat
-		if db.exists(key):
-			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["sensors"]["data_expire_days"]*conf["constants"]["1_day"])
-			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+stat+" "+str(total)+" items")
-			total = total + deleted
+	# define which stat to expire for each retention policy
+	policies = {
+		"realtime_days": [""],
+		"recent_days": [":hour:min",":hour:avg",":hour:max"],
+		"history_days": [":day:min",":day:avg",":day:max"],
+	}
+	# for each policy
+	for policy, stats in policies.iteritems():
+		# set the retention to the global configuration
+		retention = conf["sensors"]["retention"][policy]
+		# if the policy is overridden in the sensor configuration, update the retention
+		if "retention" in sensor and policy in sensor["retention"]: retention = sensor["retention"][policy]
+		# if retention is 0, keep the data forever
+		if retention == 0: continue
+		# for each stat to expire
+		for stat in stats:
+			key = sensor['db_sensor']+stat
+			if db.exists(key):
+				# if the key exists, delete old data
+				deleted = db.deletebyscore(key,"-inf",utils.now()-retention*conf["constants"]["1_day"])
+				log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+key+" "+str(deleted)+" items")
+				total = total + deleted
 	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
 
 # initialize a sensor data structure
