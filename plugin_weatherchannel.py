@@ -19,9 +19,10 @@ plugin_conf = conf['plugins']['weatherchannel']
 def poll(sensor):
 	request = sensor['plugin']['measure']
 	location = sensor["plugin"]["location"] if "location" in sensor["plugin"] else plugin_conf['location']
+	location = location.replace(',','/')
 	if request == "alerts":
 		# request the web page
-		return utils.web_get(url+location+'/'+get_request_type(sensor['plugin']['measure'])+'/wwir.json?apiKey='+plugin_conf['api_key']+'&units=m&language=en')
+		return utils.web_get(url+location+'/'+get_request_type(sensor['plugin']['measure'])+'/wwir.json?apiKey='+plugin_conf['api_key']+'&units=m&language='+plugin_conf["language"])
 
 # parse the data
 def parse(sensor,data):
@@ -47,4 +48,5 @@ def get_request_type(request):
 # return the cache schema
 def cache_schema(sensor):
 	location = sensor["plugin"]["location"] if "location" in sensor["plugin"] else plugin_conf['location']
+	location = location.replace(',','/')
 	return location+"_"+get_request_type(sensor['plugin']['measure'])
