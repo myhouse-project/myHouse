@@ -436,7 +436,7 @@
             },
             "location":{
               "type":"string",
-              "description":"Location (e.g. latitude,longitude - pwd:pwd_name)"
+              "description":"Location (e.g. latitude,longitude - pws:pws_name)"
             }
           },
           "required":[
@@ -454,12 +454,17 @@
             },
             "location":{
               "type":"string",
-              "description":"Location (e.g. latitude/longitude)"
+              "description":"Location (e.g. latitude,longitude)"
+            },
+            "language":{
+              "type":"string",
+              "description":"Retrieve data in the given language"
             }
           },
           "required":[
             "api_key",
-            "location"
+            "location",
+			"language"
           ]
         },
         "csv":{
