@@ -521,15 +521,15 @@ th.dt-center, td.dt-center { text-align: center; }
 		// load google maps api (lazy loading since we need the api_key from the conf)
 		var script = document.createElement('script');
 		script.src = "http://maps.google.com/maps/api/js?key="+conf["gui"]["maps"]["api_key"];
-		script.onload = function(tag) {
+		script.onload = function(tag,layout) {
 			return function () {
 				var script = document.createElement('script');
 				script.src = "web/gmaps/gmaps.min.js";
 				// load gmaps 
-				script.onload = function(tag) {
+				script.onload = function(tag,layout) {
 					return function () {
 						// request the data 
-						$.getJSON(sensor_url+"/realtime/avg",function(tag) {
+						$.getJSON(sensor_url+"/realtime/avg",function(tag,layout) {
 							return function (data) {
 								// create the map
 								var map = new GMaps({
@@ -539,81 +539,91 @@ th.dt-center, td.dt-center { text-align: center; }
 									mapType: conf["gui"]["maps"]["type"],
 								});
 								if (data.length == 0) return
-								// group together data belonging to the same device
-								var locations = {}
+								// group together data belonging to the same label first
+								var labels = {}
 								for (var i = 0; i < data.length; i++) {
-									var devices = JSON.parse(data[i][1])
-									for (device in devices) {
-										if (!(device in locations)) locations[device] = []
-										// with newest data on top
-										locations[device].unshift(devices[device])
+									// for each snapshot
+									var markers = JSON.parse(data[i][1])
+									for (var j = 0; j < markers.length; j++) {
+										var label = markers[j]["label"]
+										// for each marker
+										if (!(label in labels)) labels[label] = []
+										// add the info, with newest data on top
+										labels[label].unshift(markers[j])
 									}
 								}
-								// for each device
-								for (device_name in locations) {
+								// for each label
+								for (label in labels) {
 									// add the markers
-									for (var i = 0; i < locations[device_name].length; i++) {
-										var entry = locations[device_name][i]
+									for (var i = 0; i < labels[label].length; i++) {
+										var entry = labels[label][i]
 										// add a marker
 										var options = {
 											lat: entry["latitude"],
 											lng: entry["longitude"],
-											label: null,
-											icon: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png",
-											infoWindow: { content: '<p><b>'+device_name+':</b></p><p>'+entry["date"]+' ('+entry["type"]+') </p>'}
+											label: entry["label"],
+											icon: null,
+											infoWindow: { content: entry["text"]}
 										}
-										if (i == 0) {
-											// for the last position display a label
-											options["icon"] = null;
-											options["label"] = entry["label"];
-											// if the position is not accurate, draw a circle
-											if (entry["accuracy"] > 500) {
-												map.drawCircle({
-													lat: entry["latitude"],
-													lng: entry["longitude"],
-													radius: entry["accuracy"],
-													strokeColor: '#BBD8E9',
-													strokeOpacity: 1,
-													strokeWeight: 3,
-													fillColor: '#BBD8E9',
-													fillOpacity: 0.6
-												});
+										if (layout["tracking"]) {
+											// apply a special layout to the marker when tracking position
+											if (i == 0) {
+												// this is the last entry, if the position is not accurate, draw a circle around it
+												if (entry["accuracy"] > 500) {
+													map.drawCircle({
+														lat: entry["latitude"],
+														lng: entry["longitude"],
+														radius: entry["accuracy"],
+														strokeColor: '#BBD8E9',
+														strokeOpacity: 1,
+														strokeWeight: 3,
+														fillColor: '#BBD8E9',
+														fillOpacity: 0.6
+													});
+												}
+											} else {
+												// for intermediate positions, remote the label and use a small blue dot as icon
+												options["label"] = null;
+												options["icon"] = "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png";
 											}
 										}
+										// add the marker to the map
 										map.addMarker(options)
 									}
-									// display the route
-									if (locations[device_name].length < 2) continue;
-									// set origin and destination
-									var first = locations[device_name].shift()
-									var last = locations[device_name].pop()
-									// calculate waypoints
-									var waypoints = []
-									for (var i = 0; i < locations[device_name].length; i++) {
-										var entry = locations[device_name][i]
-										waypoints.unshift({location:entry["latitude"]+","+entry["longitude"],stopover: true})
+									if (layout["tracking"]) {
+										// build the route
+										if (labels[label].length < 2) continue;
+										// set origin and destination
+										var first = labels[label].shift()
+										var last = labels[label].pop()
+										// calculate waypoints
+										var waypoints = []
+										for (var i = 0; i < labels[label].length; i++) {
+											var entry = labels[label][i]
+											waypoints.unshift({location:entry["latitude"]+","+entry["longitude"],stopover: true})
+										}
+										// draw the route
+										map.drawRoute({
+											origin: [first["latitude"],first["longitude"]],
+											destination: [last["latitude"],last["longitude"]],
+											travelMode: 'driving',
+											strokeColor: get_color(),
+											strokeOpacity: 0.6,
+											strokeWeight: 6,
+											waypoints: waypoints
+										});
 									}
-									// draw the route
-									map.drawRoute({
-										origin: [first["latitude"],first["longitude"]],
-										destination: [last["latitude"],last["longitude"]],
-										travelMode: 'driving',
-										strokeColor: get_color(),
-										strokeOpacity: 0.6,
-										strokeWeight: 6,
-										waypoints: waypoints
-									});
 								}
 								// auto zoom the map
 								map.fitZoom();
 							};
-						}(tag));
+						}(tag,layout));
 					};
-				}(tag);
+				}(tag,layout);
 				// append gmaps to head
 				document.head.appendChild(script);
 			};
-		}(tag);
+		}(tag,layout);
 		// append google api to head
 		document.head.appendChild(script);
 	}

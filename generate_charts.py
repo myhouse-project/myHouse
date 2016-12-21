@@ -192,12 +192,13 @@ def add_sensor_map(layout,widget):
 	# setup the map
 	map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
         # retrieve the data
-        locations = json.loads(utils.web_get(hostname+sensor_url+"/current"))
+        markers = json.loads(utils.web_get(hostname+sensor_url+"/current"))
+	if len(markers) == 0: return
+	markers = json.loads(markers[0])
 	# add the marker to the map
-	for device in locations:
-		device = json.loads(device)
-		for device_name,location in device.iteritems():
-			map.add_marker(LatLonMarker(location["latitude"],location["longitude"], label=location["label"]))
+	for i in range(len(markers)):
+		marker = markers[i]
+		map.add_marker(LatLonMarker(marker["latitude"],marker["longitude"], label=marker["label"][0].upper()))
 	# download the map
 	url = map.generate_url()
         r = requests.get(url,verify=False)
