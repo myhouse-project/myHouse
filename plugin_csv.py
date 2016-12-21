@@ -15,9 +15,14 @@ plugin_conf = conf['plugins']['csv']
 def poll(sensor):
 	# read and return the content of file (in json)
 	filename = sensor["plugin"]["csv_file"] if "csv_file" in sensor["plugin"] else plugin_conf['csv_file']
-	with open(filename) as file:
-		data = json.dumps(file.readlines())
-	file.close()
+	if filename.startswith("http://") or filename.startswith("https://"):
+		# if the filename is a url retrieve the data
+		data = utils.web_get(filename)
+	else:
+		# otherwise load the file from the filesystem
+		with open(filename) as file:
+			data = json.dumps(file.readlines())
+		file.close()
 	return data
 
 # parse the data
