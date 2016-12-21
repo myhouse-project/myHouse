@@ -39,22 +39,21 @@ def poll(sensor):
 # parse the data
 def parse(sensor,data):
 	data = json.loads(data)
-	locations = {}
+	devices = []
 	# for each device normalize the data for a map 
-	for device in data:
-		location = {}
-		location["date"] = utils.timestamp2date(utils.timezone(int(data[device]["timeStamp"]/1000)))
-		location["latitude"] = data[device]["latitude"]
-		location["longitude"] = data[device]["longitude"]
-		location["type"] = data[device]["positionType"]
-		location["label"] = device[0].upper()
-		location["accuracy"] = data[device]["horizontalAccuracy"]
-		location["invalid"] = data[device]["isOld"]
-		locations[device] = location
+	for device_name in data:
+		device = {}
+		date = utils.timestamp2date(utils.timezone(int(data[device_name]["timeStamp"]/1000)))
+		device["label"] = str(device_name)
+		device["text"] = str("<p><b>"+device_name+":</b></p><p>"+date+" ("+data[device_name]["positionType"]+") </p>")
+		device["latitude"] = data[device_name]["latitude"]
+		device["longitude"] = data[device_name]["longitude"]
+		device["accuracy"] = data[device_name]["horizontalAccuracy"]
+		devices.append(device)
 	measures = []
 	measure = {}
 	measure["key"] = sensor["sensor_id"]
-	measure["value"] = json.dumps(locations)
+	measure["value"] = json.dumps(devices)
 	measures.append(measure)
         return measures
 

@@ -687,14 +687,19 @@
                               "value":"map"
                             },
                             "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
+							  "description":"The sensor in the format module_id:group_id:sensor_id. Data from the realtime timeframe will be retrieved",
                               "type":"string"
+                            },
+                            "tracking":{
+							  "description":"Draw a route between the markers having the same title",
+                              "type":"boolean"
                             }
                           },
                           "additionalProperties":false,
                           "required":[
                             "type",
-                            "sensor"
+                            "sensor",
+							"tracking"
                           ]
                         },
                         {
