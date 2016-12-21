@@ -30,21 +30,21 @@ def parse(sensor,data):
 	for line in data:
 		entry = line.split(',')
 		measure = {}
-		# if a node_id is defined, filter based on it
-		if "node_id" in sensor["plugin"] and entry[sensor["plugin"]["node_id_index"+1]] != sensor["plugin"]["node_id"]: continue
-		# if a measure prefix is defined, filter based on it
-		if "measure" in sensor["plugin"] and not entry[sensor["plugin"]["measure_index"+1]].startswith(sensor['plugin']['measure']): continue
+		# if a filter is defined, ignore the line if the filter is not found
+		if "filter" in sensor["plugin"] and entry[sensor["plugin"]["filter_position"+1]] != sensor["plugin"]["filter"]: continue
+		# if a prefix is defined, filter based on it
+		if "prefix" in sensor["plugin"] and not entry[sensor["plugin"]["value_position"+1]].startswith(sensor['plugin']['prefix']): continue
 		# generate the timestamp
-		if "date_index" in sensor["plugin"]:
-			date = datetime.datetime.strptime(entry[sensor["plugin"]["date_index"+1]],sensor["plugin"]["date_format"])
+		if "date_position" in sensor["plugin"]:
+			date = datetime.datetime.strptime(entry[sensor["plugin"]["date_position"+1]],sensor["plugin"]["date_format"])
 			measure["timestamp"] = utils.timezone(utils.timezone(int(time.mktime(date.timetuple()))))
 		else: measure["timestamp"] = utils.now()
 		# set the key as the sensor_id
 		measure["key"] = sensor["sensor_id"]
 		# strip out the measure from the value
-		value = entry[sensor["plugin"]["measure_index"+1]]
+		value = entry[sensor["plugin"]["value_position"+1]]
 		# if a measure prefix was defined, remove it
-		if "measure" in sensor["plugin"]: value.replace(sensor['plugin']['measure'],"")
+		if "prefix" in sensor["plugin"]: value.replace(sensor['plugin']['prefix'],"")
 		# set the value
 		measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
 		measures.append(measure)
