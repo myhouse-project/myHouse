@@ -9,21 +9,15 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-plugin_conf = conf['plugins']['csv']
+plugin_conf = conf['plugins']['fdsnws']
+limit = 10000
 
 # poll the sensor
 def poll(sensor):
-	# read and return the content of file (in json)
-	filename = sensor["plugin"]["csv_file"] if "csv_file" in sensor["plugin"] else plugin_conf['csv_file']
-	if filename.startswith("http://") or filename.startswith("https://"):
-		# if the filename is a url retrieve the data
-		data = json.dumps(utils.web_get(filename))
-	else:
-		# otherwise load the file from the filesystem
-		with open(filename) as file:
-			data = json.dumps(file.readlines())
-		file.close()
-	return data
+	# query the service
+	url = "http://"+sensor["plugin"]["domain"]+"/fdsnws/event/1/query?format=text&limit="+limit+"&"+sensor["plugin"]["query"]
+	data = utils.web_get(filename)
+	return json.dumps(data)
 
 # parse the data
 def parse(sensor,data):
@@ -33,8 +27,12 @@ def parse(sensor,data):
 	data = json.loads(data)
 	# for each line
 	for line in data:
-		entry = line.split(',')
 		measure = {}
+		entry = line.split('|')
+		#EventID|Time|Latitude|Longitude|Depth/Km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
+		#    0    1      2          3       4       5     6           7            8           9     10         11           12
+		date_format = "%Y-%m-%dT%H:%M:%S.%f"
+		date = datetime.datetime.strptime(entry[1],date_format)
 		# if a filter is defined, ignore the line if the filter is not found
 		if "filter" in sensor["plugin"] and entry[sensor["plugin"]["filter_position"+1]] != sensor["plugin"]["filter"]: continue
 		# if a prefix is defined, filter based on it
