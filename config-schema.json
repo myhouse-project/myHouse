@@ -558,6 +558,10 @@
 			"enabled",
             "mode"
           ]
+        },
+        "fdsnws":{
+          "type":"null",
+          "description":"Federation of Digital Seismograph Network Web Service plugin configuration"
         }
       },
       "required":[
@@ -569,7 +573,8 @@
         "icloud",
         "messagebridge",
 		"rtl_433",
-		"gpio"
+		"gpio",
+		"fdsnws"
       ]
     },
     "modules":{
@@ -701,13 +706,23 @@
                             "tracking":{
 							  "description":"Draw a route between the markers having the same title",
                               "type":"boolean"
+                            },
+                            "timeframe":{
+							  "description":"The timeframe to use for requesting the data",
+                              "type":"string",
+                              "enum":[
+                                "recent",
+                                "history",
+                                "realtime"
+                              ]
                             }
                           },
                           "additionalProperties":false,
                           "required":[
                             "type",
                             "group",
-							"tracking"
+							"tracking",
+							"timeframe"
                           ]
                         },
                         {
@@ -1549,6 +1564,39 @@
                         "plugin_name",
                         "pin",
 						"setup"
+                      ]
+                    },
+					{
+                      "title":"fdsnws",
+                      "description":"Retrieve earthquake events from a FDSN web service",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+						  "enum": [ "fdsnws" ],
+                          "value":"fdsnws"
+                        },
+                        "domain":{
+						  "description":"A domain hosting a FDSNWS web service (e.g. earthquake.usgs.gov). Visit http://www.fdsn.org/webservices/ for a full list",
+                          "type":"string"
+                        },
+                        "query":{
+						  "description":"An optional query to e.g. filter by magnitude or location in the format key1=value1&key=value2. Review http://www.fdsn.org/webservices/FDSN-WS-Specifications-1.1.pdf for the allowed parameters",
+                          "type":"string"
+                        },
+                        "polling_interval":{
+						  "description":"Poll the sensor every X minutes",
+                          "type":"integer"
+                        },
+                        "poll_on_demand":{
+						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
+						  "value": false,
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+                        "domain",
+						"query"
                       ]
                     }
                   ]

@@ -540,7 +540,7 @@ th.dt-center, td.dt-center { text-align: center; }
 							var sensor = sensors[i];
 							var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];							
 							// request the data 
-							$.getJSON(sensor_url+"/realtime/avg",function(tag,layout,map) {
+							$.getJSON(sensor_url+"/"+layout["timeframe"]+"/avg",function(tag,layout,map) {
 								return function (data) {
 									if (data.length == 0) return
 									var waypoints = []
@@ -591,9 +591,6 @@ th.dt-center, td.dt-center { text-align: center; }
 										// set origin and destination
 										var first = JSON.parse(data[0][1])
 										var last = JSON.parse(data[(data.length-1)][1])
-										console.log(waypoints)
-										console.log(first)
-										console.log(last)
 										// draw the route
 										map.drawRoute({
 											origin: [first["latitude"],first["longitude"]],
