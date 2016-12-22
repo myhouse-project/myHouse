@@ -28,32 +28,32 @@ def poll(sensor):
         # for each device
         for i, device in enumerate(devices):
                 device = devices[i]
-                if "devices" in sensor["plugin"] and device["name"] not in sensor["plugin"]["devices"]: continue
                 # retrieve the location
                 location = device.location()
                 if location is None: continue
-		# keep the raw location
+		# save the raw location
 		locations[device["name"]] = location
 	return json.dumps(locations)
 
 # parse the data
 def parse(sensor,data):
 	data = json.loads(data)
-	devices = []
-	# for each device normalize the data for a map 
+	device = {}
+	# for each device
 	for device_name in data:
-		device = {}
+		# identify the device
+		if device_name != sensor["plugin"]["device_name"]: continue
+		# normalize the data for a map
 		date = utils.timestamp2date(utils.timezone(int(data[device_name]["timeStamp"]/1000)))
 		device["label"] = str(device_name)
 		device["text"] = str("<p><b>"+device_name+":</b></p><p>"+date+" ("+data[device_name]["positionType"]+") </p>")
 		device["latitude"] = data[device_name]["latitude"]
 		device["longitude"] = data[device_name]["longitude"]
 		device["accuracy"] = data[device_name]["horizontalAccuracy"]
-		devices.append(device)
 	measures = []
 	measure = {}
 	measure["key"] = sensor["sensor_id"]
-	measure["value"] = json.dumps(devices)
+	measure["value"] = json.dumps(device)
 	measures.append(measure)
         return measures
 
