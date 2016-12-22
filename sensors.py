@@ -25,6 +25,7 @@ import plugin_messagebridge
 import plugin_icloud
 import plugin_rtl_433
 import plugin_gpio
+import plugin_fdsnws
 
 # variables
 plugins = {}
@@ -44,6 +45,7 @@ def init_plugins(start_services):
 	        elif name == "messagebridge": plugin = plugin_messagebridge
 		elif name == "rtl_433": plugin = plugin_rtl_433
 		elif name == "gpio": plugin = plugin_gpio
+		elif name == "fdsnws": plugin = plugin_fdsnws
                 if plugin is None:
                         log.error("plugin "+name+" not supported")
                         continue
