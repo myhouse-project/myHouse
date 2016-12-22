@@ -511,13 +511,6 @@ th.dt-center, td.dt-center { text-align: center; }
 	function add_sensor_map(tag,layout) {
 		var id = tag.replace("#","")
 		$(tag).html('<div id="'+id+'_map" style="width:100%; height:'+conf["gui"]["maps"]["size_x"]+'px;"></div>')
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]
-		sensor_id = split[2];
-		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
 		// load google maps api (lazy loading since we need the api_key from the conf)
 		var script = document.createElement('script');
 		script.src = "http://maps.google.com/maps/api/js?key="+conf["gui"]["maps"]["api_key"];
@@ -528,52 +521,50 @@ th.dt-center, td.dt-center { text-align: center; }
 				// load gmaps 
 				script.onload = function(tag,layout) {
 					return function () {
-						// request the data 
-						$.getJSON(sensor_url+"/realtime/avg",function(tag,layout) {
-							return function (data) {
-								// create the map
-								var map = new GMaps({
-									div: tag+"_map",
-									lat: 0,
-									lng: 0,
-									mapType: conf["gui"]["maps"]["type"],
-								});
-								if (data.length == 0) return
-								// group together data belonging to the same label first
-								var labels = {}
-								for (var i = 0; i < data.length; i++) {
-									// for each snapshot
-									var markers = JSON.parse(data[i][1])
-									for (var j = 0; j < markers.length; j++) {
-										var label = markers[j]["label"]
-										// for each marker
-										if (!(label in labels)) labels[label] = []
-										// add the info, with newest data on top
-										labels[label].unshift(markers[j])
-									}
-								}
-								// for each label
-								for (label in labels) {
-									// add the markers
-									for (var i = 0; i < labels[label].length; i++) {
-										var entry = labels[label][i]
+						//create the map
+						map = new GMaps({
+							div: tag+"_map",
+							lat: 0,
+							lng: 0,
+							mapType: conf["gui"]["maps"]["type"],
+							zoom: 2
+						});
+						// retrieve the sensors belonging to the group
+						split = split_group(layout,"group")
+						if (split == null) return;
+						module_id = split[0]
+						group_id = split[1];
+						sensors = get_group(module_id,group_id)
+						for (var i = 0; i < sensors.length; i++) {
+							// for each sensor
+							var sensor = sensors[i];
+							var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];							
+							// request the data 
+							$.getJSON(sensor_url+"/realtime/avg",function(tag,layout,map) {
+								return function (data) {
+									if (data.length == 0) return
+									var waypoints = []
+									for (var i = 0; i < data.length; i++) {
+										// for each position of the sensor
+										var position = JSON.parse(data[i][1])
+										if (!("latitude" in position)) continue;
 										// add a marker
 										var options = {
-											lat: entry["latitude"],
-											lng: entry["longitude"],
-											label: entry["label"],
+											lat: position["latitude"],
+											lng: position["longitude"],
+											label: position["label"],
 											icon: null,
-											infoWindow: { content: entry["text"]}
+											infoWindow: { content: position["text"]}
 										}
+										// customize the layout of the marker when tracking position
 										if (layout["tracking"]) {
-											// apply a special layout to the marker when tracking position
-											if (i == 0) {
-												// this is the last entry, if the position is not accurate, draw a circle around it
-												if (entry["accuracy"] > 500) {
+											if (i == (data.length-1)) {
+												// this is the last position, if the position is not accurate, draw a circle around it
+												if (position["accuracy"] > 500) {
 													map.drawCircle({
-														lat: entry["latitude"],
-														lng: entry["longitude"],
-														radius: entry["accuracy"],
+														lat: position["latitude"],
+														lng: position["longitude"],
+														radius: position["accuracy"],
 														strokeColor: '#BBD8E9',
 														strokeOpacity: 1,
 														strokeWeight: 3,
@@ -589,19 +580,20 @@ th.dt-center, td.dt-center { text-align: center; }
 										}
 										// add the marker to the map
 										map.addMarker(options)
+										// keep track of the waypoint
+										waypoints.push({location:position["latitude"]+","+position["longitude"],stopover: true})
 									}
+									// auto zoom the map
+									map.fitZoom();
 									if (layout["tracking"]) {
 										// build the route
-										if (labels[label].length < 2) continue;
+										if (waypoints.length < 2) return;
 										// set origin and destination
-										var first = labels[label].shift()
-										var last = labels[label].pop()
-										// calculate waypoints
-										var waypoints = []
-										for (var i = 0; i < labels[label].length; i++) {
-											var entry = labels[label][i]
-											waypoints.unshift({location:entry["latitude"]+","+entry["longitude"],stopover: true})
-										}
+										var first = JSON.parse(data[0][1])
+										var last = JSON.parse(data[(data.length-1)][1])
+										console.log(waypoints)
+										console.log(first)
+										console.log(last)
 										// draw the route
 										map.drawRoute({
 											origin: [first["latitude"],first["longitude"]],
@@ -613,17 +605,17 @@ th.dt-center, td.dt-center { text-align: center; }
 											waypoints: waypoints
 										});
 									}
-								}
-								// auto zoom the map
-								map.fitZoom();
-							};
-						}(tag,layout));
-					};
-				}(tag,layout);
+									// auto zoom the map
+									map.fitZoom();
+								}; // end return function()
+							}(tag,layout,map));// end get json
+						} // end for each sensor
+					}; // end function ()
+				}(tag,layout); // onload gmaps.js
 				// append gmaps to head
 				document.head.appendChild(script);
-			};
-		}(tag,layout);
+			}; // end function ()
+		}(tag,layout); // onload google maps
 		// append google api to head
 		document.head.appendChild(script);
 	}

@@ -485,7 +485,10 @@
               "type":"integer",
               "description":"Timeout in seconds when running a linux command"
             }
-          }
+          },
+          "required":[
+			"timeout"
+          ]
         },
         "image":{
           "type":"null",
@@ -691,8 +694,8 @@
 							  "enum": [ "map" ],
                               "value":"map"
                             },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id. Data from the realtime timeframe will be retrieved",
+                            "group":{
+							  "description":"The group of sensors in the format module_id:group_id. Data from the realtime timeframe will be retrieved",
                               "type":"string"
                             },
                             "tracking":{
@@ -703,7 +706,7 @@
                           "additionalProperties":false,
                           "required":[
                             "type",
-                            "sensor",
+                            "group",
 							"tracking"
                           ]
                         },
@@ -1173,28 +1176,33 @@
 						  "description":"Location of the CSV file. If not provided the one in the global plugin settings will be used",
                           "type":"string"
                         },
+                        "separator":{
+						  "description":"The delimeter of the columns",
+                          "type":"string",
+						  "value":","
+                        },
+                        "date_position":{
+						  "description":"The position (index) of the date (UTC) in the csv file",
+                          "type":"integer"
+                        },
                         "date_format":{
 						  "description":"The format of the date according to https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior",
                           "type":"string"
                         },
-                        "date_index":{
-						  "description":"The position (index) of the date (UTC) in the csv file",
-                          "type":"integer"
-                        },
-                        "node_id":{
-						  "description":"An optional name of the device to filter out unwanted items from the csv file",
+                        "filter":{
+						  "description":"If defined, only the lines of the file with this value at this position will be evaluated",
                           "type":"string"
                         },
-                        "node_id_index":{
-						  "description":"The position (index) of the node_id in the csv file",
+                        "filter_position":{
+						  "description":"The position (index) of the column we want to filter in the csv file",
                           "type":"integer"
                         },
-                        "measure":{
-						  "description":"An optional prefix of the measure (e.g. TEMP) to strip out",
+                        "value_position":{
+						  "description":"The position (index) of the value to extract in the csv file",
                           "type":"string"
                         },
-                        "measure_index":{
-						  "description":"The position (index) of the measure in the csv file",
+                        "prefix":{
+						  "description":"An optional prefix of the value (that will be striped out) used as additional filter (e.g. TEMP21.5)",
                           "type":"string"
                         },
                         "polling_interval":{
@@ -1210,7 +1218,8 @@
                       "additionalProperties":false,
                       "required":[
                         "plugin_name",
-                        "measure_index"
+						"separator",
+                        "value_position"
                       ]
                     },
                     {
@@ -1262,13 +1271,9 @@
 						  "description":"The username of the icloud account",
                           "type":"string"
                         },
-                        "devices":{
-						  "description":"An optional list of device names to monitor. If not defined all the devices belonging to the icloud account will be considered",
-                          "type":"array",
-                          "items":{
-                            "type":"string",
-                            "title":"Device Name"
-                          }
+                        "device_name":{
+						  "description":"The name of the device to monitor",
+                          "type":"string"
                         },
                         "polling_interval":{
 						  "description":"Poll the sensor every X minutes",
@@ -1287,7 +1292,8 @@
                       "additionalProperties":false,
                       "required":[
                         "plugin_name",
-                        "username"
+                        "username",
+						"device_name"
                       ]
                     },
                     {
@@ -1562,7 +1568,8 @@
                     "pressure",
                     "speed",
                     "image",
-                    "calendar"
+                    "calendar",
+					"position"
                   ],
                   "description":"The format of the data of this sensor"
                 },

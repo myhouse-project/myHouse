@@ -92,6 +92,10 @@ constants = {
                         'formatter': "",
                         'suffix': "",
                 },
+                'position': {
+                        'formatter': "",
+                        'suffix': "",
+                },
 	},
 	'charts': {
 		'master': {
