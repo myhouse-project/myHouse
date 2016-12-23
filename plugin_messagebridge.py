@@ -87,7 +87,7 @@ def tx(sensor,data,service_message=False):
         sock.sendto(json_message, ('<broadcast>',plugin_conf['port_send']))
         sock.close()
 
-# send a sensor to sleep
+# put a sensor to sleep
 def sleep(sensor):
 	sleep_min = sensor["plugin"]["cycle_sleep_min"]*60
 	time.sleep(1)

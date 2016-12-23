@@ -26,12 +26,13 @@ import plugin_icloud
 import plugin_rtl_433
 import plugin_gpio
 import plugin_fdsnws
+import plugin_mqtt
 
 # variables
 plugins = {}
 
 # initialize the configured plugins
-def init_plugins(start_services):
+def init_plugins():
         # for each plugin
         for name in conf["plugins"]:
                 # get the plugin and store it
@@ -46,14 +47,20 @@ def init_plugins(start_services):
 		elif name == "rtl_433": plugin = plugin_rtl_433
 		elif name == "gpio": plugin = plugin_gpio
 		elif name == "fdsnws": plugin = plugin_fdsnws
+		elif name == "mqtt": plugin = plugin_mqtt
                 if plugin is None:
                         log.error("plugin "+name+" not supported")
                         continue
                 plugins[name] = plugin
-                # start the plugin service
-		if hasattr(plugin, 'run') and start_services:
-	                log.info("starting plugin service "+name)
-	                schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
+
+# start the plugin service
+def start_plugins():
+	print plugins
+	print "ok"
+	for name,plugin in plugins.iteritems():
+                if hasattr(plugin, 'run'):
+                        log.info("starting plugin service "+name)
+                        schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
 
 # read data out of a sensor and store the output in the cache
 def poll(sensor):
@@ -270,7 +277,7 @@ def run(module_id,group_id,sensor_id,action):
 # schedule all the sensors
 def schedule_all():
 	# init plugins
-	init_plugins(True)
+	init_plugins()
 	log.info("setting up all the configured sensors")
         # for each module
         for module in conf["modules"]:
@@ -303,6 +310,8 @@ def schedule_all():
               	        	log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
                      	        schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
                              	schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
+	# start the services
+	start_plugins()
 
 # return the latest read of a sensor for a web request
 def data_get_current(module_id,group_id,sensor_id):
@@ -442,7 +451,7 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 # manually run a command for a sensor
 def data_run(module_id,group_id,sensor_id,action):
         log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] executing: "+str(action))
-	init_plugins(False)
+	init_plugins()
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
         if sensor is None:
                 log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
@@ -461,7 +470,7 @@ if __name__ == '__main__':
 	else: 
 		# run the command for the given sensor
 		# <module_id> <group_id> <sensor_id> <action>
-		init_plugins(False)
+		init_plugins()
 		sensor = utils.get_sensor(sys.argv[1],sys.argv[2],sys.argv[3])
 		if sensor is None: 
 			log.info("invalid sensor provided")

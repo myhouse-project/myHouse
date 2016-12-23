@@ -562,6 +562,29 @@
         "fdsnws":{
           "type":"null",
           "description":"Federation of Digital Seismograph Network Web Service plugin configuration"
+        },
+        "mqtt":{
+          "type":"object",
+          "description":"MQTT plugin configuration",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the service"
+            },
+            "hostname":{
+				"type": "string",
+				"description":"The hostname of the gateway"
+            },
+            "port":{
+				"type": "integer",
+				"description":"The port the gateway is listening to"
+            }
+          },
+          "required":[
+			"enabled",
+            "hostname",
+			"port"
+          ]
         }
       },
       "required":[
@@ -574,7 +597,8 @@
         "messagebridge",
 		"rtl_433",
 		"gpio",
-		"fdsnws"
+		"fdsnws",
+		"mqtt"
       ]
     },
     "modules":{
@@ -1595,8 +1619,39 @@
                       },
                       "additionalProperties":false,
                       "required":[
+					    "plugin_name",
                         "domain",
 						"query"
+                      ]
+                    },
+					{
+                      "title":"mqtt",
+                      "description":"Interact with a MQTT gateway",
+                      "properties":{
+                        "plugin_name":{
+                          "type":"string",
+						  "enum": [ "mqtt" ],
+                          "value":"mqtt"
+                        },
+                        "mode":{
+                          "type":"string",
+						  "description":"Weather the sensor should is used to receive or send messages",
+						  "enum": [ "subscribe","publish" ]
+                        },
+                        "topic":{
+						  "description":"The topic to subscribe",
+                          "type":"string"
+                        },
+                        "retain":{
+						  "description":"When sending a message an optional retain flag",
+                          "type":"boolean"
+                        }
+                      },
+                      "additionalProperties":false,
+                      "required":[
+					    "plugin_name",
+                        "topic",
+						"mode"
                       ]
                     }
                   ]
