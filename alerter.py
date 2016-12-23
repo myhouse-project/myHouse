@@ -86,7 +86,8 @@ def is_true(a,operator,b):
 	if not isinstance(b,list): b = [b]
 	# b can be have multiple values, cycle through all of them
 	for value in b:
-		if operator == "==":
+		if value is None or a is None: evaluation = False
+		elif operator == "==":
 			if value != a: evaluation = False
 		elif operator == "!=":
 			if value == a: evaluation = False
