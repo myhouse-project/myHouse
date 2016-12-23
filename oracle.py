@@ -44,6 +44,7 @@ def load_brain():
 # enrich the knowledge base with the configuration
 def learn_config():
 	r = {}
+	widgets = []
         for module in conf["modules"]:
 		r["module"] = [module["module_id"],module["display_name"]]
 		if "rules" in module:
@@ -59,6 +60,9 @@ def learn_config():
 			for i in range(len(module["widgets"])):
 				for j in range(len(module["widgets"][i])):
 					widget = module["widgets"][i][j]
+					if widget["widget_id"] in widgets:
+						log.warning("Duplicated widget "+widget["widget_id"]+" found. Widgets must have a unique name across all the modules")
+					widgets.append(widget["widget_id"])
 					for k in range(len(widget["layout"])):
 						layout = widget["layout"][k]
 						# ignore if not an image, a chart or a sensor timeline

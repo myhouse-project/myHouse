@@ -55,8 +55,6 @@ def init_plugins():
 
 # start the plugin service
 def start_plugins():
-	print plugins
-	print "ok"
 	for name,plugin in plugins.iteritems():
                 if hasattr(plugin, 'run'):
                         log.info("starting plugin service "+name)
