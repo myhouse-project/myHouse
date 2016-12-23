@@ -182,22 +182,22 @@ def add_sensor_image(layout,widget):
 
 # add a map widget
 def add_sensor_map(layout,widget):
-        split = utils.split_sensor(layout,"sensor")
+        split = utils.split_group(layout,"group")
         if split is None: return
         module_id = split[0]
         group_id = split[1]
-        sensor_id = split[2]
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        sensor_url = module_id+"/"+group_id+"/"+sensor_id
-	# setup the map
-	map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
-        # retrieve the data
-        markers = json.loads(utils.web_get(hostname+sensor_url+"/current"))
-	if len(markers) == 0: return
-	markers = json.loads(markers[0])
-	# add the marker to the map
-	for i in range(len(markers)):
-		marker = markers[i]
+        sensors = utils.get_group(module_id,group_id)
+        # setup the map
+        map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
+        for i in range(len(sensors)):
+		# for each sensor of the group
+                sensor = sensors[i];
+                sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+	        # retrieve the data
+        	marker = json.loads(utils.web_get(hostname+sensor_url+"/current"))
+		if len(marker) == 0: continue
+		marker = json.loads(str(marker[0]))
+		# add the marker to the map
 		map.add_marker(LatLonMarker(marker["latitude"],marker["longitude"], label=marker["label"][0].upper()))
 	# download the map
 	url = map.generate_url()

@@ -28,6 +28,12 @@ rules = {
 }
 minutes_since = "timestamp"
 
+# for a location parse the data and return the label
+def parse_location(data):
+        if len(data) != 1: return
+        data = json.loads(data[0])
+	return [data["label"]]
+
 # for a calendar parse the data and return the value
 def parse_calendar(data):
 	# the calendar string is at position 0
@@ -67,6 +73,7 @@ def get_data(sensor,request):
 		# just retrieve the data
 		data = db.range(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 	if sensor["format"] == "calendar": data = parse_calendar(data)
+	if sensor["format"] == "location": data = parse_location(data)
 	return data
 
 # evaluate if a condition is met
