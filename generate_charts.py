@@ -62,6 +62,7 @@ def apply_format(series,format):
 def add_point(chart,url,series_index,category_index):
 	data = json.loads(utils.web_get(hostname+url))
 	# add the category index to the data
+	if len(data) < 2: return
 	data = [category_index,data[0],data[1]]	
 	if 'data' not in chart['series'][series_index]: chart['series'][series_index]['data'] = []
 	chart['series'][series_index]['data'].append(data)

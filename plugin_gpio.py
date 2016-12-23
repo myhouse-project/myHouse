@@ -42,7 +42,7 @@ def register(sensor):
         edge_detect = sensor["plugin"]["edge_detect"]
 	if edge_detect == "rising": GPIO.add_event_detect(pin, GPIO.RISING, callback=event_callback)
 	elif edge_detect == "falling": GPIO.add_event_detect(pin, GPIO.FALLING, callback=event_callback)
-	elif edge_detect == "both": GPIO.add_event_detect(pin, GPIO.BOTH, callback=event_callback
+	elif edge_detect == "both": GPIO.add_event_detect(pin, GPIO.BOTH, callback=event_callback)
 	log.debug("["+__name__+"]["+str(pin)+"] registered sensor "+sensor['module_id']+":"+sensor['group_id']+":"+sensor['sensor_id'])
 
 # handle the callbacks
