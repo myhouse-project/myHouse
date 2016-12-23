@@ -40,8 +40,9 @@ def register(sensor):
         GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
         # add callbacks
         edge_detect = sensor["plugin"]["edge_detect"]
-	if edge_detect == "rising" or edge_detect == "both": GPIO.add_event_detect(pin, GPIO.RISING, callback=event_high_callback)
-	if edge_detect == "falling" or edge_detect == "both": GPIO.add_event_detect(pin, GPIO.FALLING, callback=event_low_callback)
+	if edge_detect == "rising": GPIO.add_event_detect(pin, GPIO.RISING, callback=event_callback)
+	elif edge_detect == "falling": GPIO.add_event_detect(pin, GPIO.FALLING, callback=event_callback)
+	elif edge_detect == "both": GPIO.add_event_detect(pin, GPIO.BOTH, callback=event_callback
 	log.debug("["+__name__+"]["+str(pin)+"] registered sensor "+sensor['module_id']+":"+sensor['group_id']+":"+sensor['sensor_id'])
 
 # handle the callbacks
@@ -55,13 +56,10 @@ def save(pin,value):
 	measures.append(measure)
 	sensors.store(sensor,measures)
 
-# receive callback when a rising edge is detected
-def event_high_callback(pin):
-	save(pin,1)
-
-# receive a callback when a falling edge is detected
-def event_low_callback(pin):
-	save(pin,0)	
+# receive a callback
+def event_callback(pin):
+	if GPIO.input(pin): save(pin,1)
+	else: save(pin,0)
 
 # run the plugin service
 def run():
