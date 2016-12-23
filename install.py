@@ -50,6 +50,10 @@ def install_deps():
         run_command("pip install flask-compress")
         print "Installing python-jsonschema..."
         run_command("pip install jsonschema")
+        print "Installing python-paho-mqtt..."
+        run_command("pip install paho-mqtt")
+        print "Installing mosquitto..."
+        run_command("apt-get install mosquitto")
 
 # installation routine
 def install():
