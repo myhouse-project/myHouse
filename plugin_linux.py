@@ -52,6 +52,8 @@ commands = {
 # poll the sensor
 def poll(sensor):
 	command = commands[sensor['plugin']['measure']]['command_poll'] if sensor['plugin']['measure'] in commands else sensor['plugin']['command_poll']
+	# run the command in the script directory
+	command = "cd '"+conf["constants"]["script_dir"]+"'; "+command
 	return utils.run_command(command,timeout=conf["plugins"]["linux"]["timeout"])
 
 # parse the data
@@ -61,7 +63,13 @@ def parse(sensor,data):
 	measures = []
         measure = {}
         measure["key"] = sensor["sensor_id"]
-	parsed = utils.run_command("echo '"+data+"' |"+command,timeout=conf["plugins"]["linux"]["timeout"])
+	parsed = ""
+	if command != "": 
+		# run the command to parse the data
+		parsed = utils.run_command("echo '"+data+"' |"+command,timeout=conf["plugins"]["linux"]["timeout"])
+	else: 
+		# use the input data as parsed data
+		parsed = data
 	measure["value"] = utils.normalize(parsed,conf["constants"]["formats"][sensor["format"]]["formatter"])
         # append the measure and return it
         measures.append(measure)
@@ -74,4 +82,6 @@ def cache_schema(sensor):
 
 # run a command
 def send(sensor,data):
-	utils.run_command(data,timeout=conf["plugins"]["linux"]["timeout"])
+        # run the command in the script directory
+        command = "cd '"+conf["constants"]["script_dir"]+"'; "+data
+	utils.run_command(command,timeout=conf["plugins"]["linux"]["timeout"])

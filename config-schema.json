@@ -1639,7 +1639,7 @@
 						  "enum": [ "subscribe","publish" ]
                         },
                         "topic":{
-						  "description":"The topic to subscribe",
+						  "description":"The topic to subscribe. No wildcards are allowed",
                           "type":"string"
                         },
                         "retain":{

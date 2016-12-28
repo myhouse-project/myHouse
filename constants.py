@@ -22,6 +22,7 @@ constants = {
 	'base_dir': base_dir,
 	'log_dir': base_dir+"/logs",
 	'tmp_dir': base_dir+"/tmp",
+	'script_dir': base_dir+"/scripts",
 	'config_file': base_dir+"/config.json",
 	'config_file_backup': base_dir+"/config.bak",
 	'config_file_default': base_dir+"/config-example.json",
