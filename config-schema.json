@@ -3,6 +3,87 @@
   "type":"object",
   "title":"myHouse",
   "properties":{
+    "general":{
+		"type":"object",
+		"description":"Define general settings",
+		"properties":{
+			"latitude":{
+				"type":"number",
+				"description":"The latitude of the current location. Different plugins and services will use this as the default position"
+			},
+			"longitude":{
+				"type":"number",
+				"description":"The longitude of the current location. Different plugins and services will use this as the default position"
+			},
+			"timeframes":{
+				"type":"object",
+				"description":"Define common timeframes",
+				"properties":{
+					"realtime_hours":{
+						"type":"integer",
+						"description":"Realtime timeframe in hours"
+					},
+					"recent_hours":{
+						"type":"integer",
+						"description":"Recent timefram in hours"
+					},
+					"history_days":{
+						"type":"integer",
+						"description":"History timeframe in days"
+					},
+					"short_history_days":{
+						"type":"integer",
+						"description":"Short history timeframe in days"
+					},
+					"forecast_days":{
+						"type":"integer",
+						"description":"Forecast timeframe in days"
+					},
+					"alerter_recent_hours":{
+						"type":"integer",
+						"description":"Timeframe to show alerts in the top right icons in hours"
+					},
+					"alerter_history_days":{
+						"type":"integer",
+					"description":"Timeframe to show alerts in the alert table"
+					}
+				},
+				"required":[
+					"realtime_hours",
+					"recent_hours",
+					"history_days",
+					"short_history_days",
+					"forecast_days",
+					"alerter_recent_hours",
+					"alerter_history_days"
+				]
+			},
+			"units":{
+				"type":"object",
+				"description":"How to deal with units of measure",
+				"properties":{
+					"imperial":{
+						"type":"boolean",
+						"description":"Use imperial units of measures"
+					},
+					"fahrenheit":{
+						"type":"boolean",
+						"description":"Use Fahrenheit degrees"
+					}
+				},
+				"required":[
+					"imperial",
+					"fahrenheit"
+				]
+			}
+		},
+		"required":[
+			"latitude",
+			"longitude",
+			"timeframes",
+			"units"
+		]
+	},
     "db":{
       "type":"object",
       "description":"Database configuration",
@@ -29,67 +110,6 @@
         "hostname",
         "port",
         "database"
-      ]
-    },
-    "units":{
-      "type":"object",
-      "description":"How to deal with units of measure",
-      "properties":{
-        "imperial":{
-          "type":"boolean",
-          "description":"Use imperial units of measures"
-        },
-        "fahrenheit":{
-          "type":"boolean",
-          "description":"Use Fahrenheit degrees"
-        }
-      },
-      "required":[
-        "imperial",
-        "fahrenheit"
-      ]
-    },
-    "timeframes":{
-      "type":"object",
-      "description":"Define common timeframes",
-      "properties":{
-        "realtime_hours":{
-          "type":"integer",
-          "description":"Realtime timeframe in hours"
-        },
-        "recent_hours":{
-          "type":"integer",
-          "description":"Recent timefram in hours"
-        },
-        "history_days":{
-          "type":"integer",
-          "description":"History timeframe in days"
-        },
-        "short_history_days":{
-          "type":"integer",
-          "description":"Short history timeframe in days"
-        },
-        "forecast_days":{
-          "type":"integer",
-          "description":"Forecast timeframe in days"
-        },
-        "alerter_recent_hours":{
-          "type":"integer",
-          "description":"Timeframe to show alerts in the top right icons in hours"
-        },
-        "alerter_history_days":{
-          "type":"integer",
-          "description":"Timeframe to show alerts in the alert table"
-        }
-      },
-      "required":[
-        "realtime_hours",
-        "recent_hours",
-        "history_days",
-        "short_history_days",
-        "forecast_days",
-        "alerter_recent_hours",
-        "alerter_history_days"
       ]
     },
     "gui":{
@@ -433,15 +453,10 @@
             "api_key":{
               "type":"string",
               "description":"Wunderground API key (https://www.wunderground.com/weather/api/)"
-            },
-            "location":{
-              "type":"string",
-              "description":"Location (e.g. latitude,longitude - pws:pws_name)"
             }
           },
           "required":[
-            "api_key",
-            "location"
+            "api_key"
           ]
         },
         "weatherchannel":{
@@ -452,10 +467,6 @@
               "type":"string",
               "description":"Weather Channel API key (https://weather.com)"
             },
-            "location":{
-              "type":"string",
-              "description":"Location (e.g. latitude,longitude)"
-            },
             "language":{
               "type":"string",
               "description":"Retrieve data in the given language"
@@ -463,19 +474,12 @@
           },
           "required":[
             "api_key",
-            "location",
 			"language"
           ]
         },
         "csv":{
-          "type":"object",
-          "description":"CSV plugin configuration",
-          "properties":{
-            "csv_file":{
-              "type":"string",
-              "description":"Location of the CSV file"
-            }
-          }
+          "type":"null",
+          "description":"CSV plugin configuration"
         },
         "linux":{
           "type":"object",
@@ -1257,6 +1261,7 @@
                       "additionalProperties":false,
                       "required":[
                         "plugin_name",
+						"csv_file",
 						"separator",
                         "value_position"
                       ]
@@ -1732,9 +1737,8 @@
     }
   },
   "required":[
+    "general",
     "db",
-    "units",
-    "timeframes",
     "gui",
     "alerter",
     "sensors",

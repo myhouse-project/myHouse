@@ -47,11 +47,11 @@ def load(validate):
                 const['config_schema_json'] = file.read()
         file.close()
         # adapt the units if needed
-        if config["units"]["imperial"]:
+        if config["general"]["units"]["imperial"]:
                 const["formats"]["length"]["suffix"] = "in"
                 const["formats"]["length"]["formatter"] = "float_2"
                 const["formats"]["speed"]["suffix"] = "m/h"
-        if config["units"]["fahrenheit"]:
+        if config["general"]["units"]["fahrenheit"]:
                 const["formats"]["temperature"]["suffix"] = u'\u00B0F'
                 const["formats"]["temperature"]["formatter"] = "int"
         # attach the constants
