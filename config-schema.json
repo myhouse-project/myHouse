@@ -359,6 +359,53 @@
             "realtime_alerts",
             "interactive_bot"
           ]
+        },
+        "sms":{
+          "type":"object",
+          "description":"SMS notification configuration (Betamax)",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the module"
+            },
+            "hostname":{
+              "type":"string",
+              "description":"Your Betamax VOIP service. An account on one of the Betamax powered services (http://backsla.sh/betamax) is required"
+            },
+            "username":{
+              "type":"string",
+              "description":"The username of the VOIP service"
+            },
+            "password":{
+              "type":"string",
+              "description":"The password of the VOIP service"
+            },
+            "from":{
+              "type":"string",
+              "description":"Your username or your verified phone number. Always use international format"
+            },
+            "to":{
+              "type":"array",
+              "description":"The number you wish to send the sms to. Always use international format",
+              "items":{
+                "type":"string",
+                "title":"Phone Number"
+              }
+            },
+            "realtime_alerts":{
+              "type":"boolean",
+              "description":"Send realtime alerts"
+            }
+          },
+          "required":[
+            "enabled",
+            "hostname",
+			"username",
+			"password",
+            "from",
+            "to",
+            "realtime_alerts"
+          ]
         }
       },
       "required":[
