@@ -12,6 +12,7 @@ import scheduler
 schedule = scheduler.get_scheduler()
 import notification_slack
 import notification_email
+import notification_sms
 
 # schedule all reports
 def schedule_all():
@@ -34,6 +35,7 @@ def schedule_all():
 def notify(text):
 	if conf["notifications"]["email"]["realtime_alerts"]: notification_email.alert(text)
 	if conf["notifications"]["slack"]["realtime_alerts"]: notification_slack.says(text)
+	if conf["notifications"]["sms"]["realtime_alerts"]: notification_sms.send(text)
 
 # main
 if __name__ == '__main__':
