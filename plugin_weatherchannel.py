@@ -18,7 +18,8 @@ plugin_conf = conf['plugins']['weatherchannel']
 # poll the sensor
 def poll(sensor):
 	request = sensor['plugin']['measure']
-	location = sensor["plugin"]["location"] if "location" in sensor["plugin"] else plugin_conf['location']
+	location = str(conf["general"]["latitude"])+","+str(conf["general"]["longitude"])
+	if "location" in sensor["plugin"]: location = sensor["plugin"]["location"]
 	location = location.replace(',','/')
 	if request == "alerts":
 		# request the web page
@@ -47,6 +48,7 @@ def get_request_type(request):
 
 # return the cache schema
 def cache_schema(sensor):
-	location = sensor["plugin"]["location"] if "location" in sensor["plugin"] else plugin_conf['location']
+        location = str(conf["general"]["latitude"])+","+str(conf["general"]["longitude"])
+        if "location" in sensor["plugin"]: location = sensor["plugin"]["location"]
 	location = location.replace(',','/')
 	return location+"_"+get_request_type(sensor['plugin']['measure'])

@@ -16,8 +16,8 @@ db = None
 def connect():
 	global db
 	if db is None: 
-		log.debug("connecting to DB: "+str(db))
 		db = redis.StrictRedis(host=conf['db']['hostname'], port=conf['db']['port'], db=conf['db']['database'])
+		log.debug("connected to DB: "+str(db))
 	if not conf['db']['enabled']: log.warning("Database writing disabled")
 	return db
 

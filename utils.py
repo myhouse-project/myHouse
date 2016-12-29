@@ -12,6 +12,7 @@ import datetime
 import numpy
 import random
 import __builtin__
+from math import radians, cos, sin, asin, sqrt
 
 import logger
 import config
@@ -74,16 +75,42 @@ def hour_end(timestamp):
         return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
 # return the realtime timestamp
-def realtime(hours=conf["timeframes"]["realtime_hours"]):
+def realtime(hours=conf["general"]["timeframes"]["realtime_hours"]):
 	return now()-hours*conf["constants"]["1_hour"]
 
 # return the recent timestamp
-def recent(hours=conf["timeframes"]["recent_hours"]):
+def recent(hours=conf["general"]["timeframes"]["recent_hours"]):
 	return now()-hours*conf["constants"]["1_hour"]
 
 # return the history timestamp
-def history(days=conf["timeframes"]["history_days"]):
+def history(days=conf["general"]["timeframes"]["history_days"]):
 	return now()-days*conf["constants"]["1_day"]
+
+# return a timestamp as a human readable format
+def timestamp2date(timestamp):
+        return datetime.datetime.fromtimestamp(utc(int(timestamp))).strftime('%Y-%m-%d %H:%M:%S')
+
+# return the difference between two timestamps in a human readable format
+def timestamp_difference(date1,date2):
+        seconds = math.floor(math.fabs(date1-date2))
+        interval = math.floor(seconds / 31536000)
+        if interval > 1: return str(int(interval)) + " years ago"
+        interval = math.floor(seconds / 2592000)
+        if interval > 1: return str(int(interval)) + " months ago"
+        interval = math.floor(seconds / 86400)
+        if interval > 1: return str(int(interval)) + " days ago"
+        interval = math.floor(seconds / 3600)
+        if interval > 1: return str(int(interval)) + " hours ago"
+        interval = math.floor(seconds / 60)
+        if interval > 1: return str(int(interval)) + " minutes ago"
+        return str(int(math.floor(seconds))) + " seconds ago"
+
+# convert a string into a timestamp
+def string2timestamp(string):
+	if "s" in string: return now()-int(string.replace("s",""))
+	elif "m" in string: return now()-int(string.replace("m",""))*60
+	elif "h" in string: return now()-int(string.replace("d",""))*60*60
+	elif "d" in string: return now()-int(string.replace("h",""))*60*60*24
 
 # return true if the input is a number
 def is_number(s):
@@ -145,30 +172,10 @@ def get_exception(e):
 def randint(min,max):
 	return random.randint(min,max)
 
-# return a timestamp as a human readable format
-def timestamp2date(timestamp):
-	return datetime.datetime.fromtimestamp(utc(int(timestamp))).strftime('%Y-%m-%d %H:%M:%S')
-
-
 # truncate a long string 
 def truncate(string):
 	max_len = 50
 	return (string[:max_len] + '...') if len(string) > max_len else string
-
-# return the difference between two timestamps in a human readable format
-def timestamp_difference(date1,date2):
-	seconds = math.floor(math.fabs(date1-date2))
-	interval = math.floor(seconds / 31536000)
-	if interval > 1: return str(int(interval)) + " years ago"
-	interval = math.floor(seconds / 2592000)
-	if interval > 1: return str(int(interval)) + " months ago"
-	interval = math.floor(seconds / 86400)
-	if interval > 1: return str(int(interval)) + " days ago"
-	interval = math.floor(seconds / 3600)
-	if interval > 1: return str(int(interval)) + " hours ago"
-	interval = math.floor(seconds / 60)
-	if interval > 1: return str(int(interval)) + " minutes ago"
-	return str(int(math.floor(seconds))) + " seconds ago"
 
 # return a dict merging delta into template
 def merge(template,delta):
@@ -256,22 +263,22 @@ def is_night():
 
 # convert the temperature if needed
 def temperature_unit(temperature):
-	if conf["units"]["fahrenheit"]: return (temperature * 1.8) + 32
+	if conf["general"]["units"]["fahrenheit"]: return (temperature * 1.8) + 32
 	else: return temperature
 
 # convert a length if neeeded
 def length_unit(length):
-        if conf["units"]["imperial"]: return length*0.039370
+        if conf["general"]["units"]["imperial"]: return length*0.039370
         else: return length
 
 # convert a pressure if neeeded
 def pressure_unit(pressure):
-        if conf["units"]["imperial"]: return pressure*0.0295301
+        if conf["general"]["units"]["imperial"]: return pressure*0.0295301
         else: return pressure
 
 # convert a speed if needed
 def speed_unit(speed):
-	if conf["units"]["imperial"]: return speed*0.621371
+	if conf["general"]["units"]["imperial"]: return speed*0.621371
 	else: return speed
 
 # return the file path of a given widget id
@@ -279,3 +286,19 @@ def get_widget_chart(widget_id):
 	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']
 
 
+# return the distance in km between two coordinates
+def distance(a,b):
+	if len(a) != 2 or len(b) != 2: return 0
+	lat1 = a[0]
+	lon1 = a[1]
+	lat2 = b[0]
+	lon2 = b[1]
+	# convert decimal degrees to radians 
+	lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+	# haversine formula 
+	dlon = lon2 - lon1 
+	dlat = lat2 - lat1 
+	a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+	c = 2 * asin(sqrt(a)) 
+	km = 6367 * c
+	return length_unit(km)

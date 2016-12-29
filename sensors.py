@@ -120,7 +120,7 @@ def save(sensor,force=False):
 	store(sensor,measures)
 
 # store the measures into the database
-def store(sensor,measures):
+def store(sensor,measures,ifnotexists=False):
 	# if an exception occurred, skip this sensor
 	if measures is None: return
 	# for each returned measure
@@ -129,6 +129,10 @@ def store(sensor,measures):
 	        if "timestamp" not in measure: measure["timestamp"] = utils.now()
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
+		# if ifnotexists is set, check if the key exists
+		if ifnotexists and db.exists(key): 
+			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] key already exists, ignoring new value")
+			return
 		# delete previous values if needed
 		realtime_count = conf["sensors"]["retention"]["realtime_count"]
 		if "retention" in sensor and "realtime_count" in sensor["retention"]: realtime_count = sensor["retention"]["realtime_count"]
@@ -373,7 +377,7 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
         elif timeframe == "short_history":
                 # historical daily measures up to new
                 range = ":day"
-                start = utils.history(conf["timeframes"]["short_history_days"])
+                start = utils.history(conf["general"]["timeframes"]["short_history_days"])
                 end = utils.now()
                 withscores = True
         elif timeframe == "today":
@@ -392,7 +396,7 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 		# next days measures
                 range = ":day"
                 start = utils.day_start(utils.now())
-                end = utils.day_start(utils.now()+(conf["timeframes"]["forecast_days"]-1)*conf["constants"]["1_day"])
+                end = utils.day_start(utils.now()+(conf["general"]["timeframes"]["forecast_days"]-1)*conf["constants"]["1_day"])
                 withscores = True
         else: return data
         # define the key to request
@@ -414,7 +418,7 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
         return json.dumps(data)
 
 # set a sensor value
-def data_set(module_id,group_id,sensor_id,value):
+def data_set(module_id,group_id,sensor_id,value,ifnotexists=False):
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
         # ensure the group and sensor exist
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
@@ -429,7 +433,7 @@ def data_set(module_id,group_id,sensor_id,value):
 	measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
 	measures.append(measure)
 	# store it
-	store(sensor,measures)
+	store(sensor,measures,ifnotexists=ifnotexists)
         return json.dumps("OK")
 
 # send a message to a sensor

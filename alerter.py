@@ -26,21 +26,20 @@ rules = {
 	"minute": [],
 	"startup": [],
 }
-minutes_since = "timestamp"
 
 # for a location parse the data and return the label
-def parse_location(data):
-        if len(data) != 1: return
+def parse_position(data):
+        if len(data) != 1: return []
         data = json.loads(data[0])
 	return [data["label"]]
 
 # for a calendar parse the data and return the value
 def parse_calendar(data):
 	# the calendar string is at position 0
-	if len(data) != 1: return
+	if len(data) != 1: return []
 	data = json.loads(data[0])
 	# the list of events is at position 1
-	if len(data) != 2: return
+	if len(data) != 2: return []
 	events = json.loads(data[1])
 	for event in events:
 		# generate the timestamp of start and end date
@@ -61,19 +60,40 @@ def get_data(sensor,request):
 	end = split[2]
 	trasform = split[3] if len(split) > 3 else None
 	key_split = key.split(":")
+	# adjust start and end based on the request
+	query = None
+	if utils.is_number(start) and utils.is_number(end):
+		# request range with start and end the relative positions
+		query = db.range
+	else:
+		# request a timerange with start and end relative times from now
+		query = db.rangebyscore
+		start = utils.string2timestamp(start)
+		end = utils.string2timestamp(end)
 	# remove the module from the key
 	key = key.replace(key_split[0]+":","",1)	
 	key = conf["constants"]["db_schema"]["root"]+":"+key_split[0]+":"+key
-	if trasform is not None and trasform == minutes_since:
+	# handle special requests
+	if trasform is not None and trasform == "elapsed":
 		# retrieve the timestamp and calculate the time difference
-		data = db.range(key,start=start,end=end,withscores=True)
+		data = query(key,start=start,end=end,withscores=True)
 		time_diff = (utils.now() - data[0][0])/60
 		return [time_diff]
+        if trasform is not None and trasform == "timestamp":
+                # retrieve the timestamp 
+                data = query(key,start=start,end=end,withscores=True)
+                return [data[0][0]]
+        elif trasform is not None and trasform == "distance":
+                # calculate the distance between the point and our location
+		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+		data = json.loads(data[0])
+		distance = utils.distance([data["latitude"],data["longitude"]],[conf["general"]["latitude"],conf["general"]["longitude"]])
+		return [int(distance)]
 	else: 
 		# just retrieve the data
-		data = db.range(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
-	if sensor["format"] == "calendar": data = parse_calendar(data)
-	if sensor["format"] == "location": data = parse_location(data)
+		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+		if sensor["format"] == "calendar": data = parse_calendar(data)
+		if sensor["format"] == "position": data = parse_position(data)
 	return data
 
 # evaluate if a condition is met
@@ -120,7 +140,7 @@ def run(module_id,rule_id,notify=True):
 			if "for" in rule_template: variables = rule_template["for"]
 			for variable in variables:
 				# ensure the variable is a valid sensor
-				if variable != "":
+				if variable != "" and is_sensor(variable):
 					variable_split = variable.split(":")
 					variable_sensor = utils.get_sensor(variable_split[0],variable_split[1],variable_split[2])
 					if variable_sensor is None:
@@ -177,18 +197,30 @@ def run(module_id,rule_id,notify=True):
 				for definition in rule["definitions"]:
 					value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]
 					# add the suffix
-					if is_sensor(rule["definitions"][definition]) and minutes_since in rule["definitions"][definition]: value = str(value)+" minutes"
+					if is_sensor(rule["definitions"][definition]) and "elapsed" in rule["definitions"][definition]: 
+						value = str(value)+" minutes"
+                                       	if is_sensor(rule["definitions"][definition]) and "timestamp" in rule["definitions"][definition]:
+                                                value = utils.timestamp2date(value)
+					if is_sensor(rule["definitions"][definition]) and "distance" in rule["definitions"][definition]:
+						if conf["general"]["units"]["imperial"]: value = str(value)+" miles"
+						else: value = str(value)+" km"
 					elif is_sensor(rule["definitions"][definition]): value = str(value)+suffix[definition]
 					alert_text = alert_text.replace("%"+definition+"%",str(value))
 				# execute an action
 				if "actions" in rule:
 					for action in rule["actions"]:
+						# replace the definitions placeholders
 						action = action.replace("%i%",variable)
+						for definition in rule["definitions"]:
+							value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]
+							action = action.replace("%"+definition+"%",str(value))
+						# parse the action
 						split = action.split(',')
 					        what = split[0]
 					        key = split[1]
 					        value = split[2]
 					        force = True if len(split) > 3 and split[3] == "force" else False
+						ifnotexists = True if len(split) > 3 and split[3] == "ifnotexists" else False
 						# ensure the target sensor exists
 						key_split = key.split(":")
 						sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
@@ -197,7 +229,7 @@ def run(module_id,rule_id,notify=True):
 							continue
 						# execute the requested action
 						if what == "send": sensors.data_send(key_split[0],key_split[1],key_split[2],value,force=force)
-						elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value)
+						elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value,ifnotexists=ifnotexists)
 				# notify about the alert
 				if rule["severity"] == "none": notify = False
 				if notify:
@@ -252,8 +284,8 @@ def schedule_all():
 # return the latest alerts for a web request
 def data_get_alerts(severity,timeframe):
 	start = utils.recent()
-	if timeframe == "recent": start = utils.recent(hours=conf["timeframes"]["alerter_recent_hours"])
-	if timeframe == "history": start = utils.history(days=conf["timeframes"]["alerter_history_days"])
+	if timeframe == "recent": start = utils.recent(hours=conf["general"]["timeframes"]["alerter_recent_hours"])
+	if timeframe == "history": start = utils.history(days=conf["general"]["timeframes"]["alerter_history_days"])
 	return json.dumps(db.rangebyscore(conf["constants"]["db_schema"]["alerts"]+":"+severity,start,utils.now(),withscores=True,format_date=True))
 
 # allow running it both as a module and when called directly
