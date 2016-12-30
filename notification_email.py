@@ -87,3 +87,9 @@ def notify(text):
         # send the email
         smtp.send(title,template.encode('utf-8'),[])
 
+# main
+if __name__ == '__main__':
+        if len(sys.argv) == 1:
+		print "Usage: notification_email.py <module_id>"
+	else:
+		module_digest(sys.argv[1])

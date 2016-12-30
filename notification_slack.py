@@ -159,5 +159,8 @@ def run():
 
 # main
 if __name__ == '__main__':
-	run()
+	if len(sys.argv) == 1:
+		run()
+	else:
+		notify(sys.argv[1])		
 	

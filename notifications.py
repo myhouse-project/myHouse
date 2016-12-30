@@ -78,14 +78,7 @@ def notify(severity,text):
 
 # main
 if __name__ == '__main__':
-       	if len(sys.argv) == 1:
-                # no arguments provided, schedule all notifications
-                schedule.start()
-                schedule_all()
-                while True:
-                        time.sleep(1)
-	else:
-		if sys.argv[1] == "alerts_digest": notification_email.alerts_digest()
-		elif sys.argv[1] == "module_digest": notification_email.module_digest(sys.argv[2])
-		elif sys.argv[1] == "notify": notify(sys.argv[2])
-		else: print "Usage: notifications.py <alerts_digest|module_digest|notify> [module_id]"
+	schedule.start()
+        schedule_all()
+        	while True:
+                	time.sleep(1)

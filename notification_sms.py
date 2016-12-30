@@ -23,7 +23,7 @@ def notify(text):
 
 # main
 if __name__ == '__main__':
-	if len(sys.argv) != 2:	
+	if len(sys.argv) == 1:
 		print "Usage: notification_sms.py <text>"
 	else:
 		notify(sys.argv[1])
