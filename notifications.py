@@ -15,6 +15,16 @@ import notification_email
 import notification_sms
 import notification_audio
 
+# variables
+current_hour = None
+counters = {}
+channels = {
+	"email": notification_email,
+	"slack": notification_slack,
+	"sms": notification_sms,
+	"audio": notification_audio
+}
+
 # schedule all reports
 def schedule_all():
 	# schedule module summary report
@@ -31,24 +41,40 @@ def schedule_all():
 	# run slack bot
 	if conf["notifications"]["slack"]["interactive_bot"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
 
-
-# determine if a realtime notification has to be sent based on the severity and notification type
-def realtime_notification(severity,type):
-	# check if realtime alerts are enabled
-	if not conf["notifications"][type]["realtime_alerts"]: return False
-	# ensure the severity is equals or above the minimum severity configured
-	min_severity = conf["notifications"][type]["severity"]
-	if min_severity == "info" and severity in ["info","warning","alert"]: return True
-	elif min_severity == "warning" and severity in ["warning","alert"]: return True
-	elif min_severity == "alert" and severity in ["alert"]: return True
-	return False
-
-# notify all the registered plugins
+# notify all the notification channels
 def notify(severity,text):
-	if realtime_notification(severity,"email"): notification_email.notify(text)
-	if realtime_notification(severity,"slack"): notification_slack.notify(text)
-	if realtime_notification(severity,"sms"): notification_sms.notify(text)
-	if realtime_notification(severity,"audio"): notification_audio.notify(text)
+	global current_hour, notifications, channels
+	# retrieve the current hour
+	hour = time.strftime("%H")
+	# if this is a new hour, reset the notification counters
+	if hour is None or current_hour != hour:
+		for channel in channels: counters[channel] = 0
+		current_hour = hour
+	# for each channel to be notified
+	for channel,module in channels.iteritems():
+		# ensure realtime alerts are enabled
+		if not conf["notifications"][channel]["realtime_alerts"]: continue
+		# ensure the severity is equals or above the minimum severity configured
+		min_severity = conf["notifications"][channel]["severity"]
+		if min_severity == "warning" and severity in ["info"]: continue
+		elif min_severity == "alert" and severity in ["info","warning"]: continue
+		# ensure the channel is not mute during this time
+		if "-" in conf["notifications"][channel]["mute"]:
+			timeframe = conf["notifications"][channel]["mute"].split("-")
+			if len(timeframe) != 2: continue
+			timeframe[0] = int(timeframe[0])
+			timeframe[1] = int(timeframe[1])
+			# e.g. 08-12
+			if timeframe[0] < timeframe[1] and (hour >= timeframe[0] and hour < timeframe[1]): continue
+			# e.g. 20-07
+			if timeframe[0] > timeframe[1] and (hour >= timeframe[0] or hour < timeframe[1]): continue
+		# check if rate limit is configured and we have not exceed the numner of notifications during this hour
+		if conf["notifications"][channel]["rate_limit"] != 0 and counters[channel] >= conf["notifications"][channel]["rate_limit"]: continue
+		# send the notification to the channel
+		module.notify(text)
+		# increase the counter
+		counters[channel] = counters[channel] + 1
+		log.debug("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+current_hour+" with limit "+str(conf["notifications"][channel]["rate_limit"]))
 
 # main
 if __name__ == '__main__':

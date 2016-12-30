@@ -316,6 +316,14 @@
               "description":"Minimum severity which triggers the realtime notification",
 			  "enum": [ "info","warning","alert" ],
 			  "value": "info"
+            },
+            "rate_limit":{
+              "type":"integer",
+              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+            },
+            "mute":{
+              "type":"string",
+              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
             }
           },
           "required":[
@@ -326,7 +334,9 @@
             "alerts_digest",
             "module_digest",
             "realtime_alerts",
-			"severity"
+			"severity",
+			"rate_limit",
+			"mute"
           ]
         },
         "slack":{
@@ -362,6 +372,14 @@
               "description":"Minimum severity which triggers the realtime notification",
 			  "enum": [ "info","warning","alert" ],
 			  "value": "info"
+            },
+            "rate_limit":{
+              "type":"integer",
+              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+            },
+            "mute":{
+              "type":"string",
+              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
             }
           },
           "required":[
@@ -371,7 +389,9 @@
             "channel",
             "realtime_alerts",
             "interactive_bot",
-			"severity"
+			"severity",
+			"rate_limit",
+			"mute"
           ]
         },
         "sms":{
@@ -415,6 +435,14 @@
               "description":"Minimum severity which triggers the realtime notification",
 			  "enum": [ "info","warning","alert" ],
 			  "value": "info"
+            },
+            "rate_limit":{
+              "type":"integer",
+              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+            },
+            "mute":{
+              "type":"string",
+              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
             }
           },
           "required":[
@@ -425,7 +453,9 @@
             "from",
             "to",
             "realtime_alerts",
-			"severity"
+			"severity",
+			"rate_limit",
+			"mute"
           ]
         },
 		"audio":{
@@ -449,13 +479,23 @@
               "description":"Minimum severity which triggers the realtime notification",
 			  "enum": [ "info","warning","alert" ],
 			  "value": "info"
+            },
+            "rate_limit":{
+              "type":"integer",
+              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+            },
+            "mute":{
+              "type":"string",
+              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
             }
           },
           "required":[
             "enabled",
             "realtime_alerts",
 			"severity",
-			"language"
+			"language",
+			"rate_limit",
+			"mute"
           ]
         }
       },
