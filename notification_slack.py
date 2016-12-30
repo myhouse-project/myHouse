@@ -22,7 +22,7 @@ channel_name = conf["notifications"]["slack"]["channel"]
 sleep_on_error = 1*60
 
 # says something to the channel
-def says(text,channel=None):
+def notify(text,channel=None):
 	init()
 	if not initialized: return
 	if channel is None: channel = channel_id
@@ -161,5 +161,3 @@ def run():
 if __name__ == '__main__':
 	run()
 	
-
-
