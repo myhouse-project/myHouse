@@ -310,6 +310,12 @@
             "realtime_alerts":{
               "type":"boolean",
               "description":"Send realtime alerts"
+            },
+            "severity":{
+              "type":"string",
+              "description":"Minimum severity which triggers the realtime notification",
+			  "enum": [ "info","warning","alert" ],
+			  "value": "info"
             }
           },
           "required":[
@@ -319,7 +325,8 @@
             "to",
             "alerts_digest",
             "module_digest",
-            "realtime_alerts"
+            "realtime_alerts",
+			"severity"
           ]
         },
         "slack":{
@@ -349,6 +356,12 @@
             "interactive_bot":{
               "type":"boolean",
               "description":"Make the bot interactive and able to respond to your questions"
+            },
+            "severity":{
+              "type":"string",
+              "description":"Minimum severity which triggers the realtime notification",
+			  "enum": [ "info","warning","alert" ],
+			  "value": "info"
             }
           },
           "required":[
@@ -357,7 +370,8 @@
             "bot_token",
             "channel",
             "realtime_alerts",
-            "interactive_bot"
+            "interactive_bot",
+			"severity"
           ]
         },
         "sms":{
@@ -395,6 +409,12 @@
             "realtime_alerts":{
               "type":"boolean",
               "description":"Send realtime alerts"
+            },
+            "severity":{
+              "type":"string",
+              "description":"Minimum severity which triggers the realtime notification",
+			  "enum": [ "info","warning","alert" ],
+			  "value": "info"
             }
           },
           "required":[
@@ -404,7 +424,8 @@
 			"password",
             "from",
             "to",
-            "realtime_alerts"
+            "realtime_alerts",
+			"severity"
           ]
         }
       },

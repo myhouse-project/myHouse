@@ -31,11 +31,22 @@ def schedule_all():
 	if conf["notifications"]["slack"]["interactive_bot"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
 
 
+# determine if a realtime notification has to be sent based on the severity and notification type
+def realtime_notification(severity,type):
+	# check if realtime alerts are enabled
+	if not conf["notifications"][type]["realtime_alerts"]: return False
+	# ensure the severity is equals or above the minimum severity configured
+	min_severity = conf["notifications"][type]["severity"]
+	if severity == "info" and min_severity in ["info","warning","alert"]:
+	elif severity == "warning" and min_severity in ["warning","alert"]: return True
+	elif severity == "alert" and min_severity in ["alert"]: return True
+	return False
+
 # notify all the registered plugins
-def notify(text):
-	if conf["notifications"]["email"]["realtime_alerts"]: notification_email.alert(text)
-	if conf["notifications"]["slack"]["realtime_alerts"]: notification_slack.says(text)
-	if conf["notifications"]["sms"]["realtime_alerts"]: notification_sms.send(text)
+def notify(severity,text):
+	if realtime_notification(severity,"email"): notification_email.alert(text)
+	if realtime_notification(severity,"slack"): notification_slack.says(text)
+	if realtime_notification(severity,"sms"): notification_sms.send(text)
 
 # main
 if __name__ == '__main__':
