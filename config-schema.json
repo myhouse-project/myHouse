@@ -440,6 +440,10 @@
               "type":"boolean",
               "description":"Send realtime alerts"
             },
+            "language":{
+              "type":"string",
+              "description":"The language used to pronounce the message"
+            },
             "severity":{
               "type":"string",
               "description":"Minimum severity which triggers the realtime notification",
@@ -450,7 +454,8 @@
           "required":[
             "enabled",
             "realtime_alerts",
-			"severity"
+			"severity",
+			"language"
           ]
         }
       },
