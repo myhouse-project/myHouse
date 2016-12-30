@@ -79,7 +79,7 @@ def alerts_digest():
         smtp.send(title,template.encode('utf-8'),[])
 
 # email realtime alert
-def alert(text):
+def notify(text):
         log.info("emailing alert "+text)
         title = "Alert!"
         template = get_email_body(title)

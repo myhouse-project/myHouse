@@ -11,7 +11,7 @@ conf = config.get_config()
 settings = conf["notifications"]["sms"]
 
 # send a sms with the given text
-def send(text):
+def notify(text):
 	if not settings["enabled"]: return
 	for to in settings["to"]:
 		url = "https://"+settings["hostname"]+"/myaccount/sendsms.php?username="+settings["username"]+"&password="+settings["password"]+"&from="+str(settings["from"])+"&to="+str(to)+"&text="+text
@@ -26,4 +26,4 @@ if __name__ == '__main__':
 	if len(sys.argv) != 2:	
 		print "Usage: notification_sms.py <text>"
 	else:
-		send(sys.argv[1])
+		notify(sys.argv[1])

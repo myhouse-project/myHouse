@@ -427,12 +427,39 @@
             "realtime_alerts",
 			"severity"
           ]
+        },
+		"audio":{
+          "type":"object",
+          "description":"Use the attached speakers for the notification. Ensure your soundcard is properly configured.",
+          "properties":{
+            "enabled":{
+              "type":"boolean",
+              "description":"Enable the module"
+            },
+            "realtime_alerts":{
+              "type":"boolean",
+              "description":"Send realtime alerts"
+            },
+            "severity":{
+              "type":"string",
+              "description":"Minimum severity which triggers the realtime notification",
+			  "enum": [ "info","warning","alert" ],
+			  "value": "info"
+            }
+          },
+          "required":[
+            "enabled",
+            "realtime_alerts",
+			"severity"
+          ]
         }
       },
       "required":[
         "enabled",
         "email",
-        "slack"
+        "slack",
+		"sms",
+		"audio"
       ]
     },
     "logging":{

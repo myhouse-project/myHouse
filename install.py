@@ -54,6 +54,8 @@ def install_deps():
         run_command("pip install paho-mqtt")
         print "Installing mosquitto..."
         run_command("apt-get install mosquitto")
+        print "Installing svox..."
+        run_command("apt-get install libttspico-utils")
 
 # installation routine
 def install():

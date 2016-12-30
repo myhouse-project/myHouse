@@ -44,9 +44,9 @@ def realtime_notification(severity,type):
 
 # notify all the registered plugins
 def notify(severity,text):
-	if realtime_notification(severity,"email"): notification_email.alert(text)
-	if realtime_notification(severity,"slack"): notification_slack.says(text)
-	if realtime_notification(severity,"sms"): notification_sms.send(text)
+	if realtime_notification(severity,"email"): notification_email.notify(text)
+	if realtime_notification(severity,"slack"): notification_slack.notify(text)
+	if realtime_notification(severity,"sms"): notification_sms.notify(text)
 
 # main
 if __name__ == '__main__':
