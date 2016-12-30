@@ -13,6 +13,7 @@ schedule = scheduler.get_scheduler()
 import notification_slack
 import notification_email
 import notification_sms
+import notification_audio
 
 # schedule all reports
 def schedule_all():
@@ -37,9 +38,9 @@ def realtime_notification(severity,type):
 	if not conf["notifications"][type]["realtime_alerts"]: return False
 	# ensure the severity is equals or above the minimum severity configured
 	min_severity = conf["notifications"][type]["severity"]
-	if severity == "info" and min_severity in ["info","warning","alert"]:
-	elif severity == "warning" and min_severity in ["warning","alert"]: return True
-	elif severity == "alert" and min_severity in ["alert"]: return True
+	if min_severity == "info" and severity in ["info","warning","alert"]: return True
+	elif min_severity == "warning" and severity in ["warning","alert"]: return True
+	elif min_severity == "alert" and severity in ["alert"]: return True
 	return False
 
 # notify all the registered plugins
@@ -47,6 +48,7 @@ def notify(severity,text):
 	if realtime_notification(severity,"email"): notification_email.notify(text)
 	if realtime_notification(severity,"slack"): notification_slack.notify(text)
 	if realtime_notification(severity,"sms"): notification_sms.notify(text)
+	if realtime_notification(severity,"audio"): notification_audio.notify(text)
 
 # main
 if __name__ == '__main__':
