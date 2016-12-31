@@ -123,6 +123,7 @@ def is_true(a,operator,b):
 def is_sensor(definition):
 	if utils.is_number(definition): return False
 	if ',' in definition: return True
+	if ':' in definition: return True
 	return False
 
 # evaluate if the given alert has to trigger
@@ -140,7 +141,7 @@ def run(module_id,rule_id,notify=True):
 			if "for" in rule_template: variables = rule_template["for"]
 			for variable in variables:
 				# ensure the variable is a valid sensor
-				if variable != "" and is_sensor(variable):
+				if variable != '' and is_sensor(variable):
 					variable_split = variable.split(":")
 					variable_sensor = utils.get_sensor(variable_split[0],variable_split[1],variable_split[2])
 					if variable_sensor is None:
