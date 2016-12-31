@@ -7,6 +7,10 @@ import json
 import datetime
 import re
 import copy
+import base64
+import cv2
+import numpy
+import os.path
 
 import utils
 import db
@@ -26,6 +30,43 @@ rules = {
 	"minute": [],
 	"startup": [],
 }
+
+# for an image apply the configured object detection techniques
+def parse_image(data):
+	if len(data) != 1: return [""]
+	# read the image
+	data = base64.b64decode(data[0])
+	image = numpy.asarray(bytearray(data), dtype="uint8")
+	image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	# for each detection feature
+	for feature in conf["alerter"]["object_detection"]:
+		# load the cascade file
+		filename = conf["constants"]["base_dir"]+"/"+feature["filename"]
+		if not os.path.isfile(filename):
+			log.error("Unable to load the detection object XML at "+filename)
+			return [""]
+		cascade = cv2.CascadeClassifier(filename)
+		# perform detection
+		objects = cascade.detectMultiScale(
+			gray,
+			scaleFactor=feature["scale_factor"],
+			minNeighbors=feature["min_neighbors"],
+			minSize=(feature["min_size"],feature["min_size"])
+		)
+		# nothing found, go to the next object
+		if len(objects) == 0: continue
+		# return the number of objects detected
+		else: 
+			if feature["save"]:
+				# Draw a rectangle around the objects
+				for (x, y, w, h) in objects:
+					cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+				# save the image
+				cv2.imwrite(conf["constants"]["tmp_dir"]+"/"+feature["object"]+".png",image)
+			# return the alert text
+			return [str(len(objects))+" "+feature["object"]]
+	return [""]		
 
 # for a location parse the data and return the label
 def parse_position(data):
@@ -94,6 +135,7 @@ def get_data(sensor,request):
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 		if sensor["format"] == "calendar": data = parse_calendar(data)
 		if sensor["format"] == "position": data = parse_position(data)
+		if sensor["format"] == "image": data = parse_image(data)
 	return data
 
 # evaluate if a condition is met
