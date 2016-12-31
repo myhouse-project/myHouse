@@ -80,5 +80,5 @@ def notify(severity,text):
 if __name__ == '__main__':
 	schedule.start()
         schedule_all()
-        	while True:
-                	time.sleep(1)
+       	while True:
+               	time.sleep(1)
