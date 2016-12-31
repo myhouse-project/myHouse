@@ -23,14 +23,6 @@ schedule = scheduler.get_scheduler()
 import notifications
 import sensors
 
-# variables
-rules = {
-	"hour": [],
-	"day": [],
-	"minute": [],
-	"startup": [],
-}
-
 # for an image apply the configured object detection techniques
 def parse_image(data):
 	if len(data) != 1: return [""]
@@ -300,25 +292,26 @@ def expire():
 def run_schedule(run_every):
 	# for each module
 	log.debug("evaluate all the rules configured to run every "+run_every)
-	for rule in rules[run_every]:
-		run(rule[0],rule[1])
-
-# schedule both hourly and daily alerts
-def schedule_all():
-	log.info("starting alerter module...")
-	# organize all the configured rules
         for module in conf["modules"]:
                 if not module["enabled"]: continue
                 if "rules" not in module: continue
                 # for each configured rule
                 for rule in module["rules"]:
-			if not rule["enabled"]: continue
-			if rule["run_every"] != "hour" and rule["run_every"] != "day" and rule["run_every"] != "minute" and rule["run_every"] != "startup": continue
-			rules[rule["run_every"]].append([module["module_id"],rule["rule_id"]])
-        # run startup alerts
+                        if not rule["enabled"]: continue
+			if rule["run_every"] != run_every: continue
+			# if the rule has the given run_every, run it
+			run(module["module_id"],rule["rule_id"])
+
+# schedule both hourly and daily alerts
+def schedule_all():
+	log.info("starting alerter module...")
+	# run now startup rules
         schedule.add_job(run_schedule,'date',run_date=datetime.datetime.now(),args=["startup"])
 	# schedule minute, hourly and daily jobs
 	schedule.add_job(run_schedule,'cron',second="30",args=["minute"])
+	schedule.add_job(run_schedule,'cron',minute="*/5",args=["5 minutes"])
+	schedule.add_job(run_schedule,'cron',minute="*/10",args=["10 minutes"])
+	schedule.add_job(run_schedule,'cron',minute="*/30",args=["30 minutes"])
 	schedule.add_job(run_schedule,'cron',minute="1",args=["hour"])
 	schedule.add_job(run_schedule,'cron',hour="1",args=["day"])
 	# schedule an expire job
