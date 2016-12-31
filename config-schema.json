@@ -203,11 +203,53 @@
 		"data_expire_days":{
 		  "description":"After how many days current measures and hourly data can be purged out of the database. Daily measures will be kept forever",
 		  "type":"integer"
+        },
+        "object_detection":{
+          "type":"array",
+          "description":"List of object detection features that will be used to detect specific objects within an image. More information on http://docs.opencv.org/2.4/modules/objdetect/doc/cascade_classification.html",
+          "items":{
+            "type":"object",
+            "title":"Object Detection Feature",
+			"properties":{
+				"object":{
+					"type":"string",
+					"description":"The name of the object that will be used within the alert text"
+				},
+				"filename":{
+					"type":"string",
+					"description":"Name of the haar cascades XML file to use for detecting the object (download more from https://github.com/opencv/opencv/tree/master/data/haarcascades)"
+				},
+				"scale_factor":{
+					"type":"number",
+					"description":"Parameter specifying how much the image size is reduced at each image scale."
+				},
+				"min_neighbors":{
+					"type":"number",
+					"description":"Parameter specifying how many neighbors each candidate rectangle should have to retain it"
+				},
+				"min_size":{
+					"type":"number",
+					"description":"Minimum possible object size. Objects smaller than that are ignored."
+				},
+				"save": {
+					"type":"boolean",
+					"description":"Save the image with the detected object highlighted in the tmp folder"
+				}
+			},
+			"required":[
+				"object",
+				"filename",
+				"scale_factor",
+				"min_neighbors",
+				"min_size"
+			]
+          }
         }
       },
       "required":[
         "enabled",
-		"data_expire_days"
+		"data_expire_days",
+		"object_detection"
       ]
     },
     "sensors":{
