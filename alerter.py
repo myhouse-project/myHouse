@@ -24,7 +24,7 @@ import notifications
 import sensors
 
 # for an image apply the configured object detection techniques
-def parse_image(data):
+def parse_image(sensor,data):
 	if len(data) != 1: return [""]
 	# read the image
 	data = base64.b64decode(data[0])
@@ -55,6 +55,14 @@ def parse_image(data):
 				for (x, y, w, h) in objects:
 					cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 				# save the image
+				r, buffer = cv2.imencode(".png",image)
+				encoded = base64.b64encode(buffer.tostring())
+			        measures = []
+				measure = {}
+			        measure["key"] = sensor["sensor_id"]
+			        measure["value"] = encoded
+			        measures.append(measure)
+				sensors.store(sensor,measures)
 				cv2.imwrite(conf["constants"]["tmp_dir"]+"/"+feature["object"]+".png",image)
 			# return the alert text
 			return [str(len(objects))+" "+feature["object"]]
@@ -127,7 +135,7 @@ def get_data(sensor,request):
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 		if sensor["format"] == "calendar": data = parse_calendar(data)
 		if sensor["format"] == "position": data = parse_position(data)
-		if sensor["format"] == "image": data = parse_image(data)
+		if sensor["format"] == "image": data = parse_image(sensor,data)
 	return data
 
 # evaluate if a condition is met
@@ -201,6 +209,8 @@ def run(module_id,rule_id,notify=True):
 			                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
 							valid_data = False
 			                                break
+	        				sensors.init_plugins()
+		                                sensor = sensors.init_sensor(sensor,module_id)
 						# retrieve and store the data
 						definitions[definition] = get_data(sensor,rule["definitions"][definition])
 						if len(definitions[definition]) == 0: 

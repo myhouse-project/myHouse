@@ -233,7 +233,7 @@
 				},
 				"save": {
 					"type":"boolean",
-					"description":"Save the image with the detected object highlighted in the tmp folder"
+					"description":"Save the image with the detected object highlighted"
 				}
 			},
 			"required":[
@@ -1320,6 +1320,9 @@
                   "enum":[
                     "never",
                     "minute",
+					"5 minutes",
+					"10 minutes",
+					"30 minutes",
                     "hour",
                     "day",
                     "startup"
