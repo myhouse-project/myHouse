@@ -45,7 +45,7 @@ def schedule_all():
 def notify(severity,text):
 	global current_hour, notifications, channels
 	# retrieve the current hour
-	hour = time.strftime("%H")
+	hour = int(time.strftime("%H"))
 	# if this is a new hour, reset the notification counters
 	if hour is None or current_hour != hour:
 		for channel in channels: counters[channel] = 0
