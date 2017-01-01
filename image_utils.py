@@ -29,10 +29,34 @@ def export_image(image,is_base64=False):
 	return data
 
 # normalize an image
-def normalize(image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray = cv2.equalizeHist(gray)
-	return gray
+def normalize(image,hist=True,blur=False):
+	normalized = image
+        normalized = cv2.cvtColor(normalized, cv2.COLOR_BGR2GRAY)
+        if hist: normalized = cv2.equalizeHist(normalized)
+	if blur: normalied = cv2.GaussianBlur(normalized, (21, 21), 0)
+	return normalized
+
+# detect movement between two images
+def detect_movement(images,is_base64=False):
+	max = 0
+	for i in range(len(images)-1):
+		# normalize the images
+		i1 = normalize(import_image(images[i],is_base64=is_base64),hist=False)
+		i2 = normalize(import_image(images[i+1],is_base64=is_base64),hist=False)
+		# calculate height and width
+		i1_height, i1_width = i1.shape[:2]
+		i2_height, i2_width = i2.shape[:2]
+		if i1_height != i2_height or i1_width != i2_width: 
+			# if they have difference sizes, the image is invalid, ignore it
+			continue
+		# calculate the difference
+		delta = cv2.absdiff(i1,i2)
+		# calculate the threshold
+		delta = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
+		# return the percentage of change
+		percentage = cv2.countNonZero(delta)*100/(i1_height*i1_width)
+		if percentage > max: max = percentage
+	return max
 
 # detect objects in a given image
 def detect_objects(image,is_base64=False):
@@ -65,7 +89,7 @@ def detect_objects(image,is_base64=False):
 			for (x, y, w, h) in objects:
                         	cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 			# prepare the alert text
-			text = str(len(objects))+" "+feature["object"]
+			text = str(len(objects))+" "+feature["display_name"]
 			# if debug is on save the image
 			if detect_objects_debug: cv2.imwrite(conf["constants"]["tmp_dir"]+"/detect_objects_"+str(utils.now())+".png",image)
 			# prepare the image

@@ -206,12 +206,12 @@
         },
         "object_detection":{
           "type":"array",
-          "description":"List of object detection features that will be used to detect specific objects within an image. More information on http://docs.opencv.org/2.4/modules/objdetect/doc/cascade_classification.html",
+          "description":"List of image object detection features that will be used to detect specific objects within an image. More information on http://docs.opencv.org/2.4/modules/objdetect/doc/cascade_classification.html",
           "items":{
             "type":"object",
-            "title":"Object Detection Feature",
+            "title":"Image object detection feature",
 			"properties":{
-				"object":{
+				"display_name":{
 					"type":"string",
 					"description":"The name of the object that will be used within the alert text"
 				},
@@ -237,7 +237,7 @@
 				}
 			},
 			"required":[
-				"object",
+				"display_name",
 				"filename",
 				"scale_factor",
 				"min_neighbors",
@@ -245,12 +245,31 @@
 				"max_size"
 			]
           }
+        },
+        "motion_detection":{
+          "type":"object",
+          "description":"Configuration settings for detecting movements within images",
+          "properties":{
+            "display_name":{
+              "type":"string",
+              "description":"The name of the movement that will be used within the alert text"
+            },
+            "threshold":{
+              "type":"integer",
+              "description":"The minimum difference in percentage between two images to trigger an alert"
+            }
+          },
+          "required":[
+            "display_name",
+			"threshold"
+          ]
         }
       },
       "required":[
         "enabled",
 		"data_expire_days",
-		"object_detection"
+		"object_detection",
+		"motion_detection"
       ]
     },
     "sensors":{

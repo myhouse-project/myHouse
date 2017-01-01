@@ -38,6 +38,12 @@ def parse_image(sensor,data):
 		sensors.store(sensor,measures)
 		# return the alert text
 		return [text]
+	# detect movements if there are at least two images
+	if len(data) >= 2:
+		motion_detection = image_utils.detect_movement(data,is_base64=True)
+		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(motion_detection)+"%")
+		if motion_detection > conf["alerter"]["motion_detection"]["threshold"]:
+			return [conf["alerter"]["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
 	return [""]		
 
 # for a location parse the data and return the label
