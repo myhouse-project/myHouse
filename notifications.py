@@ -74,7 +74,7 @@ def notify(severity,text):
 		module.notify(text)
 		# increase the counter
 		counters[channel] = counters[channel] + 1
-		log.debug("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+current_hour+" with limit "+str(conf["notifications"][channel]["rate_limit"]))
+		log.debug("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+str(current_hour)+" with limit "+str(conf["notifications"][channel]["rate_limit"]))
 
 # main
 if __name__ == '__main__':

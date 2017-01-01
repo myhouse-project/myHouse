@@ -234,10 +234,6 @@
 				"max_size":{
 					"type":"number",
 					"description":"Maximum possible object size. Objects larger than that are ignored."
-				},
-				"save": {
-					"type":"boolean",
-					"description":"Save the image with the detected object highlighted"
 				}
 			},
 			"required":[
