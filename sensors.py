@@ -137,7 +137,7 @@ def store(sensor,measures,ifnotexists=False):
 		realtime_count = conf["sensors"]["retention"]["realtime_count"]
 		if "retention" in sensor and "realtime_count" in sensor["retention"]: realtime_count = sensor["retention"]["realtime_count"]
 		if realtime_count > 0:
-			db.deletebyrank(key,0,-1-realtime_count)
+			db.deletebyrank(key,0,-realtime_count)
 		# if only measures with a newer timestamp than the latest can be added, apply the policy
 		realtime_new_only = conf["sensors"]["retention"]["realtime_new_only"]
 		if "retention" in sensor and "realtime_new_only" in sensor["retention"]: realtime_new_only = sensor["retention"]["realtime_new_only"]
