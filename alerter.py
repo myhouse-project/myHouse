@@ -30,7 +30,9 @@ def parse_image(sensor,data):
 	data = base64.b64decode(data[0])
 	image = numpy.asarray(bytearray(data), dtype="uint8")
 	image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+	# normalize the image
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	gray = cv2.equalizeHist(gray)
 	# for each detection feature
 	for feature in conf["alerter"]["object_detection"]:
 		# load the cascade file
@@ -44,7 +46,9 @@ def parse_image(sensor,data):
 			gray,
 			scaleFactor=feature["scale_factor"],
 			minNeighbors=feature["min_neighbors"],
-			minSize=(feature["min_size"],feature["min_size"])
+			minSize=(feature["min_size"],feature["min_size"]),
+			maxSize=(feature["max_size"],feature["max_size"]),
+			flags = cv2.cv.CV_HAAR_SCALE_IMAGE
 		)
 		# nothing found, go to the next object
 		if len(objects) == 0: continue
@@ -54,7 +58,7 @@ def parse_image(sensor,data):
 				# Draw a rectangle around the objects
 				for (x, y, w, h) in objects:
 					cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-				# save the image
+				# save the image with the object highlighted
 				r, buffer = cv2.imencode(".png",image)
 				encoded = base64.b64encode(buffer.tostring())
 			        measures = []

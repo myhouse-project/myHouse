@@ -231,6 +231,10 @@
 					"type":"number",
 					"description":"Minimum possible object size. Objects smaller than that are ignored."
 				},
+				"max_size":{
+					"type":"number",
+					"description":"Maximum possible object size. Objects larger than that are ignored."
+				},
 				"save": {
 					"type":"boolean",
 					"description":"Save the image with the detected object highlighted"
@@ -241,7 +245,8 @@
 				"filename",
 				"scale_factor",
 				"min_neighbors",
-				"min_size"
+				"min_size",
+				"max_size"
 			]
           }
         }
