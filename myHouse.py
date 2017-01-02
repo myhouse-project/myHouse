@@ -29,7 +29,7 @@ def run():
 	# schedule all alerts
 	if conf['alerter']['enabled']: alerter.schedule_all()
         # schedule all notifications
-        if conf['notifications']['enabled']: notifications.schedule_all()
+        notifications.schedule_all()
 	# start the web server
 	if conf['gui']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	# run as a deamon

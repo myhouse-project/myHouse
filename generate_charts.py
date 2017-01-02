@@ -247,4 +247,4 @@ def run(module_id,requested_widget=None,generate_chart=True):
 if __name__ == '__main__':
 	if len(sys.argv) == 2: run(sys.argv[1])
 	elif len(sys.argv) == 3: run(sys.argv[1],sys.argv[2])
-	else: print "Usage: generate_charts.py <module_id> [widget_id]"
+	else: print "Usage: "+__file__+" <module_id> [widget_id]"

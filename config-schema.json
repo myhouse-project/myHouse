@@ -267,21 +267,77 @@
 				"retention"
 			]
 		},
-		"notifications": {
+		"output": {
 			"type": "object",
-			"description": "Notification module configuration",
+			"description": "Input module configuration",
 			"properties": {
-				"enabled": {
-					"type": "boolean",
-					"description": "Enable the module"
+				"slack": {
+					"type": "object",
+					"description": "Allow interactive communication with the Slack bot",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable interactive communication with the Slack bot"
+						}
+					},
+					"required": [
+						"enabled"
+					]
 				},
+				"audio": {
+					"type": "object",
+					"description": "Use the attached microphone for commands. Ensure your soundcard is properly configured first.",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the module"
+						},
+						"device": {
+							"type": "string",
+							"description": "Optional PCM device name"
+						},
+						"engine": {
+							"type": "string",
+							"description": "The speech-to-text engine to use.",
+							"enum": [
+								"google"
+							],
+							"value": "picotts"
+						},
+						"language": {
+							"type": "string",
+							"description": "The language to use for recognizing the command"
+						},
+						"sample_rate": {
+							"type": "integer",
+							"description": "The language to use for recognizing the command"
+						}
+					},
+					"required": [
+						"enabled",
+						"engine",
+						"device",
+						"language",
+						"sample_rate"
+					]
+				}
+			},
+			"required": [
+				"slack",
+				"audio"
+			]
+		},
+		"output": {
+			"type": "object",
+			"description": "Output module configuration",
+			"properties": {
 				"email": {
 					"type": "object",
 					"description": "E-mail notification configuration",
 					"properties": {
 						"enabled": {
 							"type": "boolean",
-							"description": "Enable the module"
+							"description": "Enable realtime e-mail alerts"
 						},
 						"hostname": {
 							"type": "string",
@@ -303,15 +359,7 @@
 							"type": "boolean",
 							"description": "Send a daily digest with yesterda's alerts"
 						},
-						"module_digest": {
-							"type": "boolean",
-							"description": "Send a daily digest for those modules with the digest option enabled"
-						},
-						"realtime_alerts": {
-							"type": "boolean",
-							"description": "Send realtime alerts"
-						},
-						"severity": {
+						"min_severity": {
 							"type": "string",
 							"description": "Minimum severity which triggers the realtime notification",
 							"enum": [
@@ -336,9 +384,7 @@
 						"from",
 						"to",
 						"alerts_digest",
-						"module_digest",
-						"realtime_alerts",
-						"severity",
+						"min_severity",
 						"rate_limit",
 						"mute"
 					]
@@ -349,7 +395,7 @@
 					"properties": {
 						"enabled": {
 							"type": "boolean",
-							"description": "Enable the module"
+							"description": "Enable realtime slack notifications"
 						},
 						"bot_name": {
 							"type": "string",
@@ -363,15 +409,7 @@
 							"type": "string",
 							"description": "The Slack channel in which the bot will post its updates"
 						},
-						"realtime_alerts": {
-							"type": "boolean",
-							"description": "Send realtime alerts to the Slack channel"
-						},
-						"interactive_bot": {
-							"type": "boolean",
-							"description": "Make the bot interactive and able to respond to your questions"
-						},
-						"severity": {
+						"min_severity": {
 							"type": "string",
 							"description": "Minimum severity which triggers the realtime notification",
 							"enum": [
@@ -395,9 +433,7 @@
 						"bot_name",
 						"bot_token",
 						"channel",
-						"realtime_alerts",
-						"interactive_bot",
-						"severity",
+						"min_severity",
 						"rate_limit",
 						"mute"
 					]
@@ -408,7 +444,7 @@
 					"properties": {
 						"enabled": {
 							"type": "boolean",
-							"description": "Enable the module"
+							"description": "Enable realtime alerts via SMS"
 						},
 						"hostname": {
 							"type": "string",
@@ -434,11 +470,7 @@
 								"title": "Phone Number"
 							}
 						},
-						"realtime_alerts": {
-							"type": "boolean",
-							"description": "Send realtime alerts"
-						},
-						"severity": {
+						"min_severity": {
 							"type": "string",
 							"description": "Minimum severity which triggers the realtime notification",
 							"enum": [
@@ -464,29 +496,37 @@
 						"password",
 						"from",
 						"to",
-						"realtime_alerts",
-						"severity",
+						"min_severity",
 						"rate_limit",
 						"mute"
 					]
 				},
 				"audio": {
 					"type": "object",
-					"description": "Use the attached speakers for the notification. Ensure your soundcard is properly configured.",
+					"description": "Use the attached speakers for the notification. Ensure your soundcard is properly configured first.",
 					"properties": {
 						"enabled": {
 							"type": "boolean",
 							"description": "Enable the module"
 						},
-						"realtime_alerts": {
-							"type": "boolean",
-							"description": "Send realtime alerts"
+						"device": {
+							"type": "string",
+							"description": "Optional PCM device name"
+						},
+						"engine": {
+							"type": "string",
+							"description": "The text-to-speech engine to use. Picotts works offline and has a decent quality, Google works online only with an excellent quality",
+							"enum": [
+								"picotts",
+								"google"
+							],
+							"value": "picotts"
 						},
 						"language": {
 							"type": "string",
 							"description": "The language used to pronounce the message"
 						},
-						"severity": {
+						"min_severity": {
 							"type": "string",
 							"description": "Minimum severity which triggers the realtime notification",
 							"enum": [
@@ -507,8 +547,9 @@
 					},
 					"required": [
 						"enabled",
-						"realtime_alerts",
-						"severity",
+						"engine",
+						"device",
+						"min_severity",
 						"language",
 						"rate_limit",
 						"mute"
@@ -516,7 +557,6 @@
 				}
 			},
 			"required": [
-				"enabled",
 				"email",
 				"slack",
 				"sms",
@@ -2033,7 +2073,8 @@
 		"gui",
 		"alerter",
 		"sensors",
-		"notifications",
+		"output",
+		"input",
 		"logging",
 		"plugins",
 		"modules"

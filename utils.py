@@ -241,9 +241,9 @@ def split_sensor(widget,key):
         return split
 
 # run a command and return the output
-def run_command(command,timeout=conf["constants"]["linux_timeout"]):
-        log.debug("Executing "+command)
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def run_command(command,timeout=conf["constants"]["linux_timeout"],shell=True):
+        log.debug("Executing "+str(command))
+        process = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = ''
 	for t in xrange(timeout):
 		time.sleep(1)

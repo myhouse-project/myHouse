@@ -25,7 +25,7 @@ def parse_image(sensor,data):
 	if len(data) == 0: return [""]
 	# detect objects in the last image
 	if "object_detection" in sensor: 
-		object_detection = image_utils.detect_objects(data[(len(data)-1)],is_base64=True)
+		object_detection = image_utils.detect_objects(sensor,data[(len(data)-1)],is_base64=True)
 		if object_detection is not None:
 			# detect something
 			text = object_detection[0]
@@ -43,7 +43,7 @@ def parse_image(sensor,data):
 	if "motion_detection" in sensor and len(data) >= 2:
 		motion_detection = image_utils.detect_movement(sensor,data,is_base64=True)
 		if motion_detection > 0: log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(motion_detection)+"%")
-		if motion_detection > sensor[""]["motion_detection"]["threshold"]:
+		if motion_detection > sensor["motion_detection"]["threshold"]:
 			return [sensor["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
 	return [""]		
 
