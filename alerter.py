@@ -24,26 +24,27 @@ import image_utils
 def parse_image(sensor,data):
 	if len(data) == 0: return [""]
 	# detect objects in the last image
-	object_detection = image_utils.detect_objects(data[(len(data)-1)],is_base64=True)
-	if object_detection is not None:
-		# detect something
-		text = object_detection[0]
-		image = object_detection[1]
-		# save a new image with the object highlighted into the sensor
-	        measures = []
-		measure = {}
-	        measure["key"] = sensor["sensor_id"]
-	        measure["value"] = image
-	        measures.append(measure)
-		sensors.store(sensor,measures)
-		# return the alert text
-		return [text]
+	if "object_detection" in sensor: 
+		object_detection = image_utils.detect_objects(data[(len(data)-1)],is_base64=True)
+		if object_detection is not None:
+			# detect something
+			text = object_detection[0]
+			image = object_detection[1]
+			# save a new image with the object highlighted into the sensor
+		        measures = []
+			measure = {}
+		        measure["key"] = sensor["sensor_id"]
+		        measure["value"] = image
+		        measures.append(measure)
+			sensors.store(sensor,measures)
+			# return the alert text
+			return [text]
 	# detect movements if there are at least two images
-	if len(data) >= 2:
-		motion_detection = image_utils.detect_movement(data,is_base64=True)
-		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(motion_detection)+"%")
-		if motion_detection > conf["alerter"]["motion_detection"]["threshold"]:
-			return [conf["alerter"]["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
+	if "motion_detection" in sensor and len(data) >= 2:
+		motion_detection = image_utils.detect_movement(sensor,data,is_base64=True)
+		if motion_detection > 0: log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(motion_detection)+"%")
+		if motion_detection > sensor[""]["motion_detection"]["threshold"]:
+			return [sensor["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
 	return [""]		
 
 # for a location parse the data and return the label

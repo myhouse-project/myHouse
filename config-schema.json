@@ -1,1955 +1,2041 @@
 {
-  "$schema":"http://json-schema.org/draft-04/schema#",
-  "type":"object",
-  "title":"myHouse",
-  "properties":{
-    "general":{
-		"type":"object",
-		"description":"Define general settings",
-		"properties":{
-			"latitude":{
-				"type":"number",
-				"description":"The latitude of the current location. Different plugins and services will use this as the default position"
-			},
-			"longitude":{
-				"type":"number",
-				"description":"The longitude of the current location. Different plugins and services will use this as the default position"
-			},
-			"timeframes":{
-				"type":"object",
-				"description":"Define common timeframes",
-				"properties":{
-					"realtime_hours":{
-						"type":"integer",
-						"description":"Realtime timeframe in hours"
-					},
-					"recent_hours":{
-						"type":"integer",
-						"description":"Recent timefram in hours"
-					},
-					"history_days":{
-						"type":"integer",
-						"description":"History timeframe in days"
-					},
-					"short_history_days":{
-						"type":"integer",
-						"description":"Short history timeframe in days"
-					},
-					"forecast_days":{
-						"type":"integer",
-						"description":"Forecast timeframe in days"
-					},
-					"alerter_recent_hours":{
-						"type":"integer",
-						"description":"Timeframe to show alerts in the top right icons in hours"
-					},
-					"alerter_history_days":{
-						"type":"integer",
-					"description":"Timeframe to show alerts in the alert table"
-					}
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"title": "myHouse",
+	"properties": {
+		"general": {
+			"type": "object",
+			"description": "Define general settings",
+			"properties": {
+				"latitude": {
+					"type": "number",
+					"description": "The latitude of the current location. Different plugins and services will use this as the default position"
 				},
-				"required":[
-					"realtime_hours",
-					"recent_hours",
-					"history_days",
-					"short_history_days",
-					"forecast_days",
-					"alerter_recent_hours",
-					"alerter_history_days"
-				]
-			},
-			"units":{
-				"type":"object",
-				"description":"How to deal with units of measure",
-				"properties":{
-					"imperial":{
-						"type":"boolean",
-						"description":"Use imperial units of measures"
+				"longitude": {
+					"type": "number",
+					"description": "The longitude of the current location. Different plugins and services will use this as the default position"
+				},
+				"timeframes": {
+					"type": "object",
+					"description": "Define common timeframes",
+					"properties": {
+						"realtime_hours": {
+							"type": "integer",
+							"description": "Realtime timeframe in hours"
+						},
+						"recent_hours": {
+							"type": "integer",
+							"description": "Recent timefram in hours"
+						},
+						"history_days": {
+							"type": "integer",
+							"description": "History timeframe in days"
+						},
+						"short_history_days": {
+							"type": "integer",
+							"description": "Short history timeframe in days"
+						},
+						"forecast_days": {
+							"type": "integer",
+							"description": "Forecast timeframe in days"
+						},
+						"alerter_recent_hours": {
+							"type": "integer",
+							"description": "Timeframe to show alerts in the top right icons in hours"
+						},
+						"alerter_history_days": {
+							"type": "integer",
+							"description": "Timeframe to show alerts in the alert table"
+						}
 					},
-					"fahrenheit":{
-						"type":"boolean",
-						"description":"Use Fahrenheit degrees"
-					}
+					"required": [
+						"realtime_hours",
+						"recent_hours",
+						"history_days",
+						"short_history_days",
+						"forecast_days",
+						"alerter_recent_hours",
+						"alerter_history_days"
+					]
 				},
-				"required":[
-					"imperial",
-					"fahrenheit"
-				]
-			}
-		},
-		"required":[
-			"latitude",
-			"longitude",
-			"timeframes",
-			"units"
-		]
-	},
-    "db":{
-      "type":"object",
-      "description":"Database configuration",
-      "properties":{
-        "enabled":{
-          "type":"boolean",
-          "description":"Enable writing into the database"
-        },
-        "hostname":{
-          "type":"string",
-          "description":"Hostname hosting the redis database"
-        },
-        "port":{
-          "type":"integer",
-          "description":"Port of the redis database"
-        },
-        "database":{
-          "type":"integer",
-          "description":"Instance number"
-        }
-      },
-      "required":[
-        "enabled",
-        "hostname",
-        "port",
-        "database"
-      ]
-    },
-    "gui":{
-      "type":"object",
-      "description":"GUI configuration",
-      "properties":{
-        "enabled":{
-          "type":"boolean",
-          "description":"Enable the GUI"
-        },
-        "compress":{
-          "type":"boolean",
-          "description":"GZIP compression of the web request/response"
-        },
-        "url":{
-          "type":"string",
-          "description":"URL of the web GUI"
-        },
-        "port":{
-          "type":"integer",
-          "description":"Port for running the web server"
-        },
-        "default_module":{
-          "type":"string",
-          "description":"Default module to load when no arguments are provided"
-        },
-        "auto_refresh_min":{
-          "type":"integer",
-          "description":"Refresh automatically the page every X minutes"
-        },
-        "debug_console":{
-          "type":"boolean",
-          "description":"Enable GUI debug in the browser console"
-        },
-        "sections":{
-          "type":"array",
-          "description":"Web GUI menu sections, referred by each module",
-          "items":{
-            "type":"string",
-            "title":"Menu section"
-          }
-        },
-        "maps":{
-          "type":"object",
-          "description":"Maps properties",
-          "properties":{
-            "type":{
-              "type":"string",
-              "description":"The google map to use (e.g. satellite,hybrid,terrain,roadmap)"
-            },
-            "size_x":{
-              "type":"integer",
-              "description":"The map x size in pixel"
-            },
-            "size_y":{
-              "type":"integer",
-              "description":"The map y size in pixel"
-            },
-	        "api_key":{
-              "type":"string",
-              "description":"Google Maps API key (get one from https://developers.google.com/maps/documentation/javascript/get-api-key)"
-            }
-          },
-          "required":[
-            "type",
-			"size_x",
-			"size_y",
-			"api_key"
-          ]
-        }
-      },
-      "required":[
-        "enabled",
-        "compress",
-        "url",
-        "port",
-        "default_module",
-        "auto_refresh_min",
-        "debug_console",
-        "sections"
-      ]
-    },
-    "alerter":{
-      "type":"object",
-      "description":"Alerter module configuration",
-      "properties":{
-        "enabled":{
-          "type":"boolean",
-          "description":"Enable the module"
-        },
-		"data_expire_days":{
-		  "description":"After how many days current measures and hourly data can be purged out of the database. Daily measures will be kept forever",
-		  "type":"integer"
-        },
-        "object_detection":{
-          "type":"array",
-          "description":"List of image object detection features that will be used to detect specific objects within an image. More information on http://docs.opencv.org/2.4/modules/objdetect/doc/cascade_classification.html",
-          "items":{
-            "type":"object",
-            "title":"Image object detection feature",
-			"properties":{
-				"display_name":{
-					"type":"string",
-					"description":"The name of the object that will be used within the alert text"
-				},
-				"filename":{
-					"type":"string",
-					"description":"Name of the haar cascades XML file to use for detecting the object (download more from https://github.com/opencv/opencv/tree/master/data/haarcascades)"
-				},
-				"scale_factor":{
-					"type":"number",
-					"description":"Parameter specifying how much the image size is reduced at each image scale."
-				},
-				"min_neighbors":{
-					"type":"number",
-					"description":"Parameter specifying how many neighbors each candidate rectangle should have to retain it"
-				},
-				"min_size":{
-					"type":"number",
-					"description":"Minimum possible object size. Objects smaller than that are ignored."
-				},
-				"max_size":{
-					"type":"number",
-					"description":"Maximum possible object size. Objects larger than that are ignored."
+				"units": {
+					"type": "object",
+					"description": "How to deal with units of measure",
+					"properties": {
+						"imperial": {
+							"type": "boolean",
+							"description": "Use imperial units of measures"
+						},
+						"fahrenheit": {
+							"type": "boolean",
+							"description": "Use Fahrenheit degrees"
+						}
+					},
+					"required": [
+						"imperial",
+						"fahrenheit"
+					]
 				}
 			},
-			"required":[
-				"display_name",
-				"filename",
-				"scale_factor",
-				"min_neighbors",
-				"min_size",
-				"max_size"
+			"required": [
+				"latitude",
+				"longitude",
+				"timeframes",
+				"units"
 			]
-          }
-        },
-        "motion_detection":{
-          "type":"object",
-          "description":"Configuration settings for detecting movements within images",
-          "properties":{
-            "display_name":{
-              "type":"string",
-              "description":"The name of the movement that will be used within the alert text"
-            },
-            "threshold":{
-              "type":"integer",
-              "description":"The minimum difference in percentage between two images to trigger an alert"
-            }
-          },
-          "required":[
-            "display_name",
-			"threshold"
-          ]
-        }
-      },
-      "required":[
-        "enabled",
-		"data_expire_days",
-		"object_detection",
-		"motion_detection"
-      ]
-    },
-    "sensors":{
-      "type":"object",
-      "description":"Sensors module configuration",
-      "properties":{
-        "enabled":{
-          "type":"boolean",
-          "description":"Enable the module"
-        },
-        "poll_at_startup":{
-          "type":"boolean",
-          "description":"Poll all the sensors when at startup"
-        },
-		"cache_expire_min":{
-		  "description":"For how long raw data polled from the sensors will be cached so to prevent multiple concurrent retrieval of the same data",
-		  "type":"integer"
-        },
-        "retention":{
-          "type":"object",
-          "description":"Define global retention policies",
-          "properties":{
-			"realtime_new_only":{
-				"type":"boolean",
-				"description":"If set to true, only the measures with a newer timestamp than the latest entry will be added to the database"
+		},
+		"db": {
+			"type": "object",
+			"description": "Database configuration",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Enable writing into the database"
+				},
+				"hostname": {
+					"type": "string",
+					"description": "Hostname hosting the redis database"
+				},
+				"port": {
+					"type": "integer",
+					"description": "Port of the redis database"
+				},
+				"database": {
+					"type": "integer",
+					"description": "Instance number"
+				}
 			},
-			"realtime_count":{
-				"type":"integer",
-				"description":"How many instances of current measures to keep in the database. 0 for keeping them all"
+			"required": [
+				"enabled",
+				"hostname",
+				"port",
+				"database"
+			]
+		},
+		"gui": {
+			"type": "object",
+			"description": "GUI configuration",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Enable the GUI"
+				},
+				"compress": {
+					"type": "boolean",
+					"description": "GZIP compression of the web request/response"
+				},
+				"url": {
+					"type": "string",
+					"description": "URL of the web GUI"
+				},
+				"port": {
+					"type": "integer",
+					"description": "Port for running the web server"
+				},
+				"default_module": {
+					"type": "string",
+					"description": "Default module to load when no arguments are provided"
+				},
+				"auto_refresh_min": {
+					"type": "integer",
+					"description": "Refresh automatically the page every X minutes"
+				},
+				"debug_console": {
+					"type": "boolean",
+					"description": "Enable GUI debug in the browser console"
+				},
+				"sections": {
+					"type": "array",
+					"description": "Web GUI menu sections, referred by each module",
+					"items": {
+						"type": "string",
+						"title": "Menu section"
+					}
+				},
+				"maps": {
+					"type": "object",
+					"description": "Maps properties",
+					"properties": {
+						"type": {
+							"type": "string",
+							"description": "The google map to use (e.g. satellite,hybrid,terrain,roadmap)"
+						},
+						"size_x": {
+							"type": "integer",
+							"description": "The map x size in pixel"
+						},
+						"size_y": {
+							"type": "integer",
+							"description": "The map y size in pixel"
+						},
+						"api_key": {
+							"type": "string",
+							"description": "Google Maps API key (get one from https://developers.google.com/maps/documentation/javascript/get-api-key)"
+						}
+					},
+					"required": [
+						"type",
+						"size_x",
+						"size_y",
+						"api_key"
+					]
+				}
 			},
-            "realtime_days":{
-              "type":"integer",
-              "description":"After how many days current measures are purged out of the database. 0 for keeping forever"
-            },
-            "recent_days":{
-              "type":"integer",
-              "description":"After how many days hourly data are purged out of the database. 0 for keeping forever"
-            },
-            "history_days":{
-              "type":"integer",
-              "description":"After how many days daily data are purged out of the database. 0 for keeping forever"
-            }
-          },
-          "required":[
-			"realtime_new_only",
-			"realtime_count",
-            "realtime_days",
-			"recent_days",
-			"history_days"
-          ]
-        }
-      },
-      "required":[
-        "enabled",
-		"poll_at_startup",
-		"cache_expire_min",
-		"retention"
-      ]
-    },
-    "notifications":{
-      "type":"object",
-      "description":"Notification module configuration",
-      "properties":{
-        "enabled":{
-          "type":"boolean",
-          "description":"Enable the module"
-        },
-        "email":{
-          "type":"object",
-          "description":"E-mail notification configuration",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the module"
-            },
-            "hostname":{
-              "type":"string",
-              "description":"SMTP server"
-            },
-            "from":{
-              "type":"string",
-              "description":"From email address to use"
-            },
-            "to":{
-              "type":"array",
-              "description":"Email recipients",
-              "items":{
-                "type":"string",
-                "title":"E-mail recipient"
-              }
-            },
-            "alerts_digest":{
-              "type":"boolean",
-              "description":"Send a daily digest with yesterda's alerts"
-            },
-            "module_digest":{
-              "type":"boolean",
-              "description":"Send a daily digest for those modules with the digest option enabled"
-            },
-            "realtime_alerts":{
-              "type":"boolean",
-              "description":"Send realtime alerts"
-            },
-            "severity":{
-              "type":"string",
-              "description":"Minimum severity which triggers the realtime notification",
-			  "enum": [ "info","warning","alert" ],
-			  "value": "info"
-            },
-            "rate_limit":{
-              "type":"integer",
-              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
-            },
-            "mute":{
-              "type":"string",
-              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
-            }
-          },
-          "required":[
-            "enabled",
-            "hostname",
-            "from",
-            "to",
-            "alerts_digest",
-            "module_digest",
-            "realtime_alerts",
-			"severity",
-			"rate_limit",
-			"mute"
-          ]
-        },
-        "slack":{
-          "type":"object",
-          "description":"Slack module configuration",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the module"
-            },
-            "bot_name":{
-              "type":"string",
-              "description":"Name of the Slack bot"
-            },
-            "bot_token":{
-              "type":"string",
-              "description":"The Slack bot token previously created. https://api.slack.com/bot-users for more information"
-            },
-            "channel":{
-              "type":"string",
-              "description":"The Slack channel in which the bot will post its updates"
-            },
-            "realtime_alerts":{
-              "type":"boolean",
-              "description":"Send realtime alerts to the Slack channel"
-            },
-            "interactive_bot":{
-              "type":"boolean",
-              "description":"Make the bot interactive and able to respond to your questions"
-            },
-            "severity":{
-              "type":"string",
-              "description":"Minimum severity which triggers the realtime notification",
-			  "enum": [ "info","warning","alert" ],
-			  "value": "info"
-            },
-            "rate_limit":{
-              "type":"integer",
-              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
-            },
-            "mute":{
-              "type":"string",
-              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
-            }
-          },
-          "required":[
-            "enabled",
-            "bot_name",
-            "bot_token",
-            "channel",
-            "realtime_alerts",
-            "interactive_bot",
-			"severity",
-			"rate_limit",
-			"mute"
-          ]
-        },
-        "sms":{
-          "type":"object",
-          "description":"SMS notification configuration (Betamax)",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the module"
-            },
-            "hostname":{
-              "type":"string",
-              "description":"Your Betamax VOIP service. An account on one of the Betamax powered services (http://backsla.sh/betamax) is required"
-            },
-            "username":{
-              "type":"string",
-              "description":"The username of the VOIP service"
-            },
-            "password":{
-              "type":"string",
-              "description":"The password of the VOIP service"
-            },
-            "from":{
-              "type":"string",
-              "description":"Your username or your verified phone number. Always use international format"
-            },
-            "to":{
-              "type":"array",
-              "description":"The number you wish to send the sms to. Always use international format",
-              "items":{
-                "type":"string",
-                "title":"Phone Number"
-              }
-            },
-            "realtime_alerts":{
-              "type":"boolean",
-              "description":"Send realtime alerts"
-            },
-            "severity":{
-              "type":"string",
-              "description":"Minimum severity which triggers the realtime notification",
-			  "enum": [ "info","warning","alert" ],
-			  "value": "info"
-            },
-            "rate_limit":{
-              "type":"integer",
-              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
-            },
-            "mute":{
-              "type":"string",
-              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
-            }
-          },
-          "required":[
-            "enabled",
-            "hostname",
-			"username",
-			"password",
-            "from",
-            "to",
-            "realtime_alerts",
-			"severity",
-			"rate_limit",
-			"mute"
-          ]
-        },
-		"audio":{
-          "type":"object",
-          "description":"Use the attached speakers for the notification. Ensure your soundcard is properly configured.",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the module"
-            },
-            "realtime_alerts":{
-              "type":"boolean",
-              "description":"Send realtime alerts"
-            },
-            "language":{
-              "type":"string",
-              "description":"The language used to pronounce the message"
-            },
-            "severity":{
-              "type":"string",
-              "description":"Minimum severity which triggers the realtime notification",
-			  "enum": [ "info","warning","alert" ],
-			  "value": "info"
-            },
-            "rate_limit":{
-              "type":"integer",
-              "description":"Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
-            },
-            "mute":{
-              "type":"string",
-              "description":"The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
-            }
-          },
-          "required":[
-            "enabled",
-            "realtime_alerts",
-			"severity",
-			"language",
-			"rate_limit",
-			"mute"
-          ]
-        }
-      },
-      "required":[
-        "enabled",
-        "email",
-        "slack",
-		"sms",
-		"audio"
-      ]
-    },
-    "logging":{
-      "type":"object",
-      "description":"Logging module configuration",
-      "properties":{
-	     "rotate_size_mb":{
-              "type":"integer",
-              "description":"Rotate the log file when larger than the configured megabytes"
-         },
-	     "rotate_count":{
-              "type":"integer",
-              "description":"Number of backup log files to keep once rotated"
-         },
-        "myHouse":{
-          "type":"object",
-          "description":"myHouse logging",
-          "properties":{
-            "level":{
-              "type":"string",
-              "description":"Logging level"
-            },
-            "filename":{
-              "type":"string",
-              "description":"Log file"
-            }
-          },
-          "required":[
-            "level",
-            "filename"
-          ]
-        },
-        "webserver":{
-          "type":"object",
-          "description":"Webserver logging",
-          "properties":{
-            "level":{
-              "type":"string",
-              "description":"Logging level"
-            },
-            "filename":{
-              "type":"string",
-              "description":"Log file"
-            }
-          },
-          "required":[
-            "level",
-            "filename"
-          ]
-        },
-        "scheduler":{
-          "type":"object",
-          "description":"Scheduler logging",
-          "properties":{
-            "level":{
-              "type":"string",
-              "description":"Logging Level"
-            },
-            "filename":{
-              "type":"string",
-              "description":"Log file"
-            }
-          },
-          "required":[
-            "level",
-            "filename"
-          ]
-        }
-      },
-      "required":[
-	    "rotate_size_mb",
-		"rotate_count",
-        "myHouse",
-        "webserver",
-        "scheduler"
-      ]
-    },
-    "plugins":{
-      "type":"object",
-      "description":"Plugins configuration",
-      "properties":{
-        "wunderground":{
-          "type":"object",
-          "description":"Weather Underground configuration",
-          "properties":{
-            "api_key":{
-              "type":"string",
-              "description":"Wunderground API key (https://www.wunderground.com/weather/api/)"
-            }
-          },
-          "required":[
-            "api_key"
-          ]
-        },
-        "weatherchannel":{
-          "type":"object",
-          "description":"Weather Channel configuration",
-          "properties":{
-            "api_key":{
-              "type":"string",
-              "description":"Weather Channel API key (https://weather.com)"
-            },
-            "language":{
-              "type":"string",
-              "description":"Retrieve data in the given language"
-            }
-          },
-          "required":[
-            "api_key",
-			"language"
-          ]
-        },
-        "csv":{
-          "type":"null",
-          "description":"CSV plugin configuration"
-        },
-        "linux":{
-          "type":"object",
-          "description":"Linux plugin configuration",
-          "properties":{
-            "timeout":{
-              "type":"integer",
-              "description":"Timeout in seconds when running a linux command"
-            }
-          },
-          "required":[
-			"timeout"
-          ]
-        },
-        "image":{
-          "type":"null",
-          "description":"Image plugin configuration"
-        },
-        "icloud":{
-          "type":"null",
-          "description":"iCloud plugin configuration"
-        },
-        "messagebridge":{
-          "type":"object",
-          "description":"Wirelessthings/Ciseco Messagebridge plugin configuration",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the service"
-            },
-            "port_listen":{
-              "type":"integer",
-              "description":"Listen to this port from messagebridge updates"
-            },
-            "port_send":{
-              "type":"integer",
-              "description":"Send to this port updates to messagebridge"
-            }
-          },
-          "required":[
-			"enabled",
-            "port_listen",
-            "port_send"
-          ]
-        },
-        "rtl_433":{
-          "type":"object",
-          "description":"rtl_433 plugin configuration",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the service"
-            },
-            "command":{
-              "type":"string",
-              "description":"The command for running rtl_433 followed by any required command line arguments. -F json will appended by default"
-            }
-          },
-          "required":[
-			"enabled",
-            "command"
-          ]
-        },
-        "gpio":{
-          "type":"object",
-          "description":"GPIO plugin configuration",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the service"
-            },
-            "mode":{
-				"type": "string",
-				"description":"Use the pin (board) or the channel (bcm) numbering system",
-				"enum": [ "bcm","board" ],
-				"value": "board"
-            }
-          },
-          "required":[
-			"enabled",
-            "mode"
-          ]
-        },
-        "fdsnws":{
-          "type":"null",
-          "description":"Federation of Digital Seismograph Network Web Service plugin configuration"
-        },
-        "mqtt":{
-          "type":"object",
-          "description":"MQTT plugin configuration",
-          "properties":{
-            "enabled":{
-              "type":"boolean",
-              "description":"Enable the service"
-            },
-            "hostname":{
-				"type": "string",
-				"description":"The hostname of the gateway"
-            },
-            "port":{
-				"type": "integer",
-				"description":"The port the gateway is listening to"
-            }
-          },
-          "required":[
-			"enabled",
-            "hostname",
-			"port"
-          ]
-        }
-      },
-      "required":[
-        "wunderground",
-        "weatherchannel",
-        "csv",
-        "linux",
-        "image",
-        "icloud",
-        "messagebridge",
-		"rtl_433",
-		"gpio",
-		"fdsnws",
-		"mqtt"
-      ]
-    },
-    "modules":{
-      "type":"array",
-      "description":"Individual module configuration",
-      "items":{
-        "type":"object",
-        "title":"Module",
-        "properties":{
-          "module_id":{
-            "type":"string",
-            "description":"ID of the module, must be unique"
-          },
-          "section_id":{
-            "type":"string",
-            "description":"Section of the menu the module belongs to, must be the same as defined in gui/sections"
-          },
-          "display_name":{
-            "type":"string",
-            "description":"Name of the module"
-          },
-          "icon":{
-            "type":"string",
-            "description":"Fontawesome icon associated to the module (http://fontawesome.io/icons/)"
-          },
-          "enabled":{
-            "type":"boolean",
-            "description":"Enable the module"
-          },
-          "daily_digest":{
-            "type":"boolean",
-            "description":"Generate and send by email a daily digest of the module"
-          },
-          "auto_refresh_min":{
-            "type":"integer",
-            "description":"Auto refresh the page every X minutes. If not defined the global GUI setting will be used"
-          },
-          "widgets":{
-            "type":"array",
-            "description":"Widgets for the GUI to be presented for this module",
-            "items":{
-              "type":"array",
-              "title":"Row",
-              "description":"Each row has a size of 12, multiple widgets can share the row",
-              "items":{
-                "type":"object",
-                "title":"Widget",
-                "properties":{
-                  "widget_id":{
-                    "type":"string",
-                    "description":"The ID of the widget, must be unique across all the modules"
-                  },
-                  "display_name":{
-                    "type":"string",
-                    "description":"The title to the widget"
-                  },
-                  "enabled":{
-                    "type":"boolean",
-                    "description":"Enable the widget"
-                  },
-                  "size":{
-                    "type":"integer",
-                    "description":"The size of the widget. Each row has size 12"
-                  },
-                  "offset":{
-                    "type":"integer",
-                    "description":"The optional offset ot the widget position on the row"
-                  },
-                  "layout":{
-                    "type":"array",
-                    "description":"Each widget can have multiple objects in its layout",
-                    "items":{
-                      "type":"object",
-                      "title":"Layout",
-                      "oneOf":[
-                        {
-                          "title":"sensor_group_summary",
-                          "description":"Generate a chart with min/max for each sensor of the group for today and yesterday",
-                          "properties":{
-                            "type":{
+			"required": [
+				"enabled",
+				"compress",
+				"url",
+				"port",
+				"default_module",
+				"auto_refresh_min",
+				"debug_console",
+				"sections"
+			]
+		},
+		"alerter": {
+			"type": "object",
+			"description": "Alerter module configuration",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Enable the module"
+				},
+				"data_expire_days": {
+					"description": "After how many days current measures and hourly data can be purged out of the database. Daily measures will be kept forever",
+					"type": "integer"
+				}
+			},
+			"required": [
+				"enabled",
+				"data_expire_days"
+			]
+		},
+		"sensors": {
+			"type": "object",
+			"description": "Sensors module configuration",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Enable the module"
+				},
+				"poll_at_startup": {
+					"type": "boolean",
+					"description": "Poll all the sensors when at startup"
+				},
+				"cache_expire_min": {
+					"description": "For how long raw data polled from the sensors will be cached so to prevent multiple concurrent retrieval of the same data",
+					"type": "integer"
+				},
+				"retention": {
+					"type": "object",
+					"description": "Define global retention policies",
+					"properties": {
+						"realtime_new_only": {
+							"type": "boolean",
+							"description": "If set to true, only the measures with a newer timestamp than the latest entry will be added to the database"
+						},
+						"realtime_count": {
+							"type": "integer",
+							"description": "How many instances of current measures to keep in the database. 0 for keeping them all"
+						},
+						"realtime_days": {
+							"type": "integer",
+							"description": "After how many days current measures are purged out of the database. 0 for keeping forever"
+						},
+						"recent_days": {
+							"type": "integer",
+							"description": "After how many days hourly data are purged out of the database. 0 for keeping forever"
+						},
+						"history_days": {
+							"type": "integer",
+							"description": "After how many days daily data are purged out of the database. 0 for keeping forever"
+						}
+					},
+					"required": [
+						"realtime_new_only",
+						"realtime_count",
+						"realtime_days",
+						"recent_days",
+						"history_days"
+					]
+				}
+			},
+			"required": [
+				"enabled",
+				"poll_at_startup",
+				"cache_expire_min",
+				"retention"
+			]
+		},
+		"notifications": {
+			"type": "object",
+			"description": "Notification module configuration",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Enable the module"
+				},
+				"email": {
+					"type": "object",
+					"description": "E-mail notification configuration",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the module"
+						},
+						"hostname": {
+							"type": "string",
+							"description": "SMTP server"
+						},
+						"from": {
+							"type": "string",
+							"description": "From email address to use"
+						},
+						"to": {
+							"type": "array",
+							"description": "Email recipients",
+							"items": {
 								"type": "string",
-								"enum": [ "sensor_group_summary" ],
-								"value": "sensor_group_summary"
-                            },
-                            "group":{
-							  "description":"The group in the format module_id:group_id",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "group"
-                          ]
-                        },
-                        {
-                          "title":"image",
-                          "description":"Add an image from a sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "image" ],
-                              "value":"image"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "sensor"
-                          ]
-                        },
-                        {
-                          "title":"map",
-                          "description":"Add a map for a given sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "map" ],
-                              "value":"map"
-                            },
-                            "group":{
-							  "description":"The group of sensors in the format module_id:group_id. Data from the realtime timeframe will be retrieved",
-                              "type":"string"
-                            },
-                            "tracking":{
-							  "description":"Draw a route between the markers having the same title",
-                              "type":"boolean"
-                            },
-                            "timeframe":{
-							  "description":"The timeframe to use for requesting the data",
-                              "type":"string",
-                              "enum":[
-                                "recent",
-                                "history",
-                                "realtime"
-                              ]
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "group",
-							"tracking",
-							"timeframe"
-                          ]
-                        },
-                        {
-                          "title":"button",
-                          "description":"Add a button",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "button" ],
-                              "value":"button"
-                            },
-                            "display_name":{
-							  "description":"The text to display on the button",
-                              "type":"string"
-                            },
-                            "send":{
-							  "description":"A URL to call when the button is pressed to e.g. send a message to a sensor",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "send",
-							"display_name"
-                          ]
-                        },
-                        {
-                          "title":"sensor_group_timeline",
-                          "description":"Generate a chart with a timeline of the given timeframe for the sensors belonging to the given group",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "sensor_group_timeline" ],
-                              "value":"sensor_group_timeline"
-                            },
-                            "group":{
-							  "description":"The group in the format module_id:group_id",
-                              "type":"string"
-                            },
-                            "timeframe":{
-                              "type":"string",
-							  "description":"The timeframe to be used for the chart",
-                              "enum":[
-                                "recent",
-                                "history",
-                                "realtime",
-                                "forecast"
-                              ]
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "group",
-                            "timeframe"
-                          ]
-                        },
-                        {
-                          "title":"chart_short",
-                          "description":"Generate a chart with a limited size for the sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "chart_short" ],
-                              "value":"chart_short"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "timeframe":{
-                              "type":"string",
-							  "description":"The timeframe to be used for the chart",
-                              "enum":[
-                                "recent",
-                                "history",
-                                "realtime",
-                                "forecast"
-                              ]
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "sensor",
-                            "timeframe"
-                          ]
-                        },
-                        {
-                          "title":"chart_short_inverted",
-                          "description":"Generate a chart with a limited size for the sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "chart_short_inverted" ],
-                              "value":"chart_short_inverted"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "timeframe":{
-                              "type":"string",
-                              "enum":[
-                                "recent",
-                                "history",
-                                "realtime",
-                                "forecast"
-                              ]
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "sensor",
-                            "timeframe"
-                          ]
-                        },
-                        {
-                          "title":"current",
-                          "description":"Generate a header with the current measure of a sensor and an icon",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "current" ],
-                              "value":"current"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "icon":{
-							  "description":"The URL of the icon to display. It can be a sensor called with the trailing /image",
-                              "type":"string"
-                            },
-                            "timestamp":{
-							  "description":"An optional sensor in the format module_id:group_id:sensor_id for the last updated timestamp. If not defined the one belonging to the previously defined sensor will be used",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type"
-                          ]
-                        },
-                        {
-                          "title":"alerts",
-                          "description":"Generate a table with all the alerts",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "alerts" ],
-                              "value":"alerts"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type"
-                          ]
-                        },
-                        {
-                          "title":"checkbox",
-                          "description":"Generate a checkbox controlling the given sensor and url",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "checkbox" ],
-                              "value":"checkbox"
-                            },
-                            "display_name":{
-							  "description":"An optional text to describe the purpose of the control",
-                              "type":"string"
-                            },
-                            "sensor":{
-							  "description":"The sensor to attach to the checkbox, in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "send":{
-							  "description":"An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
-                              "type":"string"
-                            },
-                            "send_on":{
-							  "description":"An optional URL to call when the value is 1. No value is appended to the URL",
-                              "type":"string"
-                            },
-                            "send_off":{
-							  "description":"An optional URL to call when the value is 0. No value is appended to the URL",
-                              "type":"string"
-                            },
-                            "disabled":{
-							  "description":"If the control cannot be manipulated by the user (e.g. read only)",
-							  "value": false,
-                              "type":"boolean"
-                            },
-                            "style":{
-							  "description":"Optional style of the checkbox. 'a': rectangular with text, 'b': iOS style, 'c': material like",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type"
-                          ]
-                        },
-                        {
-                          "title":"input",
-                          "description":"Add an input form controlling a given sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "input" ],
-                              "value":"input"
-                            },
-                            "display_name":{
-							  "description":"An optional text to describe the purpose of the control",
-                              "type":"string"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "send":{
-							  "description":"An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type"
-                          ]
-                        },
-                        {
-                          "title":"separator",
-                          "description":"Add a separator",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "separator" ],
-                              "value":"separator"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type"
-                          ]
-                        },
-                        {
-                          "title":"configuration",
-                          "description":"Add a configuration editor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "configuration" ],
-                              "value":"configuration"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type"
-                          ]
-                        },
-                        {
-                          "title":"calendar",
-                          "description":"Add a calendar storing information in a given sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "calendar" ],
-                              "value":"calendar"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "default_value":{
-							  "description":"The default value for new entries in the calendar",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "sensor"
-                          ]
-                        },
-                        {
-                          "title":"data",
-                          "description":"Add raw data from a given sensor",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "data" ],
-                              "value":"data"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "sensor"
-                          ]
-                        },
-                        {
-                          "title":"table",
-                          "description":"Add a table and add data from a given sensor. Rows are separated by \n and columns by |_|",
-                          "properties":{
-                            "type":{
-                              "type":"string",
-							  "enum": [ "table" ],
-                              "value":"table"
-                            },
-                            "sensor":{
-							  "description":"The sensor in the format module_id:group_id:sensor_id",
-                              "type":"string"
-                            },
-                            "columns":{
-							  "description":"The headers of the table in the format column1,column2,etc.",
-                              "type":"string"
-                            }
-                          },
-                          "additionalProperties":false,
-                          "required":[
-                            "type",
-                            "sensor"
-                          ]
-                        }
-                      ]
-                    }
-                  }
-                },
-                "required":[
-                  "widget_id",
-                  "display_name",
-                  "enabled",
-                  "size",
-                  "layout"
-                ]
-              }
-            }
-          },
-          "rules":{
-            "type":"array",
-            "description":"Rules configuration",
-            "items":{
-              "type":"object",
-              "title":"Rule",
-              "properties":{
-                "rule_id":{
-                  "type":"string",
-                  "description":"Rule ID, must be unique across all the modules"
-                },
-                "for":{
-				  "description":"An optional list of sensors in the format module_id:group_id,sensor_id to cycle through and apply the same conditions. When the placeholder %i% is used across the rule, it will be replaced by the actual sensor",
-                  "type":"array",
-                  "items":{
-					"type":"string",
-                    "title":"Sensor"
-				  }
-                },
-                "display_name":{
-                  "type":"string",
-                  "description":"The text of alert then the rule triggers"
-                },
-                "enabled":{
-                  "type":"boolean",
-                  "description":"Enable the rule"
-                },
-                "severity":{
-                  "type":"string",
-                  "enum":[
-                    "none",
-                    "debug",
-                    "info",
-                    "warning",
-                    "alert"
-                  ],
-                  "description":"Severity of the rule"
-                },
-                "run_every":{
-                  "type":"string",
-                  "enum":[
-                    "never",
-                    "minute",
-					"5 minutes",
-					"10 minutes",
-					"30 minutes",
-                    "hour",
-                    "day",
-                    "startup"
-                  ],
-                  "description":"Frequency to evaluate the rule's condition"
-                },
-                "conditions":{
-                  "type":"array",
-                  "description":"Set of conditions to evaluate. When all true, the alert will trigger",
-                  "items":{
-                    "type":"string",
-                    "title":"Condition",
-                    "description":"Compare what has been defined in definitions with the operator ==, !=, >, <"
-                  }
-                },
-                "definitions":{
-                  "type":"object",
-                  "description":"An explanation about the purpose of this instance.",
-                  "items":{
-                    "type":"string",
-                    "title":"Definition",
-                    "description":"Can be either a value or a query in the format module_id:group_id:sensor_id,start_position,end_position[,timestamp] where start_position = -1 and end_position = -1 is the last value of the sensor. When appended the keywork timestamp, the returned value will be the minutes passed by since the time the measure was taken"
-                  }
-                },
-                "actions":{
-                  "type":"array",
-                  "description":"Actions to execute when the rule evaluates to true",
-                  "items":{
-                    "type":"string",
-                    "title":"Action",
-                    "description":"Can be either set,module_id:group_id:sensor_id,value to set a value to a sensor or send,module_id:group_id:sensor_id,value to send a message to a sensor"
-                  }
-                }
-              },
-              "required":[
-                "rule_id",
-                "display_name",
-                "enabled",
-                "severity",
-                "run_every",
-                "conditions",
-                "definitions"
-              ]
-            }
-          },
-          "sensors":{
-            "type":"array",
-            "description":"Sensors configuration",
-            "items":{
-              "type":"object",
-              "title":"Sensor",
-              "properties":{
-                "group_id":{
-                  "type":"string",
-                  "description":"The ID of a group of sensors. Sensors belonging to the same group can be presented within the same widget"
-                },
-                "sensor_id":{
-                  "type":"string",
-                  "description":"ID of the sensor, must be unique within the group"
-                },
-                "display_name":{
-                  "type":"string",
-                  "description":"Name of the sensor"
-                },
-                "plugin":{
-                  "type":"object",
-                  "description":"Properties are dependant on the plugin used to retrieve the data",
-                  "oneOf":[
-                    {
-                      "title":"csv",
-                      "description":"Parse a csv file and for the given node_id read the given measure",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "csv" ],
-                          "value":"csv"
-                        },
-                        "csv_file":{
-						  "description":"Location of the CSV file. If not provided the one in the global plugin settings will be used",
-                          "type":"string"
-                        },
-                        "separator":{
-						  "description":"The delimeter of the columns",
-                          "type":"string",
-						  "value":","
-                        },
-                        "date_position":{
-						  "description":"The position (index) of the date (UTC) in the csv file",
-                          "type":"integer"
-                        },
-                        "date_format":{
-						  "description":"The format of the date according to https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior",
-                          "type":"string"
-                        },
-                        "filter":{
-						  "description":"If defined, only the lines of the file with this value at this position will be evaluated",
-                          "type":"string"
-                        },
-                        "filter_position":{
-						  "description":"The position (index) of the column we want to filter in the csv file",
-                          "type":"integer"
-                        },
-                        "value_position":{
-						  "description":"The position (index) of the value to extract in the csv file",
-                          "type":"string"
-                        },
-                        "prefix":{
-						  "description":"An optional prefix of the value (that will be striped out) used as additional filter (e.g. TEMP21.5)",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-						"csv_file",
-						"separator",
-                        "value_position"
-                      ]
-                    },
-                    {
-                      "title":"messagebridge",
-                      "description":"Listen for updates from Wirelessthings/ciseco sensors and read the given measure for the given node_id",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "messagebridge" ],
-                          "value":"messagebridge"
-                        },
-                        "measure":{
-						  "description":"The measure to capture (e.g. TEMP)",
-                          "type":"string"
-                        },
-                        "measures":{
-						  "description":"A list of measures to capture",
-                          "type":"array",
-                          "items":{
-                            "type":"string",
-                            "title":"Measure"
-                          }
-                        },
-                        "node_id":{
-						  "description":"The ID of the device (e.g. TA)",
-                          "type":"string"
-                        },
-                        "cycle_sleep_min":{
-						  "description":"For devices with a Generic IO firmware, when the sensor reports AWAKE, put it to sleep for additional X minutes. Should not be defined for other firmware",
-                          "type":"integer"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "node_id"
-                      ]
-                    },
-                    {
-                      "title":"icloud",
-                      "description":"Retrive from icloud the location of an IOS device. Run python plugin_icloud.py --username=youricloudemail@email.com to configure the plugin first",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "icloud" ],
-                          "value":"icloud"
-                        },
-                        "username":{
-						  "description":"The username of the icloud account",
-                          "type":"string"
-                        },
-                        "device_name":{
-						  "description":"The name of the device to monitor",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        },
-						"cache_expire_min":{
-						  "description":"Optional per-sensor validity of the polling cache in minutes",
-						  "type":"integer"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "username",
-						"device_name"
-                      ]
-                    },
-                    {
-                      "title":"image",
-                      "description":"Retrive an image from a given url",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "image" ],
-                          "value":"image"
-                        },
-                        "url":{
-						  "description":"Download the image from this URL",
-                          "type":"string"
-                        },
-                        "username":{
-						  "description":"Optional username if the URL requires basic authentication",
-                          "type":"string"
-                        },
-                        "password":{
-						  "description":"Optional password if the URL requires basic authentication",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "url"
-                      ]
-                    },
-                    {
-                      "title":"linux",
-                      "description":"Run a linux command to poll a sensor. It can be either a pre-defined measure or if set to custom command_poll and command_parse can be defined",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "linux" ],
-                          "value":"linux"
-                        },
-                        "measure":{
-                          "type":"string",
-						  "description":"The statistic to retrieve. Set to custom to provide custom commands to run",
-                          "enum":[
-                            "cpu_user",
-                            "cpu_system",
-                            "ram_used",
-                            "swap_used",
-                            "load_1",
-                            "load_5",
-                            "load_15",
-                            "network_services",
-                            "network_connections",
-                            "temperature",
-                            "custom"
-                          ]
-                        },
-                        "command_poll":{
-						  "description":"The command to run to poll the raw data of the sensor (e.g. top)",
-                          "type":"string"
-                        },
-                        "command_parse":{
-						  "description":"The command to run to parse the the raw data retrieved with command_poll (e.g. awk, sed, etc.)",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "measure"
-                      ]
-                    },
-                    {
-                      "title":"wunderground",
-                      "description":"Retrieve from Weather Underground the statistic given by measure",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "wunderground" ],
-                          "value":"wunderground"
-                        },
-                        "measure":{
-                          "type":"string",
-                          "description":"The statistic to retrieve",
-                          "enum":[
-                            "temperature",
-                            "humidity",
-                            "wind",
-                            "wind_gust",
-                            "pressure",
-                            "condition",
-                            "wind_dir",
-                            "forecast_condition",
-                            "forecast_pop",
-                            "forecast_rain",
-                            "forecast_snow",
-                            "forecast_temperature",
-                            "record_temperature",
-                            "record_temperature_year",
-                            "normal_temperature",
-                            "rain",
-                            "snow"
-                          ]
-                        },
-                        "location":{
-                          "description":"An optional location in the format latitude,longitude. If not provided the global configuration from plugins will be used",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "measure"
-                      ]
-                    },
-                    {
-                      "title":"weatherchannel",
-                      "description":"Retrieve from Weather Channel the statistic given by measure",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "weatherchannel" ],
-                          "value":"weatherchannel"
-                        },
-                        "measure":{
-                          "type":"string",
-                          "description":"The statistic to retrieve",
-                          "enum":[
-                            "alerts"
-                          ]
-                        },
-                        "location":{
-                          "description":"An optional location in the format latitude/longitude. If not provided the global configuration from plugins will be used",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "measure"
-                      ]
-                    },
-					{
-                      "title":"rtl_433",
-                      "description":"Look for a specific sensor from rtl_433 output and retrieve a measure",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "rtl_433" ],
-                          "value":"rtl_433"
-                        },
-                        "measure":{
-                          "type":"string",
-                          "description":"The key whose value has to be retrieved"
-                        },
-                        "search":{
-                          "description":"A list of key/value pairs to search in the JSON output for identifying a specific sensor",
-                          "type":"object",
-						  "properties": {
-						  }
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "search"
-                      ]
-                    },
-					{
-                      "title":"gpio",
-                      "description":"Interact with the GPIO to capture input and send output signal",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "gpio" ],
-                          "value":"gpio"
-                        },
-                        "pin":{
-						  "description":"The pin of the GPIO to use based on the numbering system defined in the global plugin configuration",
-                          "type":"integer"
-                        },
-                        "setup":{
-						  "description":"Setup the pin as input or output",
-                          "type":"string",
-						  "enum": [ "input","output" ],
-                          "value":"input"
-                        },
-                        "pull_up_down":{
-						  "description":"As an input, optional pull up/pull down resistor",
-                          "type":"string",
-						  "enum": [ "up","down" ],
-                          "value":"down"
-                        },
-                        "edge_detect":{
-						  "description":"As an input, wait for a low/high edge instead of constantly polling the sensor",
-                          "type":"string",
-						  "enum": [ "rising","falling","both" ],
-                          "value":"rising"
-                        },
-                        "polling_interval":{
-						  "description":"As an input, poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"As an input, do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        },
-                        "initial_value":{
-						  "description":"As an output, optionally set the initial value to low or high",
-                          "type":"string",
-						  "enum": [ "low","high" ],
-                          "value":"low"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-                        "plugin_name",
-                        "pin",
-						"setup"
-                      ]
-                    },
-					{
-                      "title":"fdsnws",
-                      "description":"Retrieve earthquake events from a FDSN web service",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "fdsnws" ],
-                          "value":"fdsnws"
-                        },
-                        "domain":{
-						  "description":"A domain hosting a FDSNWS web service (e.g. earthquake.usgs.gov). Visit http://www.fdsn.org/webservices/ for a full list",
-                          "type":"string"
-                        },
-                        "query":{
-						  "description":"An optional query to e.g. filter by magnitude or location in the format key1=value1&key=value2. Review http://www.fdsn.org/webservices/FDSN-WS-Specifications-1.1.pdf for the allowed parameters",
-                          "type":"string"
-                        },
-                        "polling_interval":{
-						  "description":"Poll the sensor every X minutes",
-                          "type":"integer"
-                        },
-                        "poll_on_demand":{
-						  "description":"Do not poll the sensor at regular interval but poll only when the data is requested",
-						  "value": false,
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-					    "plugin_name",
-                        "domain",
-						"query"
-                      ]
-                    },
-					{
-                      "title":"mqtt",
-                      "description":"Interact with a MQTT gateway",
-                      "properties":{
-                        "plugin_name":{
-                          "type":"string",
-						  "enum": [ "mqtt" ],
-                          "value":"mqtt"
-                        },
-                        "mode":{
-                          "type":"string",
-						  "description":"Weather the sensor should is used to receive or send messages",
-						  "enum": [ "subscribe","publish" ]
-                        },
-                        "topic":{
-						  "description":"The topic to subscribe. No wildcards are allowed",
-                          "type":"string"
-                        },
-                        "retain":{
-						  "description":"When sending a message an optional retain flag",
-                          "type":"boolean"
-                        }
-                      },
-                      "additionalProperties":false,
-                      "required":[
-					    "plugin_name",
-                        "topic",
+								"title": "E-mail recipient"
+							}
+						},
+						"alerts_digest": {
+							"type": "boolean",
+							"description": "Send a daily digest with yesterda's alerts"
+						},
+						"module_digest": {
+							"type": "boolean",
+							"description": "Send a daily digest for those modules with the digest option enabled"
+						},
+						"realtime_alerts": {
+							"type": "boolean",
+							"description": "Send realtime alerts"
+						},
+						"severity": {
+							"type": "string",
+							"description": "Minimum severity which triggers the realtime notification",
+							"enum": [
+								"info",
+								"warning",
+								"alert"
+							],
+							"value": "info"
+						},
+						"rate_limit": {
+							"type": "integer",
+							"description": "Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+						},
+						"mute": {
+							"type": "string",
+							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						}
+					},
+					"required": [
+						"enabled",
+						"hostname",
+						"from",
+						"to",
+						"alerts_digest",
+						"module_digest",
+						"realtime_alerts",
+						"severity",
+						"rate_limit",
+						"mute"
+					]
+				},
+				"slack": {
+					"type": "object",
+					"description": "Slack module configuration",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the module"
+						},
+						"bot_name": {
+							"type": "string",
+							"description": "Name of the Slack bot"
+						},
+						"bot_token": {
+							"type": "string",
+							"description": "The Slack bot token previously created. https://api.slack.com/bot-users for more information"
+						},
+						"channel": {
+							"type": "string",
+							"description": "The Slack channel in which the bot will post its updates"
+						},
+						"realtime_alerts": {
+							"type": "boolean",
+							"description": "Send realtime alerts to the Slack channel"
+						},
+						"interactive_bot": {
+							"type": "boolean",
+							"description": "Make the bot interactive and able to respond to your questions"
+						},
+						"severity": {
+							"type": "string",
+							"description": "Minimum severity which triggers the realtime notification",
+							"enum": [
+								"info",
+								"warning",
+								"alert"
+							],
+							"value": "info"
+						},
+						"rate_limit": {
+							"type": "integer",
+							"description": "Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+						},
+						"mute": {
+							"type": "string",
+							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						}
+					},
+					"required": [
+						"enabled",
+						"bot_name",
+						"bot_token",
+						"channel",
+						"realtime_alerts",
+						"interactive_bot",
+						"severity",
+						"rate_limit",
+						"mute"
+					]
+				},
+				"sms": {
+					"type": "object",
+					"description": "SMS notification configuration (Betamax)",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the module"
+						},
+						"hostname": {
+							"type": "string",
+							"description": "Your Betamax VOIP service. An account on one of the Betamax powered services (http://backsla.sh/betamax) is required"
+						},
+						"username": {
+							"type": "string",
+							"description": "The username of the VOIP service"
+						},
+						"password": {
+							"type": "string",
+							"description": "The password of the VOIP service"
+						},
+						"from": {
+							"type": "string",
+							"description": "Your username or your verified phone number. Always use international format"
+						},
+						"to": {
+							"type": "array",
+							"description": "The number you wish to send the sms to. Always use international format",
+							"items": {
+								"type": "string",
+								"title": "Phone Number"
+							}
+						},
+						"realtime_alerts": {
+							"type": "boolean",
+							"description": "Send realtime alerts"
+						},
+						"severity": {
+							"type": "string",
+							"description": "Minimum severity which triggers the realtime notification",
+							"enum": [
+								"info",
+								"warning",
+								"alert"
+							],
+							"value": "info"
+						},
+						"rate_limit": {
+							"type": "integer",
+							"description": "Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+						},
+						"mute": {
+							"type": "string",
+							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						}
+					},
+					"required": [
+						"enabled",
+						"hostname",
+						"username",
+						"password",
+						"from",
+						"to",
+						"realtime_alerts",
+						"severity",
+						"rate_limit",
+						"mute"
+					]
+				},
+				"audio": {
+					"type": "object",
+					"description": "Use the attached speakers for the notification. Ensure your soundcard is properly configured.",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the module"
+						},
+						"realtime_alerts": {
+							"type": "boolean",
+							"description": "Send realtime alerts"
+						},
+						"language": {
+							"type": "string",
+							"description": "The language used to pronounce the message"
+						},
+						"severity": {
+							"type": "string",
+							"description": "Minimum severity which triggers the realtime notification",
+							"enum": [
+								"info",
+								"warning",
+								"alert"
+							],
+							"value": "info"
+						},
+						"rate_limit": {
+							"type": "integer",
+							"description": "Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+						},
+						"mute": {
+							"type": "string",
+							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						}
+					},
+					"required": [
+						"enabled",
+						"realtime_alerts",
+						"severity",
+						"language",
+						"rate_limit",
+						"mute"
+					]
+				}
+			},
+			"required": [
+				"enabled",
+				"email",
+				"slack",
+				"sms",
+				"audio"
+			]
+		},
+		"logging": {
+			"type": "object",
+			"description": "Logging module configuration",
+			"properties": {
+				"rotate_size_mb": {
+					"type": "integer",
+					"description": "Rotate the log file when larger than the configured megabytes"
+				},
+				"rotate_count": {
+					"type": "integer",
+					"description": "Number of backup log files to keep once rotated"
+				},
+				"myHouse": {
+					"type": "object",
+					"description": "myHouse logging",
+					"properties": {
+						"level": {
+							"type": "string",
+							"description": "Logging level"
+						},
+						"filename": {
+							"type": "string",
+							"description": "Log file"
+						}
+					},
+					"required": [
+						"level",
+						"filename"
+					]
+				},
+				"webserver": {
+					"type": "object",
+					"description": "Webserver logging",
+					"properties": {
+						"level": {
+							"type": "string",
+							"description": "Logging level"
+						},
+						"filename": {
+							"type": "string",
+							"description": "Log file"
+						}
+					},
+					"required": [
+						"level",
+						"filename"
+					]
+				},
+				"scheduler": {
+					"type": "object",
+					"description": "Scheduler logging",
+					"properties": {
+						"level": {
+							"type": "string",
+							"description": "Logging Level"
+						},
+						"filename": {
+							"type": "string",
+							"description": "Log file"
+						}
+					},
+					"required": [
+						"level",
+						"filename"
+					]
+				}
+			},
+			"required": [
+				"rotate_size_mb",
+				"rotate_count",
+				"myHouse",
+				"webserver",
+				"scheduler"
+			]
+		},
+		"plugins": {
+			"type": "object",
+			"description": "Plugins configuration",
+			"properties": {
+				"wunderground": {
+					"type": "object",
+					"description": "Weather Underground configuration",
+					"properties": {
+						"api_key": {
+							"type": "string",
+							"description": "Wunderground API key (https://www.wunderground.com/weather/api/)"
+						}
+					},
+					"required": [
+						"api_key"
+					]
+				},
+				"weatherchannel": {
+					"type": "object",
+					"description": "Weather Channel configuration",
+					"properties": {
+						"api_key": {
+							"type": "string",
+							"description": "Weather Channel API key (https://weather.com)"
+						},
+						"language": {
+							"type": "string",
+							"description": "Retrieve data in the given language"
+						}
+					},
+					"required": [
+						"api_key",
+						"language"
+					]
+				},
+				"csv": {
+					"type": "null",
+					"description": "CSV plugin configuration"
+				},
+				"linux": {
+					"type": "object",
+					"description": "Linux plugin configuration",
+					"properties": {
+						"timeout": {
+							"type": "integer",
+							"description": "Timeout in seconds when running a linux command"
+						}
+					},
+					"required": [
+						"timeout"
+					]
+				},
+				"image": {
+					"type": "null",
+					"description": "Image plugin configuration"
+				},
+				"icloud": {
+					"type": "null",
+					"description": "iCloud plugin configuration"
+				},
+				"messagebridge": {
+					"type": "object",
+					"description": "Wirelessthings/Ciseco Messagebridge plugin configuration",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the service"
+						},
+						"port_listen": {
+							"type": "integer",
+							"description": "Listen to this port from messagebridge updates"
+						},
+						"port_send": {
+							"type": "integer",
+							"description": "Send to this port updates to messagebridge"
+						}
+					},
+					"required": [
+						"enabled",
+						"port_listen",
+						"port_send"
+					]
+				},
+				"rtl_433": {
+					"type": "object",
+					"description": "rtl_433 plugin configuration",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the service"
+						},
+						"command": {
+							"type": "string",
+							"description": "The command for running rtl_433 followed by any required command line arguments. -F json will appended by default"
+						}
+					},
+					"required": [
+						"enabled",
+						"command"
+					]
+				},
+				"gpio": {
+					"type": "object",
+					"description": "GPIO plugin configuration",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the service"
+						},
+						"mode": {
+							"type": "string",
+							"description": "Use the pin (board) or the channel (bcm) numbering system",
+							"enum": [
+								"bcm",
+								"board"
+							],
+							"value": "board"
+						}
+					},
+					"required": [
+						"enabled",
 						"mode"
-                      ]
-                    }
-                  ]
-                },
-                "format":{
-                  "type":"string",
-                  "enum":[
-                    "int",
-                    "float",
-                    "string",
-                    "temperature",
-                    "humidity",
-                    "size",
-                    "percentage",
-                    "voltage",
-                    "length",
-                    "pressure",
-                    "speed",
-                    "image",
-                    "calendar",
-					"position"
-                  ],
-                  "description":"The format of the data of this sensor"
-                },
-				"retention":{
-					"type":"object",
-					"description":"Define the sensor retention policies. If not set the global preferences would apply",
-					"properties":{
-						"realtime_new_only":{
-							"type":"boolean",
-							"description":"If set to true, only the measures with a newer timestamp than the latest entry will be added to the database"
+					]
+				},
+				"fdsnws": {
+					"type": "null",
+					"description": "Federation of Digital Seismograph Network Web Service plugin configuration"
+				},
+				"mqtt": {
+					"type": "object",
+					"description": "MQTT plugin configuration",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the service"
 						},
-						"realtime_count":{
-							"type":"integer",
-							"description":"How many instances of current measures to keep in the database. 0 for keeping them all"
+						"hostname": {
+							"type": "string",
+							"description": "The hostname of the gateway"
 						},
-						"realtime_days":{
-							"type":"integer",
-							"description":"After how many days current measures are purged out of the database. 0 for keeping forever"
-						},
-						"recent_days":{
-							"type":"integer",
-							"description":"After how many days hourly data are purged out of the database. 0 for keeping forever"
-						},
-						"history_days":{
-							"type":"integer",
-							"description":"After how many days daily data are purged out of the database. 0 for keeping forever"
+						"port": {
+							"type": "integer",
+							"description": "The port the gateway is listening to"
+						}
+					},
+					"required": [
+						"enabled",
+						"hostname",
+						"port"
+					]
+				}
+			},
+			"required": [
+				"wunderground",
+				"weatherchannel",
+				"csv",
+				"linux",
+				"image",
+				"icloud",
+				"messagebridge",
+				"rtl_433",
+				"gpio",
+				"fdsnws",
+				"mqtt"
+			]
+		},
+		"modules": {
+			"type": "array",
+			"description": "Individual module configuration",
+			"items": {
+				"type": "object",
+				"title": "Module",
+				"properties": {
+					"module_id": {
+						"type": "string",
+						"description": "ID of the module, must be unique"
+					},
+					"section_id": {
+						"type": "string",
+						"description": "Section of the menu the module belongs to, must be the same as defined in gui/sections"
+					},
+					"display_name": {
+						"type": "string",
+						"description": "Name of the module"
+					},
+					"icon": {
+						"type": "string",
+						"description": "Fontawesome icon associated to the module (http://fontawesome.io/icons/)"
+					},
+					"enabled": {
+						"type": "boolean",
+						"description": "Enable the module"
+					},
+					"daily_digest": {
+						"type": "boolean",
+						"description": "Generate and send by email a daily digest of the module"
+					},
+					"auto_refresh_min": {
+						"type": "integer",
+						"description": "Auto refresh the page every X minutes. If not defined the global GUI setting will be used"
+					},
+					"widgets": {
+						"type": "array",
+						"description": "Widgets for the GUI to be presented for this module",
+						"items": {
+							"type": "array",
+							"title": "Row",
+							"description": "Each row has a size of 12, multiple widgets can share the row",
+							"items": {
+								"type": "object",
+								"title": "Widget",
+								"properties": {
+									"widget_id": {
+										"type": "string",
+										"description": "The ID of the widget, must be unique across all the modules"
+									},
+									"display_name": {
+										"type": "string",
+										"description": "The title to the widget"
+									},
+									"enabled": {
+										"type": "boolean",
+										"description": "Enable the widget"
+									},
+									"size": {
+										"type": "integer",
+										"description": "The size of the widget. Each row has size 12"
+									},
+									"offset": {
+										"type": "integer",
+										"description": "The optional offset ot the widget position on the row"
+									},
+									"layout": {
+										"type": "array",
+										"description": "Each widget can have multiple objects in its layout",
+										"items": {
+											"type": "object",
+											"title": "Layout",
+											"oneOf": [
+												{
+													"title": "sensor_group_summary",
+													"description": "Generate a chart with min/max for each sensor of the group for today and yesterday",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"sensor_group_summary"
+															],
+															"value": "sensor_group_summary"
+														},
+														"group": {
+															"description": "The group in the format module_id:group_id",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"group"
+													]
+												},
+												{
+													"title": "image",
+													"description": "Add an image from a sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"image"
+															],
+															"value": "image"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor"
+													]
+												},
+												{
+													"title": "map",
+													"description": "Add a map for a given sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"map"
+															],
+															"value": "map"
+														},
+														"group": {
+															"description": "The group of sensors in the format module_id:group_id. Data from the realtime timeframe will be retrieved",
+															"type": "string"
+														},
+														"tracking": {
+															"description": "Draw a route between the markers having the same title",
+															"type": "boolean"
+														},
+														"timeframe": {
+															"description": "The timeframe to use for requesting the data",
+															"type": "string",
+															"enum": [
+																"recent",
+																"history",
+																"realtime"
+															]
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"group",
+														"tracking",
+														"timeframe"
+													]
+												},
+												{
+													"title": "button",
+													"description": "Add a button",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"button"
+															],
+															"value": "button"
+														},
+														"display_name": {
+															"description": "The text to display on the button",
+															"type": "string"
+														},
+														"send": {
+															"description": "A URL to call when the button is pressed to e.g. send a message to a sensor",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"send",
+														"display_name"
+													]
+												},
+												{
+													"title": "sensor_group_timeline",
+													"description": "Generate a chart with a timeline of the given timeframe for the sensors belonging to the given group",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"sensor_group_timeline"
+															],
+															"value": "sensor_group_timeline"
+														},
+														"group": {
+															"description": "The group in the format module_id:group_id",
+															"type": "string"
+														},
+														"timeframe": {
+															"type": "string",
+															"description": "The timeframe to be used for the chart",
+															"enum": [
+																"recent",
+																"history",
+																"realtime",
+																"forecast"
+															]
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"group",
+														"timeframe"
+													]
+												},
+												{
+													"title": "chart_short",
+													"description": "Generate a chart with a limited size for the sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"chart_short"
+															],
+															"value": "chart_short"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"timeframe": {
+															"type": "string",
+															"description": "The timeframe to be used for the chart",
+															"enum": [
+																"recent",
+																"history",
+																"realtime",
+																"forecast"
+															]
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor",
+														"timeframe"
+													]
+												},
+												{
+													"title": "chart_short_inverted",
+													"description": "Generate a chart with a limited size for the sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"chart_short_inverted"
+															],
+															"value": "chart_short_inverted"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"timeframe": {
+															"type": "string",
+															"enum": [
+																"recent",
+																"history",
+																"realtime",
+																"forecast"
+															]
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor",
+														"timeframe"
+													]
+												},
+												{
+													"title": "current",
+													"description": "Generate a header with the current measure of a sensor and an icon",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"current"
+															],
+															"value": "current"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"icon": {
+															"description": "The URL of the icon to display. It can be a sensor called with the trailing /image",
+															"type": "string"
+														},
+														"timestamp": {
+															"description": "An optional sensor in the format module_id:group_id:sensor_id for the last updated timestamp. If not defined the one belonging to the previously defined sensor will be used",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "alerts",
+													"description": "Generate a table with all the alerts",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"alerts"
+															],
+															"value": "alerts"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "checkbox",
+													"description": "Generate a checkbox controlling the given sensor and url",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"checkbox"
+															],
+															"value": "checkbox"
+														},
+														"display_name": {
+															"description": "An optional text to describe the purpose of the control",
+															"type": "string"
+														},
+														"sensor": {
+															"description": "The sensor to attach to the checkbox, in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"send": {
+															"description": "An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
+															"type": "string"
+														},
+														"send_on": {
+															"description": "An optional URL to call when the value is 1. No value is appended to the URL",
+															"type": "string"
+														},
+														"send_off": {
+															"description": "An optional URL to call when the value is 0. No value is appended to the URL",
+															"type": "string"
+														},
+														"disabled": {
+															"description": "If the control cannot be manipulated by the user (e.g. read only)",
+															"value": false,
+															"type": "boolean"
+														},
+														"style": {
+															"description": "Optional style of the checkbox. 'a': rectangular with text, 'b': iOS style, 'c': material like",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "input",
+													"description": "Add an input form controlling a given sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"input"
+															],
+															"value": "input"
+														},
+														"display_name": {
+															"description": "An optional text to describe the purpose of the control",
+															"type": "string"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"send": {
+															"description": "An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "separator",
+													"description": "Add a separator",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"separator"
+															],
+															"value": "separator"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "configuration",
+													"description": "Add a configuration editor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"configuration"
+															],
+															"value": "configuration"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "calendar",
+													"description": "Add a calendar storing information in a given sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"calendar"
+															],
+															"value": "calendar"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"default_value": {
+															"description": "The default value for new entries in the calendar",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor"
+													]
+												},
+												{
+													"title": "data",
+													"description": "Add raw data from a given sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"data"
+															],
+															"value": "data"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor"
+													]
+												},
+												{
+													"title": "table",
+													"description": "Add a table and add data from a given sensor. Rows are separated by \n and columns by |_|",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"table"
+															],
+															"value": "table"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"columns": {
+															"description": "The headers of the table in the format column1,column2,etc.",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor"
+													]
+												}
+											]
+										}
+									}
+								},
+								"required": [
+									"widget_id",
+									"display_name",
+									"enabled",
+									"size",
+									"layout"
+								]
+							}
+						}
+					},
+					"rules": {
+						"type": "array",
+						"description": "Rules configuration",
+						"items": {
+							"type": "object",
+							"title": "Rule",
+							"properties": {
+								"rule_id": {
+									"type": "string",
+									"description": "Rule ID, must be unique across all the modules"
+								},
+								"for": {
+									"description": "An optional list of sensors in the format module_id:group_id,sensor_id to cycle through and apply the same conditions. When the placeholder %i% is used across the rule, it will be replaced by the actual sensor",
+									"type": "array",
+									"items": {
+										"type": "string",
+										"title": "Sensor"
+									}
+								},
+								"display_name": {
+									"type": "string",
+									"description": "The text of alert then the rule triggers"
+								},
+								"enabled": {
+									"type": "boolean",
+									"description": "Enable the rule"
+								},
+								"severity": {
+									"type": "string",
+									"enum": [
+										"none",
+										"debug",
+										"info",
+										"warning",
+										"alert"
+									],
+									"description": "Severity of the rule"
+								},
+								"run_every": {
+									"type": "string",
+									"enum": [
+										"never",
+										"minute",
+										"5 minutes",
+										"10 minutes",
+										"30 minutes",
+										"hour",
+										"day",
+										"startup"
+									],
+									"description": "Frequency to evaluate the rule's condition"
+								},
+								"conditions": {
+									"type": "array",
+									"description": "Set of conditions to evaluate. When all true, the alert will trigger",
+									"items": {
+										"type": "string",
+										"title": "Condition",
+										"description": "Compare what has been defined in definitions with the operator ==, !=, >, <"
+									}
+								},
+								"definitions": {
+									"type": "object",
+									"description": "An explanation about the purpose of this instance.",
+									"items": {
+										"type": "string",
+										"title": "Definition",
+										"description": "Can be either a value or a query in the format module_id:group_id:sensor_id,start_position,end_position[,timestamp] where start_position = -1 and end_position = -1 is the last value of the sensor. When appended the keywork timestamp, the returned value will be the minutes passed by since the time the measure was taken"
+									}
+								},
+								"actions": {
+									"type": "array",
+									"description": "Actions to execute when the rule evaluates to true",
+									"items": {
+										"type": "string",
+										"title": "Action",
+										"description": "Can be either set,module_id:group_id:sensor_id,value to set a value to a sensor or send,module_id:group_id:sensor_id,value to send a message to a sensor"
+									}
+								}
+							},
+							"required": [
+								"rule_id",
+								"display_name",
+								"enabled",
+								"severity",
+								"run_every",
+								"conditions",
+								"definitions"
+							]
+						}
+					},
+					"sensors": {
+						"type": "array",
+						"description": "Sensors configuration",
+						"items": {
+							"type": "object",
+							"title": "Sensor",
+							"properties": {
+								"group_id": {
+									"type": "string",
+									"description": "The ID of a group of sensors. Sensors belonging to the same group can be presented within the same widget"
+								},
+								"sensor_id": {
+									"type": "string",
+									"description": "ID of the sensor, must be unique within the group"
+								},
+								"display_name": {
+									"type": "string",
+									"description": "Name of the sensor"
+								},
+								"plugin": {
+									"type": "object",
+									"description": "Properties are dependant on the plugin used to retrieve the data",
+									"oneOf": [
+										{
+											"title": "csv",
+											"description": "Parse a csv file and for the given node_id read the given measure",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"csv"
+													],
+													"value": "csv"
+												},
+												"csv_file": {
+													"description": "Location of the CSV file. If not provided the one in the global plugin settings will be used",
+													"type": "string"
+												},
+												"separator": {
+													"description": "The delimeter of the columns",
+													"type": "string",
+													"value": ","
+												},
+												"date_position": {
+													"description": "The position (index) of the date (UTC) in the csv file",
+													"type": "integer"
+												},
+												"date_format": {
+													"description": "The format of the date according to https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior",
+													"type": "string"
+												},
+												"filter": {
+													"description": "If defined, only the lines of the file with this value at this position will be evaluated",
+													"type": "string"
+												},
+												"filter_position": {
+													"description": "The position (index) of the column we want to filter in the csv file",
+													"type": "integer"
+												},
+												"value_position": {
+													"description": "The position (index) of the value to extract in the csv file",
+													"type": "string"
+												},
+												"prefix": {
+													"description": "An optional prefix of the value (that will be striped out) used as additional filter (e.g. TEMP21.5)",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"csv_file",
+												"separator",
+												"value_position"
+											]
+										},
+										{
+											"title": "messagebridge",
+											"description": "Listen for updates from Wirelessthings/ciseco sensors and read the given measure for the given node_id",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"messagebridge"
+													],
+													"value": "messagebridge"
+												},
+												"measure": {
+													"description": "The measure to capture (e.g. TEMP)",
+													"type": "string"
+												},
+												"measures": {
+													"description": "A list of measures to capture",
+													"type": "array",
+													"items": {
+														"type": "string",
+														"title": "Measure"
+													}
+												},
+												"node_id": {
+													"description": "The ID of the device (e.g. TA)",
+													"type": "string"
+												},
+												"cycle_sleep_min": {
+													"description": "For devices with a Generic IO firmware, when the sensor reports AWAKE, put it to sleep for additional X minutes. Should not be defined for other firmware",
+													"type": "integer"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"node_id"
+											]
+										},
+										{
+											"title": "icloud",
+											"description": "Retrive from icloud the location of an IOS device. Run python plugin_icloud.py --username=youricloudemail@email.com to configure the plugin first",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"icloud"
+													],
+													"value": "icloud"
+												},
+												"username": {
+													"description": "The username of the icloud account",
+													"type": "string"
+												},
+												"device_name": {
+													"description": "The name of the device to monitor",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"username",
+												"device_name"
+											]
+										},
+										{
+											"title": "image",
+											"description": "Retrive an image from a given url",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"image"
+													],
+													"value": "image"
+												},
+												"url": {
+													"description": "Download the image from this URL",
+													"type": "string"
+												},
+												"username": {
+													"description": "Optional username if the URL requires basic authentication",
+													"type": "string"
+												},
+												"password": {
+													"description": "Optional password if the URL requires basic authentication",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"url"
+											]
+										},
+										{
+											"title": "linux",
+											"description": "Run a linux command to poll a sensor. It can be either a pre-defined measure or if set to custom command_poll and command_parse can be defined",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"linux"
+													],
+													"value": "linux"
+												},
+												"measure": {
+													"type": "string",
+													"description": "The statistic to retrieve. Set to custom to provide custom commands to run",
+													"enum": [
+														"cpu_user",
+														"cpu_system",
+														"ram_used",
+														"swap_used",
+														"load_1",
+														"load_5",
+														"load_15",
+														"network_services",
+														"network_connections",
+														"temperature",
+														"custom"
+													]
+												},
+												"command_poll": {
+													"description": "The command to run to poll the raw data of the sensor (e.g. top)",
+													"type": "string"
+												},
+												"command_parse": {
+													"description": "The command to run to parse the the raw data retrieved with command_poll (e.g. awk, sed, etc.)",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"measure"
+											]
+										},
+										{
+											"title": "wunderground",
+											"description": "Retrieve from Weather Underground the statistic given by measure",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"wunderground"
+													],
+													"value": "wunderground"
+												},
+												"measure": {
+													"type": "string",
+													"description": "The statistic to retrieve",
+													"enum": [
+														"temperature",
+														"humidity",
+														"wind",
+														"wind_gust",
+														"pressure",
+														"condition",
+														"wind_dir",
+														"forecast_condition",
+														"forecast_pop",
+														"forecast_rain",
+														"forecast_snow",
+														"forecast_temperature",
+														"record_temperature",
+														"record_temperature_year",
+														"normal_temperature",
+														"rain",
+														"snow"
+													]
+												},
+												"location": {
+													"description": "An optional location in the format latitude,longitude. If not provided the global configuration from plugins will be used",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"measure"
+											]
+										},
+										{
+											"title": "weatherchannel",
+											"description": "Retrieve from Weather Channel the statistic given by measure",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"weatherchannel"
+													],
+													"value": "weatherchannel"
+												},
+												"measure": {
+													"type": "string",
+													"description": "The statistic to retrieve",
+													"enum": [
+														"alerts"
+													]
+												},
+												"location": {
+													"description": "An optional location in the format latitude/longitude. If not provided the global configuration from plugins will be used",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"measure"
+											]
+										},
+										{
+											"title": "rtl_433",
+											"description": "Look for a specific sensor from rtl_433 output and retrieve a measure",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"rtl_433"
+													],
+													"value": "rtl_433"
+												},
+												"measure": {
+													"type": "string",
+													"description": "The key whose value has to be retrieved"
+												},
+												"search": {
+													"description": "A list of key/value pairs to search in the JSON output for identifying a specific sensor",
+													"type": "object",
+													"properties": {}
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"search"
+											]
+										},
+										{
+											"title": "gpio",
+											"description": "Interact with the GPIO to capture input and send output signal",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"gpio"
+													],
+													"value": "gpio"
+												},
+												"pin": {
+													"description": "The pin of the GPIO to use based on the numbering system defined in the global plugin configuration",
+													"type": "integer"
+												},
+												"setup": {
+													"description": "Setup the pin as input or output",
+													"type": "string",
+													"enum": [
+														"input",
+														"output"
+													],
+													"value": "input"
+												},
+												"pull_up_down": {
+													"description": "As an input, optional pull up/pull down resistor",
+													"type": "string",
+													"enum": [
+														"up",
+														"down"
+													],
+													"value": "down"
+												},
+												"edge_detect": {
+													"description": "As an input, wait for a low/high edge instead of constantly polling the sensor",
+													"type": "string",
+													"enum": [
+														"rising",
+														"falling",
+														"both"
+													],
+													"value": "rising"
+												},
+												"polling_interval": {
+													"description": "As an input, poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "As an input, do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												},
+												"initial_value": {
+													"description": "As an output, optionally set the initial value to low or high",
+													"type": "string",
+													"enum": [
+														"low",
+														"high"
+													],
+													"value": "low"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"pin",
+												"setup"
+											]
+										},
+										{
+											"title": "fdsnws",
+											"description": "Retrieve earthquake events from a FDSN web service",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"fdsnws"
+													],
+													"value": "fdsnws"
+												},
+												"domain": {
+													"description": "A domain hosting a FDSNWS web service (e.g. earthquake.usgs.gov). Visit http://www.fdsn.org/webservices/ for a full list",
+													"type": "string"
+												},
+												"query": {
+													"description": "An optional query to e.g. filter by magnitude or location in the format key1=value1&key=value2. Review http://www.fdsn.org/webservices/FDSN-WS-Specifications-1.1.pdf for the allowed parameters",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"domain",
+												"query"
+											]
+										},
+										{
+											"title": "mqtt",
+											"description": "Interact with a MQTT gateway",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"mqtt"
+													],
+													"value": "mqtt"
+												},
+												"mode": {
+													"type": "string",
+													"description": "Weather the sensor should is used to receive or send messages",
+													"enum": [
+														"subscribe",
+														"publish"
+													]
+												},
+												"topic": {
+													"description": "The topic to subscribe. No wildcards are allowed",
+													"type": "string"
+												},
+												"retain": {
+													"description": "When sending a message an optional retain flag",
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"topic",
+												"mode"
+											]
+										}
+									]
+								},
+								"format": {
+									"type": "string",
+									"enum": [
+										"int",
+										"float",
+										"string",
+										"temperature",
+										"humidity",
+										"size",
+										"percentage",
+										"voltage",
+										"length",
+										"pressure",
+										"speed",
+										"image",
+										"calendar",
+										"position"
+									],
+									"description": "The format of the data of this sensor"
+								},
+								"retention": {
+									"type": "object",
+									"description": "Define the sensor retention policies. If not set the global preferences would apply",
+									"properties": {
+										"realtime_new_only": {
+											"type": "boolean",
+											"description": "If set to true, only the measures with a newer timestamp than the latest entry will be added to the database"
+										},
+										"realtime_count": {
+											"type": "integer",
+											"description": "How many instances of current measures to keep in the database. 0 for keeping them all"
+										},
+										"realtime_days": {
+											"type": "integer",
+											"description": "After how many days current measures are purged out of the database. 0 for keeping forever"
+										},
+										"recent_days": {
+											"type": "integer",
+											"description": "After how many days hourly data are purged out of the database. 0 for keeping forever"
+										},
+										"history_days": {
+											"type": "integer",
+											"description": "After how many days daily data are purged out of the database. 0 for keeping forever"
+										}
+									}
+								},
+								"series": {
+									"type": "array",
+									"description": "Series to be added to the charts in the GUI",
+									"items": {
+										"type": "object",
+										"title": "Series",
+										"description": "Set of highcharts properites (http://api.highcharts.com/highstock) for the series. The mandatory series_id defines the data to use (e.g. min, max, avg, range)"
+									}
+								},
+								"object_detection": {
+									"type": "array",
+									"description": "List of image object detection features that will be used to detect specific objects within an image. More information on http://docs.opencv.org/2.4/modules/objdetect/doc/cascade_classification.html. Create a rule to detect objects, if the sensor does not return an empty text, an object has been identified",
+									"items": {
+										"type": "object",
+										"title": "Image object detection feature",
+										"properties": {
+											"display_name": {
+												"type": "string",
+												"description": "The name of the object that will be used within the alert text"
+											},
+											"filename": {
+												"type": "string",
+												"description": "Name of the haar cascades XML file to use for detecting the object (download more from https://github.com/opencv/opencv/tree/master/data/haarcascades)"
+											},
+											"scale_factor": {
+												"type": "number",
+												"description": "Parameter specifying how much the image size is reduced at each image scale."
+											},
+											"min_neighbors": {
+												"type": "number",
+												"description": "Parameter specifying how many neighbors each candidate rectangle should have to retain it"
+											},
+											"min_size": {
+												"type": "number",
+												"description": "Minimum possible object size. Objects smaller than that are ignored."
+											},
+											"max_size": {
+												"type": "number",
+												"description": "Maximum possible object size. Objects larger than that are ignored."
+											}
+										},
+										"required": [
+											"display_name",
+											"filename",
+											"scale_factor",
+											"min_neighbors",
+											"min_size",
+											"max_size"
+										]
+									}
+								},
+								"motion_detection": {
+									"type": "object",
+									"description": "Configuration settings for detecting movements within images. Create a rule to detect movements, if the sensor does not return an empty text, motion has been identified. Ensure to have realtime_count set at lest to two to have a minimum of two images for the comparison",
+									"properties": {
+										"display_name": {
+											"type": "string",
+											"description": "The name of the movement that will be used within the alert text"
+										},
+										"threshold": {
+											"type": "integer",
+											"description": "The minimum difference in percentage between two images to trigger an alert"
+										}
+									},
+									"required": [
+										"display_name",
+										"threshold"
+									]
+								}
+							},
+							"required": [
+								"group_id",
+								"sensor_id",
+								"format"
+							]
 						}
 					}
 				},
-                "series":{
-                  "type":"array",
-                  "description":"Series to be added to the charts in the GUI",
-                  "items":{
-                    "type":"object",
-                    "title":"Series",
-                    "description":"Set of highcharts properites (http://api.highcharts.com/highstock) for the series. The mandatory series_id defines the data to use (e.g. min, max, avg, range)"
-                  }
-                }
-              },
-              "required":[
-                "group_id",
-                "sensor_id",
-                "format"
-              ]
-            }
-          }
-        },
-        "required":[
-          "module_id",
-          "section_id",
-          "enabled",
-          "display_name",
-          "icon",
-          "widgets"
-        ]
-      }
-    }
-  },
-  "required":[
-    "general",
-    "db",
-    "gui",
-    "alerter",
-    "sensors",
-    "notifications",
-    "logging",
-    "plugins",
-    "modules"
-  ]
+				"required": [
+					"module_id",
+					"section_id",
+					"enabled",
+					"display_name",
+					"icon",
+					"widgets"
+				]
+			}
+		}
+	},
+	"required": [
+		"general",
+		"db",
+		"gui",
+		"alerter",
+		"sensors",
+		"notifications",
+		"logging",
+		"plugins",
+		"modules"
+	]
 }

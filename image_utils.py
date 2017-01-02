@@ -30,6 +30,7 @@ def export_image(image,is_base64=False):
 
 # normalize an image
 def normalize(image,hist=True,blur=False):
+	if image.empty(): return image
 	normalized = image
         normalized = cv2.cvtColor(normalized, cv2.COLOR_BGR2GRAY)
         if hist: normalized = cv2.equalizeHist(normalized)
@@ -43,6 +44,7 @@ def detect_movement(images,is_base64=False):
 		# normalize the images
 		i1 = normalize(import_image(images[i],is_base64=is_base64),hist=False)
 		i2 = normalize(import_image(images[i+1],is_base64=is_base64),hist=False)
+		if i1.empty() or i2.empty(): continue
 		# calculate height and width
 		i1_height, i1_width = i1.shape[:2]
 		i2_height, i2_width = i2.shape[:2]
@@ -59,13 +61,14 @@ def detect_movement(images,is_base64=False):
 	return max
 
 # detect objects in a given image
-def detect_objects(image,is_base64=False):
+def detect_objects(sensor,image,is_base64=False):
 	# read the image
 	image = import_image(image,is_base64=is_base64)
+	if image.empty(): return None
 	# normalize the image
 	normalized = normalize(image)
 	# for each detection feature
-        for feature in conf["alerter"]["object_detection"]:
+        for feature in sensor["object_detection"]:
 		# load the cascade file
                 filename = conf["constants"]["base_dir"]+"/"+feature["filename"]
                 if not os.path.isfile(filename):
