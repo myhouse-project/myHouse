@@ -126,6 +126,6 @@ def ask(request):
 # main
 if __name__ == '__main__':
         if len(sys.argv) != 2:
-		print 'Usage: oracle.py "sentence for the oracle"'
+		print 'Usage: '+__file__+' "sentence for the oracle"'
 	else:
 		ask(sys.argv[1])

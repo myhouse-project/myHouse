@@ -23,15 +23,15 @@ def run_command(command):
 def install_deps():
 	print "Preparing dependencies..."
 	print "Installing redis..."
-	run_command("apt-get install redis-server")
+	run_command("apt-get install -y redis-server")
 	print "Installing flask..."
-	run_command("apt-get install python-flask")
+	run_command("apt-get install -y python-flask")
         print "Installing python-redis..."
-        run_command("apt-get install python-redis")
+        run_command("apt-get install -y python-redis")
         print "Installing python-numphy..."
-        run_command("apt-get install python-numpy")
+        run_command("apt-get install -y python-numpy")
         print "Installing python-rpi.gpio..."
-        run_command("apt-get install python-rpi.gpio")
+        run_command("apt-get install -y python-rpi.gpio")
         print "Installing python-apscheduler..."
         run_command("pip install APScheduler")
         print "Installing python-slackclient..."
@@ -50,15 +50,25 @@ def install_deps():
         run_command("pip install flask-compress")
         print "Installing python-jsonschema..."
         run_command("pip install jsonschema")
+	# from v2.2
         print "Installing python-paho-mqtt..."
         run_command("pip install paho-mqtt")
         print "Installing mosquitto..."
-        run_command("apt-get install mosquitto")
-        print "Installing svox..."
-        run_command("apt-get install libttspico-utils")
-        print "Installing opencv..."
-        run_command("apt-get install python-opencv")
+        run_command("apt-get install -y mosquitto")
+        print "Installing picotts..."
+        run_command("apt-get install -y libttspico-utils")
+        print "Installing python-opencv..."
+        run_command("apt-get install -y python-opencv")
+        print "Installing python-gtts..."
+        run_command("pip install gTTS")
+        print "Installing mpg123..."
+        run_command("apt-get install -y mpg123")
+        print "Installing python-speech-recognition..."
+        run_command("pip install SpeechRecognition")
+        print "Installing python-pyaudio..."
+        run_command("apt-get install -y python-pyaudio")
 
+python-pyaudio
 # installation routine
 def install():
 	install_deps()

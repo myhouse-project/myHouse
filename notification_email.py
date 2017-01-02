@@ -4,6 +4,10 @@ import time
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 import utils
 import logger
@@ -12,10 +16,34 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import generate_charts
-import smtp
 
 # variables
 run_generate_charts = True
+
+# attach the image to the given message
+def attach_image(msg,image):
+        with open(image['filename'], 'r') as file:
+                img = MIMEImage(file.read(),_subtype="png")
+                file.close()
+                img.add_header('Content-ID', '<{}>'.format(image['id']))
+                msg.attach(img)
+
+# send an email
+def send(subject,body,images=[]):
+        msg = MIMEMultipart()
+        # attach images
+        if len(images) > 0:
+                for image in images: attach_image(msg,image)
+        # prepare the message
+        msg['From'] = conf["output"]["email"]["from"]
+        msg['To'] = ", ".join(conf["output"]["email"]["to"])
+        msg['Subject'] = "[myHouse] "+subject
+        msg.attach(MIMEText(body, 'html'))
+        smtp = smtplib.SMTP(conf["output"]["email"]["hostname"])
+        # send it
+        log.info("sending email '"+subject+"' to "+msg['To'])
+        smtp.sendmail(conf["output"]["email"]["from"],conf["output"]["email"]["to"], msg.as_string())
+        smtp.quit()
 
 # return the HTML template of the widget
 def get_email_widget(title,body):
@@ -57,7 +85,7 @@ def module_digest(module_id):
 		# add the image to the queue
 		images.append({'filename': utils.get_widget_chart(widget_id),'id': widget_id,})
         # send the email
-	smtp.send(title,template,images)
+	send(title,template,images)
 
 # email alert digest
 def alerts_digest():
@@ -76,7 +104,7 @@ def alerts_digest():
                         text = "<small>["+alert[0]+"] "+alert[1]+"</small><br>"+text
                 template = template.replace("<!-- widgets -->",get_email_widget(severity.capitalize(),text)+"\n<!-- widgets -->")
         # send the email
-        smtp.send(title,template.encode('utf-8'),[])
+        send(title,template.encode('utf-8'),[])
 
 # email realtime alert
 def notify(text):
@@ -85,11 +113,11 @@ def notify(text):
         template = get_email_body(title)
 	template = template.replace("<!-- widgets -->",get_email_widget("Alert",text))
         # send the email
-        smtp.send(title,template.encode('utf-8'),[])
+        send(title,template.encode('utf-8'),[])
 
 # main
 if __name__ == '__main__':
         if len(sys.argv) == 1:
-		print "Usage: notification_email.py <module_id>"
+		print "Usage: "+__file__+" <module_id>"
 	else:
 		module_digest(sys.argv[1])

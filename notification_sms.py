@@ -8,11 +8,10 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 
 # variables
-settings = conf["notifications"]["sms"]
+settings = conf["output"]["sms"]
 
 # send a sms with the given text
 def notify(text):
-	if not settings["enabled"]: return
 	for to in settings["to"]:
 		url = "https://"+settings["hostname"]+"/myaccount/sendsms.php?username="+settings["username"]+"&password="+settings["password"]+"&from="+str(settings["from"])+"&to="+str(to)+"&text="+text
 		response = utils.web_get(url)
@@ -24,6 +23,6 @@ def notify(text):
 # main
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
-		print "Usage: notification_sms.py <text>"
+		print "Usage: "+__file__+" <text>"
 	else:
 		notify(sys.argv[1])

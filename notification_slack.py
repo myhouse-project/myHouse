@@ -17,8 +17,8 @@ connected = False
 slack = None
 bot_id = None
 channel_id = None
-bot_name = conf["notifications"]["slack"]["bot_name"]
-channel_name = conf["notifications"]["slack"]["channel"]
+bot_name = conf["output"]["slack"]["bot_name"]
+channel_name = conf["output"]["slack"]["channel"]
 sleep_on_error = 1*60
 
 # says something to the channel
@@ -26,7 +26,7 @@ def notify(text,channel=None):
 	init()
 	if not initialized: return
 	if channel is None: channel = channel_id
-	log.info("saying: "+text)
+	log.debug("saying: "+text)
 	slack_message(channel,text)
 
 # return the ID corresponding to the bot name
@@ -58,7 +58,7 @@ def init():
 	# initialize the library
 	try:
 		# initialize the library
-		slack = SlackClient(conf["notifications"]["slack"]["bot_token"])
+		slack = SlackClient(conf["output"]["slack"]["bot_token"])
 		# test the authentication
 		auth = slack.api_call("auth.test")
 		if not auth["ok"]:

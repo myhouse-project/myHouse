@@ -179,4 +179,4 @@ if __name__ == '__main__':
                         reanme(key+":day:min",new_key+":day:min")
                         rename(key+":day:avg",new_key+":day:avg")
                         rename(key+":day:max",new_key+":day:max")
-		else: print "Usage: db.py <delete|rename> <module_id:group_id:sensor_id> [module_id:group_id:new_sensor_id]"
+		else: print "Usage: "+__file__+" <delete|rename> <module_id:group_id:sensor_id> [module_id:group_id:new_sensor_id]"

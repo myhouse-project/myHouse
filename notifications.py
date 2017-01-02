@@ -25,21 +25,21 @@ channels = {
 	"audio": notification_audio
 }
 
-# schedule all reports
+# schedule all input/output
 def schedule_all():
 	# schedule module summary report
         for module in conf["modules"]:
 		if not module["enabled"]: continue
 		if "daily_digest" not in module: continue
-                if conf["notifications"]["email"]["module_digest"] and module["daily_digest"]:
+                if module["daily_digest"]:
                         schedule.add_job(notification_email.module_digest,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
                         log.info("["+module['module_id']+"] scheduling daily module digest")
 	# schedule alert summary report
-	if conf["notifications"]["email"]["alerts_digest"]: 
+	if conf["output"]["email"]["alerts_digest"]: 
 		log.info("scheduling daily alert digest")
 		schedule.add_job(notification_email.alerts_digest,'cron',hour="0",minute="55",args=[])
 	# run slack bot
-	if conf["notifications"]["slack"]["interactive_bot"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
+	if conf["input"]["slack"]["enabled"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
 
 # notify all the notification channels
 def notify(severity,text):
@@ -53,14 +53,14 @@ def notify(severity,text):
 	# for each channel to be notified
 	for channel,module in channels.iteritems():
 		# ensure realtime alerts are enabled
-		if not conf["notifications"][channel]["realtime_alerts"]: continue
+		if not conf["output"][channel]["enabled"]: continue
 		# ensure the severity is equals or above the minimum severity configured
-		min_severity = conf["notifications"][channel]["severity"]
+		min_severity = conf["output"][channel]["min_severity"]
 		if min_severity == "warning" and severity in ["info"]: continue
 		elif min_severity == "alert" and severity in ["info","warning"]: continue
 		# ensure the channel is not mute during this time
-		if "-" in conf["notifications"][channel]["mute"]:
-			timeframe = conf["notifications"][channel]["mute"].split("-")
+		if "-" in conf["output"][channel]["mute"]:
+			timeframe = conf["output"][channel]["mute"].split("-")
 			if len(timeframe) != 2: continue
 			timeframe[0] = int(timeframe[0])
 			timeframe[1] = int(timeframe[1])
@@ -69,12 +69,12 @@ def notify(severity,text):
 			# e.g. 20-07
 			if timeframe[0] > timeframe[1] and (hour >= timeframe[0] or hour < timeframe[1]): continue
 		# check if rate limit is configured and we have not exceed the numner of notifications during this hour
-		if conf["notifications"][channel]["rate_limit"] != 0 and counters[channel] >= conf["notifications"][channel]["rate_limit"]: continue
+		if conf["output"][channel]["rate_limit"] != 0 and counters[channel] >= conf["output"][channel]["rate_limit"]: continue
 		# send the notification to the channel
 		module.notify(text)
 		# increase the counter
 		counters[channel] = counters[channel] + 1
-		log.debug("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+str(current_hour)+" with limit "+str(conf["notifications"][channel]["rate_limit"]))
+		log.debug("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+str(current_hour)+" with limit "+str(conf["output"][channel]["rate_limit"]))
 
 # main
 if __name__ == '__main__':
