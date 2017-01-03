@@ -292,33 +292,33 @@
 							"type": "boolean",
 							"description": "Enable the module"
 						},
-						"device": {
-							"type": "string",
-							"description": "Optional PCM device name"
+						"device_index": {
+							"type": "number",
+							"description": "Force the selection of a specific input device by its index. Review the logs for a list the list of devices and their indexes. Use -1 for automatic detection"
 						},
 						"engine": {
 							"type": "string",
-							"description": "The speech-to-text engine to use.",
+							"description": "The speech-to-text engine to use. Google works online only, is fast and gives excellent results, pocketsphinx works offline, is slower, not always accurate and additional languages must be installed manually",
 							"enum": [
-								"google"
+								"google",
+								"pocketsphinx"
 							],
-							"value": "picotts"
+							"value": "google"
 						},
 						"language": {
 							"type": "string",
 							"description": "The language to use for recognizing the command"
 						},
-						"sample_rate": {
-							"type": "integer",
-							"description": "The language to use for recognizing the command"
+						"echo_question": {
+							"type": "boolean",
+							"description": "For debugging purposes, repeats the understood question"
 						}
 					},
 					"required": [
 						"enabled",
 						"engine",
-						"device",
-						"language",
-						"sample_rate"
+						"device_index",
+						"language"
 					]
 				}
 			},

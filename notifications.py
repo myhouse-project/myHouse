@@ -40,6 +40,8 @@ def schedule_all():
 		schedule.add_job(notification_email.alerts_digest,'cron',hour="0",minute="55",args=[])
 	# run slack bot
 	if conf["input"]["slack"]["enabled"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
+	# listen for voice commands
+	if conf["input"]["audio"]["enabled"]: schedule.add_job(notification_audio.listen,'date',run_date=datetime.datetime.now())
 
 # notify all the notification channels
 def notify(severity,text):
