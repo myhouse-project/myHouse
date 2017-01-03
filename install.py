@@ -67,8 +67,11 @@ def install_deps():
         run_command("pip install SpeechRecognition")
         print "Installing python-pyaudio..."
         run_command("apt-get install -y python-pyaudio")
+        print "Installing flac..."
+        run_command("apt-get install -y flac")
+        print "Installing pocketsphinx..."
+        run_command("apt-get install -y pocketsphinx")
 
-python-pyaudio
 # installation routine
 def install():
 	install_deps()

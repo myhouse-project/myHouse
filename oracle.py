@@ -42,7 +42,7 @@ def load_brain():
 			else: kb[request] = "text|"+response
 
 # enrich the knowledge base with the configuration
-def learn_config():
+def learn_config(include_widgets):
 	r = {}
 	widgets = []
         for module in conf["modules"]:
@@ -56,7 +56,7 @@ def learn_config():
 				context = module["module_id"]+"|"+rule["rule_id"]
 				# user requesting for an alert
 				kb[cleanup.sub(' '," ".join(r["rule"])).lower()] = "rule|"+context
-		if "widgets" in module:
+		if "widgets" in module and include_widgets:
 			for i in range(len(module["widgets"])):
 				for j in range(len(module["widgets"][i])):
 					widget = module["widgets"][i][j]
@@ -74,12 +74,13 @@ def learn_config():
 						kb[cleanup.sub(' '," ".join(r["layout"])).lower()] = "chart|"+context
 					
 # initialize the oracle		
-def init():
-        if initialized: return
+def init(include_widgets=True):
+        if initialized: return kb
 	# load basic knowledge
 	load_brain()
 	# learn from the configuration
-	learn_config()
+	learn_config(include_widgets)
+	return kb
 
 # add a random prefix
 def add_prefix(text):
@@ -107,8 +108,11 @@ def translate_response(action):
 	return response
 	
 # ask the oracle a question
-def ask(request):
-	init()
+def ask(request,custom_kb=None):
+	# determine which kb to use
+	if custom_kb is not None: current_kb = custom_kb
+	else: current_kb = init()
+	# clean up the request
 	request = cleanup.sub(' ',request)
 	log.info("I've been asked: "+request)
 	# identify the most suitable action to take
