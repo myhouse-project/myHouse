@@ -1446,11 +1446,19 @@
 								},
 								"definitions": {
 									"type": "object",
-									"description": "An explanation about the purpose of this instance.",
+									"description": "Set of data definitions that will be used in conditions",
 									"items": {
 										"type": "string",
 										"title": "Definition",
-										"description": "Can be either a value or a query in the format module_id:group_id:sensor_id,start_position,end_position[,timestamp] where start_position = -1 and end_position = -1 is the last value of the sensor. When appended the keywork timestamp, the returned value will be the minutes passed by since the time the measure was taken"
+										"description": "Can be either a value or a query in the format module_id:group_id:sensor_id,start,end[,timestamp|elapsed|distance]. If start and end are numbers, they represent relative positions in the database -1,-1 is the last value of the sensor, otherwise represent timeframes (e.g. 10s, 20m, 1d, etc.). When appended the keywork timestamp, the returned value will be the timestamp if the entry, with elapsed the minutes passed by since the time the measure was taken, with distance the distance from the coordinates defined in the configuration of the event"
+									}
+								},
+								"aliases": {
+									"type": "object",
+									"description": "Optional aliases for converting the values of a sensor into something else within the alert's text (e.g. 1 into on)",
+									"items": {
+										"type": "string",
+										"title": "Alias"
 									}
 								},
 								"actions": {
