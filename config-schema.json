@@ -309,9 +309,9 @@
 							"type": "string",
 							"description": "The language to use for recognizing the command"
 						},
-						"echo_question": {
+						"echo_request": {
 							"type": "boolean",
-							"description": "For debugging purposes, repeats the understood question"
+							"description": "For debugging purposes, repeats the request and what has been understood"
 						}
 					},
 					"required": [
@@ -392,11 +392,7 @@
 						"hostname",
 						"from",
 						"to",
-						"alerts_digest",
-						"min_severity",
-						"rate_limit",
-						"mute",
-						"mute_min_severity",
+						"alerts_digest"
 					]
 				},
 				"slack": {
@@ -451,11 +447,7 @@
 						"enabled",
 						"bot_name",
 						"bot_token",
-						"channel",
-						"min_severity",
-						"rate_limit",
-						"mute",
-						"mute_min_severity",
+						"channel"
 					]
 				},
 				"sms": {
@@ -524,11 +516,7 @@
 						"username",
 						"password",
 						"from",
-						"to",
-						"min_severity",
-						"rate_limit",
-						"mute",
-						"mute_min_severity",
+						"to"
 					]
 				},
 				"audio": {
@@ -588,11 +576,7 @@
 						"enabled",
 						"engine",
 						"device",
-						"min_severity",
-						"language",
-						"rate_limit",
-						"mute",
-						"mute_min_severity",
+						"language"
 					]
 				}
 			},
@@ -1388,6 +1372,10 @@
 								"display_name": {
 									"type": "string",
 									"description": "The text of alert then the rule triggers"
+								},
+								"keywords": {
+									"type": "string",
+									"description": "Additional keywords that will be used for better matching a user request with this rule"
 								},
 								"enabled": {
 									"type": "boolean",

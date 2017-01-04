@@ -56,17 +56,21 @@ def notify(severity,text):
 	for channel,module in channels.iteritems():
 		# ensure realtime alerts are enabled
 		if not conf["output"][channel]["enabled"]: continue
-		# ensure the severity is equals or above the minimum severity configured
-		min_severity = conf["output"][channel]["min_severity"]
-		if min_severity == "warning" and severity in ["info"]: continue
-		elif min_severity == "alert" and severity in ["info","warning"]: continue
-		# check if the notification is severe enough to override the mute setting
-		mute_min_severity = conf["output"][channel]["mute_min_severity"]
 		mute_override = False
-                if mute_min_severity == "warning" and severity in ["warning","alert"]: mute_override = True
-                elif mute_min_severity == "alert" and severity in ["alert"]: mute_override = True
+		min_severity = None
+		mute_min_severity = None
+		# ensure the severity is equals or above the minimum severity configured
+		if "min_severity" in conf["output"][channel]:
+			min_severity = conf["output"][channel]["min_severity"]
+			if min_severity == "warning" and severity in ["info"]: continue
+			elif min_severity == "alert" and severity in ["info","warning"]: continue
+		# check if the notification is severe enough to override the mute setting
+		if "mute_min_severity" in conf["output"][channel]:
+			mute_min_severity = conf["output"][channel]["mute_min_severity"]
+        	        if mute_min_severity == "warning" and severity in ["warning","alert"]: mute_override = True
+	                elif mute_min_severity == "alert" and severity in ["alert"]: mute_override = True
 		# ensure the channel is not mute now
-		if "-" in conf["output"][channel]["mute"] and not mute_override:
+		if "mute" in conf["output"][channel] and "-" in conf["output"][channel]["mute"] and not mute_override:
 			timeframe = conf["output"][channel]["mute"].split("-")
 			if len(timeframe) != 2: continue
 			timeframe[0] = int(timeframe[0])
@@ -76,7 +80,7 @@ def notify(severity,text):
 			# e.g. 20-07
 			if timeframe[0] > timeframe[1] and (hour >= timeframe[0] or hour < timeframe[1]): continue
 		# check if rate limit is configured and we have not exceed the numner of notifications during this hour
-		if conf["output"][channel]["rate_limit"] != 0 and counters[channel] >= conf["output"][channel]["rate_limit"]: continue
+		if "rate_limit" in conf["output"][channel] and conf["output"][channel]["rate_limit"] != 0 and counters[channel] >= conf["output"][channel]["rate_limit"]: continue
 		# send the notification to the channel
 		module.notify(text)
 		# increase the counter
