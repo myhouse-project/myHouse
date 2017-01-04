@@ -84,7 +84,7 @@ th.dt-center, td.dt-center { text-align: center; }
 }
 </style>
 
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition sidebar-mini">
 	<div class="wrapper">
 
 		<!-- =============================================== -->
@@ -225,6 +225,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		// request the configuration first
 		$.getJSON(hostname+"config",function(data) {
 			conf = data;
+			// set the skin
+			load_skin(conf["gui"]["skin"])
 			// set the version
 			load_version();
 			// load the status
@@ -1330,6 +1332,30 @@ th.dt-center, td.dt-center { text-align: center; }
 			color += letters[Math.floor(Math.random() * 16)];
 		}
 		return color;
+	}
+	
+	// set the sking to the GUI
+	function load_skin(skin) {
+		var skins = [
+			"skin-blue",
+			"skin-black",
+			"skin-red",
+			"skin-yellow",
+			"skin-purple",
+			"skin-green",
+			"skin-blue-light",
+			"skin-black-light",
+			"skin-red-light",
+			"skin-yellow-light",
+			"skin-purple-light",
+			"skin-green-light"
+		];
+		// remove all the skins from the body first
+		$.each(skins, function (i) {
+			$("body").removeClass(skins[i]);
+		});
+		// apply the new skin
+		$("body").addClass("skin-"+skin);
 	}
 	
 	</script>

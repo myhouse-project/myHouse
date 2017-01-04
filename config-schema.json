@@ -128,6 +128,25 @@
 					"type": "string",
 					"description": "URL of the web GUI"
 				},
+				"skin": {
+					"type": "string",
+					"description": "The skin to use for the GUI",
+					"enum": [
+						"blue",
+						"black",
+						"red",
+						"yellow",
+						"purple",
+						"green",
+						"blue-light",
+						"black-light",
+						"red-light",
+						"yellow-light",
+						"purple-light",
+						"green-light"
+					],
+					"value": "blue"
+				},				
 				"port": {
 					"type": "integer",
 					"description": "Port for running the web server"
