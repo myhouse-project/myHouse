@@ -227,6 +227,10 @@ def run(module_id,rule_id,notify=True):
 				# replace the definitions placeholders
 				for definition in rule["definitions"]:
 					value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]
+					# apply aliases
+					if "aliases" in rule:
+						for to_find,to_replace in rule["aliases"].iteritems():
+							if str(value) == str(to_find): value = to_replace
 					# add the suffix
 					if is_sensor(rule["definitions"][definition]) and "elapsed" in rule["definitions"][definition]: 
 						value = str(value)+" minutes"
