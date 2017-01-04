@@ -60,8 +60,13 @@ def notify(severity,text):
 		min_severity = conf["output"][channel]["min_severity"]
 		if min_severity == "warning" and severity in ["info"]: continue
 		elif min_severity == "alert" and severity in ["info","warning"]: continue
-		# ensure the channel is not mute during this time
-		if "-" in conf["output"][channel]["mute"]:
+		# check if the notification is severe enough to override the mute setting
+		mute_min_severity = conf["output"][channel]["mute_min_severity"]
+		mute_override = False
+                if mute_min_severity == "warning" and severity in ["warning","alert"]: mute_override = True
+                elif mute_min_severity == "alert" and severity in ["alert"]: mute_override = True
+		# ensure the channel is not mute now
+		if "-" in conf["output"][channel]["mute"] and not mute_override:
 			timeframe = conf["output"][channel]["mute"].split("-")
 			if len(timeframe) != 2: continue
 			timeframe[0] = int(timeframe[0])
@@ -76,7 +81,7 @@ def notify(severity,text):
 		module.notify(text)
 		# increase the counter
 		counters[channel] = counters[channel] + 1
-		log.debug("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+str(current_hour)+" with limit "+str(conf["output"][channel]["rate_limit"]))
+		log.info("Notification channel "+channel+" sent so far "+str(counters[channel])+" notifications during hour "+str(current_hour)+" with limit "+str(conf["output"][channel]["rate_limit"]))
 
 # main
 if __name__ == '__main__':

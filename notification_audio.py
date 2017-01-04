@@ -49,7 +49,7 @@ def notify(text):
 # play an audio file
 def play(filename):
 	device = "-D "+str(output_settings["device"]) if output_settings["device"] != "" else ""
-	log.debug(utils.run_command("aplay "+device+" "+filename,shell=True))
+	log.debug(utils.run_command("aplay "+device+" "+filename+" &",shell=True))
 
 # list and select an input device
 def get_input_device():

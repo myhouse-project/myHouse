@@ -376,6 +376,15 @@
 						"mute": {
 							"type": "string",
 							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						},
+						"mute_min_severity": {
+							"type": "string",
+							"description": "When muted, minimum severity which triggers the realtime notification (e.g. muted for info but not for alerts)",
+							"enum": [
+								"",
+								"warning",
+								"alert"
+							]
 						}
 					},
 					"required": [
@@ -386,7 +395,8 @@
 						"alerts_digest",
 						"min_severity",
 						"rate_limit",
-						"mute"
+						"mute",
+						"mute_min_severity",
 					]
 				},
 				"slack": {
@@ -426,6 +436,15 @@
 						"mute": {
 							"type": "string",
 							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						},
+						"mute_min_severity": {
+							"type": "string",
+							"description": "When muted, minimum severity which triggers the realtime notification (e.g. muted for info but not for alerts)",
+							"enum": [
+								"",
+								"warning",
+								"alert"
+							]
 						}
 					},
 					"required": [
@@ -435,7 +454,8 @@
 						"channel",
 						"min_severity",
 						"rate_limit",
-						"mute"
+						"mute",
+						"mute_min_severity",
 					]
 				},
 				"sms": {
@@ -487,6 +507,15 @@
 						"mute": {
 							"type": "string",
 							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						},
+						"mute_min_severity": {
+							"type": "string",
+							"description": "When muted, minimum severity which triggers the realtime notification (e.g. muted for info but not for alerts)",
+							"enum": [
+								"",
+								"warning",
+								"alert"
+							]
 						}
 					},
 					"required": [
@@ -498,7 +527,8 @@
 						"to",
 						"min_severity",
 						"rate_limit",
-						"mute"
+						"mute",
+						"mute_min_severity",
 					]
 				},
 				"audio": {
@@ -543,6 +573,15 @@
 						"mute": {
 							"type": "string",
 							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						},
+						"mute_min_severity": {
+							"type": "string",
+							"description": "When muted, minimum severity which triggers the realtime notification (e.g. muted for info but not for alerts)",
+							"enum": [
+								"",
+								"warning",
+								"alert"
+							]
 						}
 					},
 					"required": [
@@ -552,7 +591,8 @@
 						"min_severity",
 						"language",
 						"rate_limit",
-						"mute"
+						"mute",
+						"mute_min_severity",
 					]
 				}
 			},
