@@ -50,12 +50,7 @@ def parse(sensor,data):
 		device["latitude"] = data[device_name]["latitude"]
 		device["longitude"] = data[device_name]["longitude"]
 		device["accuracy"] = data[device_name]["horizontalAccuracy"]
-	measures = []
-	measure = {}
-	measure["key"] = sensor["sensor_id"]
-	measure["value"] = json.dumps(device)
-	measures.append(measure)
-        return measures
+	return json.dumps(device)	
 
 # return the cache schema
 def cache_schema(sensor):

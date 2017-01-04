@@ -44,7 +44,7 @@ def scheduler_error(event):
 		msg = msg.replace('\n','|')
 		msg = msg + ": "+str(event.exception)
 	else: 
-		msg = msg + "Error"
+		msg = msg + "No exception available"
 	log.error(msg)
 
 # configure logging

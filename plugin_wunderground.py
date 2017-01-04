@@ -147,7 +147,7 @@ def parse(sensor,data):
                 measure["timestamp"] = utils.timezone(int(time.mktime(date.timetuple())))
                 measure["value"] = float(parsed_json['history']['dailysummary'][0]['precipm']) if utils.is_number(parsed_json['history']['dailysummary'][0]['precipm']) else 0
                 measures.append(measure)
-	else: log.warning("invalid measure requested: "+request)		
+	else: raise Exception("invalid request "+str(request))
 	# append the measure and return it
 	return measures
 
