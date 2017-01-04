@@ -8,44 +8,24 @@ import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
-import scheduler
-schedule = scheduler.get_scheduler()
-import notification_slack
-import notification_email
-import notification_sms
-import notification_audio
+import slack
+import smtp
+import sms
+import audio
 
 # variables
 current_hour = None
 counters = {}
 channels = {
-	"email": notification_email,
-	"slack": notification_slack,
-	"sms": notification_sms,
-	"audio": notification_audio
+	"email": smtp,
+	"slack": slack,
+	"sms": sms,
+	"audio": audio
 }
-
-# schedule all input/output
-def schedule_all():
-	# schedule module summary report
-        for module in conf["modules"]:
-		if not module["enabled"]: continue
-		if "daily_digest" not in module: continue
-                if module["daily_digest"]:
-                        schedule.add_job(notification_email.module_digest,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
-                        log.info("["+module['module_id']+"] scheduling daily module digest")
-	# schedule alert summary report
-	if conf["output"]["email"]["alerts_digest"]: 
-		log.info("scheduling daily alert digest")
-		schedule.add_job(notification_email.alerts_digest,'cron',hour="0",minute="55",args=[])
-	# run slack bot
-	if conf["input"]["slack"]["enabled"]: schedule.add_job(notification_slack.run,'date',run_date=datetime.datetime.now())
-	# listen for voice commands
-	if conf["input"]["audio"]["enabled"]: schedule.add_job(notification_audio.listen,'date',run_date=datetime.datetime.now())
 
 # notify all the notification channels
 def notify(severity,text):
-	global current_hour, notifications, channels
+	global current_hour, channels, counters
 	# retrieve the current hour
 	hour = int(time.strftime("%H"))
 	# if this is a new hour, reset the notification counters
@@ -89,7 +69,7 @@ def notify(severity,text):
 
 # main
 if __name__ == '__main__':
-	schedule.start()
-        schedule_all()
-       	while True:
-               	time.sleep(1)
+        if len(sys.argv) == 1:
+                print "Usage: "+__file__+" <severity> <message>"
+        else:
+                notify(sys.argv[1],sys.argv[2])
