@@ -105,6 +105,7 @@ def detect_objects(sensor,image,is_base64=False):
 
 # save an image into a temporary folder
 def save_tmp_image(prefix,image):
+	global current_index
 	if not conf["constants"]["image_detection_save_on_disk"]: return
 	# keep a maximum number of images
 	if current_index > conf["constants"]["image_detection_max_saved_images"]: current_index = 1
