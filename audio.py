@@ -160,7 +160,6 @@ def record_voice(device):
 		if byteorder == 'big': data_chunk.byteswap()
 	        data_all.extend(data_chunk)
 		# check if the recorded chunk was silent
-		print max(data_chunk)
         	silent = max(data_chunk) < conf["constants"]["voice_recorder"]["threshold"]
 		# record the voice when not in silent
 	        if audio_started:

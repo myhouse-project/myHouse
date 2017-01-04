@@ -14,7 +14,7 @@ schedule = scheduler.get_scheduler()
 import webserver
 import db
 import alerter
-import notifications
+import input
 
 # run the main application
 def run():
@@ -28,8 +28,8 @@ def run():
 	if conf['sensors']['enabled']: sensors.schedule_all()
 	# schedule all alerts
 	if conf['alerter']['enabled']: alerter.schedule_all()
-        # schedule all notifications
-        notifications.schedule_all()
+        # run all input services
+        input.run()
 	# start the web server
 	if conf['gui']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	# run as a deamon

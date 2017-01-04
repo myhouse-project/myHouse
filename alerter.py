@@ -16,7 +16,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
-import notifications
+import output
 import sensors
 import image_utils
 
@@ -267,7 +267,7 @@ def run(module_id,rule_id,notify=True):
 					log.info("["+module_id+"]["+rule_id+"]["+rule["severity"]+"] "+alert_text)
 					if rule["severity"] != "debug":
 						db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
-						notifications.notify(rule["severity"],alert_text)
+						output.notify(rule["severity"],alert_text)
         except Exception,e:
                 log.warning("error while running rule "+module_id+":"+rule_id+": "+utils.get_exception(e))
 	return alert_text
