@@ -10,7 +10,7 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import oracle
-import generate_charts
+import generate_image
 
 # variables
 initialized = False
@@ -143,12 +143,12 @@ def run():
 					elif response["type"] == "chart":
 						# post a waiting message
 						slack_message(channel,oracle.get_wait_message())
-						# generate the chart
+						# generate the image
 						module_id,widget_id = response["content"].split(",")
 						try: 
-							widgets = generate_charts.run(module_id,widget_id)
+							widgets = generate_image.run(module_id,widget_id)
 						except Exception,e:
-							log.warning("unable to generate the chart for "+module_id+":"+widget_id+": "+utils.get_exception(e))
+							log.warning("unable to generate the image for "+module_id+":"+widget_id+": "+utils.get_exception(e))
 							continue
 						# upload the chart to the channel
 						if len(widgets) > 0:
