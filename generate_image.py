@@ -206,7 +206,7 @@ def add_sensor_map(layout,widget):
         save_to_file(r,widget["widget_id"])
 
 # load all the widgets of the given module
-def run(module_id,requested_widget=None,generate_chart=True):
+def run(module_id,requested_widget=None,generate_image=True):
 	module = utils.get_module(module_id)
 	widgets = []
 	if module is None: return
@@ -223,19 +223,19 @@ def run(module_id,requested_widget=None,generate_chart=True):
 				layout = widget["layout"][k]
 				chart_generated = True
 				if layout["type"] == "sensor_group_summary": 
-					if generate_chart: add_sensor_group_summary_chart(layout,widget)
+					if generate_image: add_sensor_group_summary_chart(layout,widget)
 					break
 				elif layout["type"] == "image": 
-					if generate_chart: add_sensor_image(layout,widget)
+					if generate_image: add_sensor_image(layout,widget)
 					break
 				elif layout["type"] == "sensor_group_timeline": 
-					if generate_chart: add_sensor_group_timeline_chart(layout,widget)
+					if generate_image: add_sensor_group_timeline_chart(layout,widget)
 					break
 				elif layout["type"] == "chart_short" or layout["type"] == "chart_short_inverted": 
-					if generate_chart: add_sensor_chart(layout,widget)
+					if generate_image: add_sensor_chart(layout,widget)
 					break
                                 elif layout["type"] == "map":
-                                        if generate_chart: add_sensor_map(layout,widget)
+                                        if generate_image: add_sensor_map(layout,widget)
                                         break
 				else: 
 					chart_generated = False
