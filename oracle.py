@@ -2,7 +2,6 @@
 import sys
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
-import copy
 import re
 
 import utils
@@ -16,10 +15,15 @@ import alerter
 # kb format: words => action
 kb = {}
 initialized = False
-# possible values: fuzz.ratio, fuzz.partial_ratio, fuzz.token_sort_ratio, fuzz.token_set_ratio
-scorer = fuzz.token_set_ratio
+# define the scorer to use
+if conf["input"]["settings"]["algorithm"] == "ratio": scorer = fuzz.ratio
+elif conf["input"]["settings"]["algorithm"] == "partial_ratio": scorer = fuzz.partial_ratio
+elif conf["input"]["settings"]["algorithm"] == "token_sort_ratio": scorer = fuzz.token_sort_ratio
+elif conf["input"]["settings"]["algorithm"] == "token_set_ratio": scorer = fuzz.token_set_ratio
+# define the minimum score 
+not_understood_score = conf["input"]["settings"]["score"]
+# othre variables
 not_understood = "%not_understood%"
-not_understood_score = 50
 prefix = "%prefix%"
 wait = "%wait%"
 cleanup = re.compile('[^a-zA-Z ]')
@@ -46,35 +50,33 @@ def learn_config(include_widgets):
 	r = {}
 	widgets = []
         for module in conf["modules"]:
-		r["module"] = [module["module_id"],module["display_name"]]
 		if "rules" in module:
 			for rule in module["rules"]:
 				if not rule["enabled"]: continue
+				# ignore rules with a condition
 				if len(rule["conditions"]) != 0: continue
-				#r["rule"] = copy.deepcopy(r["module"])
-				#r["rule"].extend([rule["rule_id"],rule["display_name"]])
-				r["rule"] = [rule["display_name"]]
-				if "keywords" in rule: r["rule"].extend(rule["keywords"])
-				context = module["module_id"]+"|"+rule["rule_id"]
+				# keywords are the rule display name and additional keywords if any
+				keywords = rule["display_name"]
+				if "keywords" in rule: keywords = keywords+" "+rule["keywords"]
 				# user requesting for an alert
-				kb[cleanup.sub(' '," ".join(r["rule"])).lower()] = "rule|"+context
+				kb[cleanup.sub(' ',keywords).lower()] = "rule|"+module["module_id"]+"|"+rule["rule_id"]
 		if "widgets" in module and include_widgets:
 			for i in range(len(module["widgets"])):
 				for j in range(len(module["widgets"][i])):
 					widget = module["widgets"][i][j]
 					if widget["widget_id"] in widgets:
+						# perform a sanity check on the widget_id
 						log.warning("Duplicated widget "+widget["widget_id"]+" found. Widgets must have a unique name across all the modules")
 					widgets.append(widget["widget_id"])
 					for k in range(len(widget["layout"])):
 						layout = widget["layout"][k]
-						# ignore if not an image, a chart or a sensor timeline
-						if layout["type"] != "image" and layout["type"] != "map" and not layout["type"].startswith("chart_") and not layout["type"].startswith("sensor_"): continue
-	                			#r["layout"] = copy.deepcopy(r["module"])
-			                        #r["layout"].extend(["chart","widget",widget["widget_id"],widget["display_name"],layout["type"]])
-						r["layout"] = [widget["display_name"]]
-						context = module["module_id"]+"|"+widget["widget_id"]
-						# user requesting for a widget
-						kb[cleanup.sub(' '," ".join(r["layout"])).lower()] = "chart|"+context
+						# consider only the layouts we can generate a chart of
+						if layout["type"] == "image" or layout["type"] == "map" or layout["type"].startswith("chart_") or layout["type"].startswith("sensor_"):
+							keywords = widget["display_name"]
+							if "keywords" in rule: keywords = keywords+" "+rule["keywords"]
+							# user requesting for a widget
+							kb[cleanup.sub(' ',keywords).lower()] = "chart|"+module["module_id"]+"|"+widget["widget_id"]
+							break
 					
 # initialize the oracle		
 def init(include_widgets=True):
