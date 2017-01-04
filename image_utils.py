@@ -2,7 +2,6 @@
 import sys
 import cv2
 import numpy
-import os.path
 import base64
 
 import utils
@@ -13,6 +12,7 @@ conf = config.get_config()
 
 # variables
 detect_objects_debug = False
+current_index = 1
 
 # return a cv2 image object from a binary image
 def import_image(data,is_base64=False):
@@ -40,6 +40,7 @@ def normalize(image,hist=True,blur=False):
 # detect movement between two images
 def detect_movement(sensor,images,is_base64=False):
 	max = 0
+	index = None
 	for i in range(len(images)-1):
 		# normalize the images
 		i1 = normalize(import_image(images[i],is_base64=is_base64),hist=False)
@@ -57,8 +58,11 @@ def detect_movement(sensor,images,is_base64=False):
 		delta = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
 		# return the percentage of change
 		percentage = cv2.countNonZero(delta)*100/(i1_height*i1_width)
-		if percentage > max: max = percentage
-	return max
+		if percentage > max: 
+			max = percentage
+			index = i
+	if index is None: return None
+	return [max,images[i]]
 
 # detect objects in a given image
 def detect_objects(sensor,image,is_base64=False):
@@ -71,7 +75,7 @@ def detect_objects(sensor,image,is_base64=False):
         for feature in sensor["object_detection"]:
 		# load the cascade file
                 filename = conf["constants"]["base_dir"]+"/"+feature["filename"]
-                if not os.path.isfile(filename):
+                if not utils.file_exists(filename):
                         log.error("Unable to load the detection object XML at "+filename)
                         return None
                 cascade = cv2.CascadeClassifier(filename)
@@ -93,11 +97,18 @@ def detect_objects(sensor,image,is_base64=False):
                         	cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 			# prepare the alert text
 			text = str(len(objects))+" "+feature["display_name"]
-			# if debug is on save the image
-			if detect_objects_debug: cv2.imwrite(conf["constants"]["tmp_dir"]+"/detect_objects_"+str(utils.now())+".png",image)
 			# prepare the image
 			image = export_image(image,is_base64=is_base64)
 			return [text,image]
 	# nothing found, return None
 	return None
 
+# save an image into a temporary folder
+def save_tmp_image(prefix,image):
+	if not conf["constants"]["image_detection_save_on_disk"]: return
+	# keep a maximum number of images
+	if current_index > conf["constants"]["image_detection_max_saved_images"]: current_index = 1
+	filename = conf["constants"]["tmp_dir"]+"/"+prefix+"_"+str(current_index)+".png"
+	cv2.imwrite(filename,image)
+	current_index = current_index +1
+	return filename

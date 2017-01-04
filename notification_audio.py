@@ -21,14 +21,7 @@ input_settings = conf["input"]["audio"]
 output_file = conf["constants"]["tmp_dir"]+"/audio_output.wav"
 input_file = conf["constants"]["tmp_dir"]+"/audio_input.wav"
 # voice recorder variables
-chunk_size = 1024
-silent_chunks_threshold = 1
 format = pyaudio.paInt16
-silent_chunks = 2
-threshold = 500
-frame_max_value = 2 ** 15 - 1
-normalize_db = 10 ** (-1.0 / 20)
-trim_append_ratio = 4
 
 # use text to speech to notify about a given text
 def notify(text):
@@ -86,19 +79,21 @@ def get_input_device():
 			if device is not None: continue
 			if input_settings["device_index"] == -1 or i == input_settings["device_index"]:
 				device = {"index": i, "sample_rate": rate, "channels": devinfo['maxInputChannels'], "name": str(audio.get_device_info_by_host_api_device_index(0,i).get('name'))}
-	log.info("Selected input device: "+device["name"])
 	return device
 
 # capture voice and perform speech recognition
 def listen():
 	# get the input device
 	device = get_input_device()
+	if device is None: 
+		log.warning("No input device found")
+		return
+	log.info("Selected input device: "+device["name"])
 	# initialize the oracle
 	kb = oracle.init(include_widgets=False)
 	while True:
 		# record a voice sample
-		log.info("Listening for voice...")
-		# Not using speech_recognition Microphone() since requires pyaudio 0.2.9+ which is not available in the raspian repository
+		log.info("Listening for voice commands...")
 		sample_width, data = record_voice(device)
 		# save it to file
 		save_to_file(device,sample_width,data)
@@ -153,7 +148,7 @@ def save_to_file(device,sample_width,data):
 def record_voice(device):
 	# open the input device
 	audio = pyaudio.PyAudio()
-	stream = audio.open(format=format, channels=device["channels"], rate=device["sample_rate"], input=True, output=True, frames_per_buffer=chunk_size)
+	stream = audio.open(format=format, channels=device["channels"], rate=device["sample_rate"], input=True, output=True, frames_per_buffer=conf["constants"]["voice_recorder"]["chunk_size"])
 	# initialize
 	audio_started = False
 	silent_chunks = 0
@@ -161,17 +156,18 @@ def record_voice(device):
 	# record the voice
 	while True:
         	# little endian, signed short
-		data_chunk = array('h', stream.read(chunk_size))
+		data_chunk = array('h', stream.read(conf["constants"]["voice_recorder"]["chunk_size"]))
 		if byteorder == 'big': data_chunk.byteswap()
 	        data_all.extend(data_chunk)
 		# check if the recorded chunk was silent
-        	silent = max(data_chunk) < threshold
+		print max(data_chunk)
+        	silent = max(data_chunk) < conf["constants"]["voice_recorder"]["threshold"]
 		# record the voice when not in silent
 	        if audio_started:
         		if silent:
 				# if there is silence count the number of silent_chunks and exit when there was too much silence at the end
 	        		silent_chunks += 1
-	        	        if silent_chunks > (silent_chunks_threshold * device["sample_rate"] / 1024): break
+	        	        if silent_chunks > (conf["constants"]["voice_recorder"]["silent_chunks_threshold"] * device["sample_rate"] / 1024): break
 		        else: 
 				# there is still voice, reset the silent_chunk counter
 				silent_chunks = 0
@@ -194,16 +190,16 @@ def normalize(device,data_all):
 	_to = len(data_all) - 1
 	# normalize the sample
 	for i, b in enumerate(data_all):
-		if abs(b) > threshold:
-			_from = max(0, i - device["sample_rate"]/trim_append_ratio)
+		if abs(b) > conf["constants"]["voice_recorder"]["threshold"]:
+			_from = max(0, i - device["sample_rate"]/conf["constants"]["voice_recorder"]["trim_append_ratio"])
 			break
 	for i, b in enumerate(reversed(data_all)):
-        	if abs(b) > threshold:
-			_to = min(len(data_all) - 1, len(data_all) - 1 - i + device["sample_rate"]/trim_append_ratio)
+        	if abs(b) > conf["constants"]["voice_recorder"]["threshold"]:
+			_to = min(len(data_all) - 1, len(data_all) - 1 - i + device["sample_rate"]/conf["constants"]["voice_recorder"]["trim_append_ratio"])
 			break
 	data_all = copy.deepcopy(data_all[_from:(_to + 1)])
 	# amplify the volume
-	normalize_factor = (float(normalize_db * frame_max_value)/ max(abs(i) for i in data_all))
+	normalize_factor = (float(conf["constants"]["voice_recorder"]["normalize_db"] * conf["constants"]["voice_recorder"]["frame_max_value"])/ max(abs(i) for i in data_all))
 	r = array('h')
 	for i in data_all: r.append(int(i * normalize_factor))
 	return r

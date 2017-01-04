@@ -40,6 +40,17 @@ constants = {
 	'bot_brain_file': base_dir+"/bot.txt",
 	'chart_extension': 'png',
 	'chart_short_height': 230,
+	'image_detection_save_on_disk': True,
+	'image_detection_max_saved_images': 10,
+	'voice_recorder': {
+		'chunk_size': 4096,
+		'silent_chunks_threshold': 3,
+		'silent_chunks': 2,
+		'threshold': 500,
+		'frame_max_value': 2 ** 15 - 1,
+		'normalize_db': 10 ** (-1.0 / 20),
+		'trim_append_ratio': 4,
+	},
 	'formats': {
 		'int': { 
 			'formatter': 'int', 

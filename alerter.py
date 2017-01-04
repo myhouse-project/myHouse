@@ -25,11 +25,13 @@ def parse_image(sensor,data):
 	if len(data) == 0: return [""]
 	# detect objects in the last image
 	if "object_detection" in sensor: 
-		object_detection = image_utils.detect_objects(sensor,data[(len(data)-1)],is_base64=True)
-		if object_detection is not None:
+		result = image_utils.detect_objects(sensor,data[(len(data)-1)],is_base64=True)
+		if result is not None:
 			# detect something
-			text = object_detection[0]
-			image = object_detection[1]
+			text = result[0]
+			image = result[1]
+                        # save the image on disk
+                        image_utils.save_tmp_image("objects_detection",image)
 			# save a new image with the object highlighted into the sensor
 		        measures = []
 			measure = {}
@@ -41,10 +43,15 @@ def parse_image(sensor,data):
 			return [text]
 	# detect movements if there are at least two images
 	if "motion_detection" in sensor and len(data) >= 2:
-		motion_detection = image_utils.detect_movement(sensor,data,is_base64=True)
-		if motion_detection > 0: log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(motion_detection)+"%")
-		if motion_detection > sensor["motion_detection"]["threshold"]:
-			return [sensor["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
+		result = image_utils.detect_movement(sensor,data,is_base64=True)
+		if result is not None:
+	                difference = result[0]
+	                image = result[1]
+			if difference > 0: log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(difference)+"%")
+			if difference > sensor["motion_detection"]["threshold"]:
+				# save the image on disk
+				image_utils.save_tmp_image("motion_detection",image)
+				return [sensor["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
 	return [""]		
 
 # for a location parse the data and return the label
