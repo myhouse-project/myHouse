@@ -123,7 +123,7 @@ def listen():
 			command = "pocketsphinx_continuous -infile "+input_file+" -hmm /usr/share/pocketsphinx/model/hmm/"+language+"/hub4wsj_sc_8k/ -dict /usr/share/pocketsphinx/model/lm/"+language+"/cmu07a.dic 2>/dev/null"
 			output = utils.run_command(command)
 			request = output.replace("000000000: ","")
-		if input_settings["echo_question"]:
+		if input_settings["echo_request"]:
 			# repeat the question
 			notify("You have said:")
 			play(input_file)

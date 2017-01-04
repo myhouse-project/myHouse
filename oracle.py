@@ -54,6 +54,7 @@ def learn_config(include_widgets):
 				#r["rule"] = copy.deepcopy(r["module"])
 				#r["rule"].extend([rule["rule_id"],rule["display_name"]])
 				r["rule"] = [rule["display_name"]]
+				if "keywords" in rule: r["rule"].extend(rule["keywords"])
 				context = module["module_id"]+"|"+rule["rule_id"]
 				# user requesting for an alert
 				kb[cleanup.sub(' '," ".join(r["rule"])).lower()] = "rule|"+context
