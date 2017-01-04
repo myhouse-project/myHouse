@@ -35,14 +35,9 @@ def poll(sensor):
 
 # parse the data
 def parse(sensor,data):
-	measures = []
-	measure = {}
-	measure["key"] = sensor["sensor_id"]
-	measure["value"] = data
 	# if expecting an image and no data or an error is returned, return a placeholder
-	if measure["value"] == "": measure["value"] = get_image_unavailable()
-	measures.append(measure)
-        return measures
+	if data == "": return get_image_unavailable()
+	return data
 
 # return the cache schema
 def cache_schema(sensor):

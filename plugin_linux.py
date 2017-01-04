@@ -60,20 +60,8 @@ def poll(sensor):
 def parse(sensor,data):
 	data = str(data).replace("'","''")
 	command = commands[sensor['plugin']['measure']]['command_parse'] if sensor['plugin']['measure'] in commands else sensor['plugin']['command_parse']
-	measures = []
-        measure = {}
-        measure["key"] = sensor["sensor_id"]
-	parsed = ""
-	if command != "": 
-		# run the command to parse the data
-		parsed = utils.run_command("echo '"+data+"' |"+command,timeout=conf["plugins"]["linux"]["timeout"])
-	else: 
-		# use the input data as parsed data
-		parsed = data
-	measure["value"] = utils.normalize(parsed,conf["constants"]["formats"][sensor["format"]]["formatter"])
-        # append the measure and return it
-        measures.append(measure)
-        return measures
+	if command != "": return utils.run_command("echo '"+data+"' |"+command,timeout=conf["plugins"]["linux"]["timeout"])
+	else: return data
 
 # return the cache schema
 def cache_schema(sensor):

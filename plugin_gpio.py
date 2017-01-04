@@ -12,6 +12,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 
+# initialize the GPIO
 if "gpio" in conf['plugins']: 
 	plugin_conf = conf['plugins']['gpio']
 	pins = {}
@@ -76,12 +77,7 @@ def poll(sensor):
 
 # parse the data
 def parse(sensor,data):
-        measures = []
-        measure = {}
-        measure["key"] = sensor["sensor_id"]
-        measure["value"] = int(data)
-        measures.append(measure)
-	return measures
+	return int(data)
 
 # return the cache schema
 def cache_schema(sensor):

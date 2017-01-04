@@ -88,6 +88,14 @@ def parse(sensor):
         try:
 		# parse the cached data
 		measures = plugins[sensor['plugin']['plugin_name']].parse(sensor,data)
+		if not isinstance(measures,list): 
+			# returned a single value, build the data structure
+			value = measures
+			measures = []
+			measure = {}
+			measure["key"] = sensor["sensor_id"]
+			measure["value"] = value
+			measures.append(measure)
 		# format each values
 		for i in range(len(measures)): 
 			# normalize the measures

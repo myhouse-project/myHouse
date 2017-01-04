@@ -28,19 +28,14 @@ def poll(sensor):
 # parse the data
 def parse(sensor,data):
 	request = sensor['plugin']['measure']
-	measures = []
-        measure = {}
-        measure["key"] = sensor["sensor_id"]
 	# parse the json 
 	parsed_json = json.loads(data)
 	if request == "alerts": 
 		# return the alert
 		alert = ""
 		if isinstance(parsed_json["forecast"]["precip_time_24hr"],basestring): alert = parsed_json["forecast"]["phrase"]
-		measure["value"] = alert
-	# append the measure and return it
-	measures.append(measure)
-        return measures
+		return alert
+	else: raise Exception("invalid request "+str(request))
 
 # return the plugin request type
 def get_request_type(request):
