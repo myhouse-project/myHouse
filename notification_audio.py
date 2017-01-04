@@ -77,7 +77,7 @@ def get_input_device():
 	                log.info("- ["+str(i)+"][input] "+str(audio.get_device_info_by_host_api_device_index(0,i).get('name'))+", sample rate "+str(sample_rate)+"Hz")
 			# select the input device
 			if device is not None: continue
-			if input_settings["device_index"] == -1 or i == input_settings["device_index"]:
+			if "device_index" not in input_settings or i == input_settings["device_index"]:
 				device = {"index": i, "sample_rate": rate, "channels": devinfo['maxInputChannels'], "name": str(audio.get_device_info_by_host_api_device_index(0,i).get('name'))}
 	return device
 

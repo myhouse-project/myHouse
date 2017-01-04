@@ -267,10 +267,35 @@
 				"retention"
 			]
 		},
-		"output": {
+		"input": {
 			"type": "object",
 			"description": "Input module configuration",
 			"properties": {
+				"settings": {
+					"type": "object",
+					"description": "Configuration settings of the engine responsible for selecting the most appropriate response to users' requests",
+					"properties": {
+						"algorithm": {
+							"type": "string",
+							"description": "When a request is submitted, the algorithm to use for identifying the most appropriate response (http://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/ for more information)",
+							"enum": [
+								"ratio",
+								"partial_ratio",
+								"token_sort_ratio",
+								"token_set_ratio"
+							],
+							"value": "token_set_ratio"
+						},
+						"score": {
+							"type": "integer",
+							"description": "The minimum score to determine if a request has been understood correctly"
+						}
+					},
+					"required": [
+						"algorithm",
+						"score"
+					]
+				},
 				"slack": {
 					"type": "object",
 					"description": "Allow interactive communication with the Slack bot",
@@ -316,15 +341,15 @@
 					},
 					"required": [
 						"enabled",
-						"engine",
-						"device_index",
+						"engine"
 						"language"
 					]
 				}
 			},
 			"required": [
 				"slack",
-				"audio"
+				"audio",
+				"settings"
 			]
 		},
 		"output": {
@@ -881,6 +906,10 @@
 									"display_name": {
 										"type": "string",
 										"description": "The title to the widget"
+									},
+									"keywords": {
+										"type": "string",
+										"description": "Additional keywords that will be used for better matching a user request with this rule"
 									},
 									"enabled": {
 										"type": "boolean",
