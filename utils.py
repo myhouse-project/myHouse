@@ -302,3 +302,7 @@ def distance(a,b):
 	c = 2 * asin(sqrt(a)) 
 	km = 6367 * c
 	return length_unit(km)
+
+# check if a file exists on the filesystem
+def file_exists(file):
+	return os.path.isfile(file)

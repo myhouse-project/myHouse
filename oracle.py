@@ -51,8 +51,9 @@ def learn_config(include_widgets):
 			for rule in module["rules"]:
 				if not rule["enabled"]: continue
 				if len(rule["conditions"]) != 0: continue
-				r["rule"] = copy.deepcopy(r["module"])
-				r["rule"].extend([rule["rule_id"],rule["display_name"]])
+				#r["rule"] = copy.deepcopy(r["module"])
+				#r["rule"].extend([rule["rule_id"],rule["display_name"]])
+				r["rule"] = [rule["display_name"]]
 				context = module["module_id"]+"|"+rule["rule_id"]
 				# user requesting for an alert
 				kb[cleanup.sub(' '," ".join(r["rule"])).lower()] = "rule|"+context
@@ -67,8 +68,9 @@ def learn_config(include_widgets):
 						layout = widget["layout"][k]
 						# ignore if not an image, a chart or a sensor timeline
 						if layout["type"] != "image" and layout["type"] != "map" and not layout["type"].startswith("chart_") and not layout["type"].startswith("sensor_"): continue
-	                			r["layout"] = copy.deepcopy(r["module"])
-			                        r["layout"].extend(["chart","widget",widget["widget_id"],widget["display_name"],layout["type"]])
+	                			#r["layout"] = copy.deepcopy(r["module"])
+			                        #r["layout"].extend(["chart","widget",widget["widget_id"],widget["display_name"],layout["type"]])
+						r["layout"] = [widget["display_name"]]
 						context = module["module_id"]+"|"+widget["widget_id"]
 						# user requesting for a widget
 						kb[cleanup.sub(' '," ".join(r["layout"])).lower()] = "chart|"+context
