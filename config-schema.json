@@ -872,6 +872,39 @@
 				"mqtt"
 			]
 		},
+		"pws": {
+			"type": "object",
+			"description": "To upload your weather data to Weather Underground Personal Weather Station service For more information visit https://www.wunderground.com/personal-weather-station/signup",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Enable the service"
+				},
+				"username": {
+					"type": "string",
+					"description": "The username for authenticating against the service"
+				},
+				"password": {
+					"type": "string",
+					"description": "The password for authenticating against the service"
+				},
+				"publishing_interval": {
+					"type": "integer",
+					"description": "How often in minutes the pws has to be updated with new data"
+				},
+				"data": {
+					"type": "object",
+					"description": "Mapping between the field (full list available at http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol) and the sensor to pull the data from in the format module_id:group_id:sensor_id"
+				}
+			},
+			"required": [
+				"enabled",
+				"username",
+				"password",
+				"publishing_interval",
+				"data"
+			]
+		},
 		"modules": {
 			"type": "array",
 			"description": "Individual module configuration",

@@ -15,6 +15,7 @@ import webserver
 import db
 import alerter
 import input
+import pws
 
 # run the main application
 def run():
@@ -32,6 +33,8 @@ def run():
         input.run()
 	# start the web server
 	if conf['gui']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
+	# run the pws service
+	if conf['pws']['enabled']: pws.schedule_all()
 	# run as a deamon
 	while True:
 		time.sleep(1)

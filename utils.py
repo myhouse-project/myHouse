@@ -131,10 +131,10 @@ def normalize(value,formatter=None):
 	else: return str(value)
 
 # request a given url
-def web_get(url,username=None,password=None,binary=False):
+def web_get(url,username=None,password=None,binary=False,params={}):
 	log.debug("Requesting web page "+url)
-	if username is not None: request = requests.get(url,auth=(username,password),timeout=conf['constants']['web_timeout'],verify=False)
-	else: request = requests.get(url,timeout=conf['constants']['web_timeout'],verify=False)
+	if username is not None: request = requests.get(url,params=params,auth=(username,password),timeout=conf['constants']['web_timeout'],verify=False)
+	else: request = requests.get(url,params=params,timeout=conf['constants']['web_timeout'],verify=False)
 	if binary: return request.content
 	else: return request.text
 
@@ -262,23 +262,23 @@ def is_night():
 	return is_night
 
 # convert the temperature if needed
-def temperature_unit(temperature):
-	if conf["general"]["units"]["fahrenheit"]: return (temperature * 1.8) + 32
+def temperature_unit(temperature,force=False):
+	if conf["general"]["units"]["fahrenheit"] or force: return (temperature * 1.8) + 32
 	else: return temperature
 
 # convert a length if neeeded
-def length_unit(length):
-        if conf["general"]["units"]["imperial"]: return length*0.039370
+def length_unit(length,force=False):
+        if conf["general"]["units"]["imperial"] or force: return length*0.039370
         else: return length
 
 # convert a pressure if neeeded
-def pressure_unit(pressure):
-        if conf["general"]["units"]["imperial"]: return pressure*0.0295301
+def pressure_unit(pressure,force=False):
+        if conf["general"]["units"]["imperial"] or force: return (29.92 * pressure) / 1013.25
         else: return pressure
 
 # convert a speed if needed
-def speed_unit(speed):
-	if conf["general"]["units"]["imperial"]: return speed*0.621371
+def speed_unit(speed,force=False):
+	if conf["general"]["units"]["imperial"] or force: return speed*0.621371
 	else: return speed
 
 # return the file path of a given widget id
