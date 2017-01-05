@@ -170,8 +170,7 @@ def run(module_id,rule_id,notify=True):
 			for variable in variables:
 				# ensure the variable is a valid sensor
 				if variable != '' and is_sensor(variable):
-					variable_split = variable.split(":")
-					variable_sensor = utils.get_sensor(variable_split[0],variable_split[1],variable_split[2])
+					variable_sensor = utils.get_sensor_string(variable)
 					if variable_sensor is None:
 						log.error("invalid variable sensor "+variable)
                                                 continue
@@ -189,14 +188,13 @@ def run(module_id,rule_id,notify=True):
 						key = split[0]
 						start = split[1]
 						end = split[2]
-			                        key_split = key.split(":")
-			                        sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
+			                        sensor = utils.get_sensor_string(key)
 			                        if sensor is None:
-			                        	log.error("invalid sensor "+key_split[0]+":"+key_split[1]+":"+key_split[2])
+			                        	log.error("invalid sensor "+key)
 							valid_data = False
 			                                break
 	        				sensors.init_plugins()
-		                                sensor = sensors.init_sensor(sensor,module_id)
+		                                sensor = sensors.init_sensor(sensor)
 						# retrieve and store the data
 						definitions[definition] = get_data(sensor,rule["definitions"][definition])
 						if len(definitions[definition]) == 0: 
@@ -257,14 +255,13 @@ def run(module_id,rule_id,notify=True):
 					        force = True if len(split) > 3 and split[3] == "force" else False
 						ifnotexists = True if len(split) > 3 and split[3] == "ifnotexists" else False
 						# ensure the target sensor exists
-						key_split = key.split(":")
-						sensor = utils.get_sensor(key_split[0],key_split[1],key_split[2])
+						sensor = utils.get_sensor_string(key)
 						if sensor is None: 
 							log.warning("["+rule["rule_id"]+"] invalid sensor "+key)
 							continue
 						# execute the requested action
-						if what == "send": sensors.data_send(key_split[0],key_split[1],key_split[2],value,force=force)
-						elif what == "set": sensors.data_set(key_split[0],key_split[1],key_split[2],value,ifnotexists=ifnotexists)
+						if what == "send": sensors.data_send(sensor["module_id"],sensor["group_id"],sensor["sensor_id"],value,force=force)
+						elif what == "set": sensors.data_set(sensor["module_id"],sensor["group_id"],sensor["sensor_id"],value,ifnotexists=ifnotexists)
 				# notify about the alert
 				if rule["severity"] == "none": notify = False
 				if notify:

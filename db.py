@@ -165,9 +165,11 @@ if __name__ == '__main__':
 			delete(key+":hour:min")
 			delete(key+":hour:avg")
 			delete(key+":hour:max")
+			delete(key+":hour:rate")
 			delete(key+":day:min")
                         delete(key+":day:avg")
                         delete(key+":day:max")
+			delete(key+":day:rate")
 		elif sys.argv[1] == "rename":
 			key = conf["constants"]["db_schema"]["root"]+":"+sys.argv[2]
 			new_key = conf["constants"]["db_schema"]["root"]+":"+sys.argv[3]
@@ -176,7 +178,9 @@ if __name__ == '__main__':
 			rename(key+":hour:min",new_key+":hour:min")
                         rename(key+":hour:avg",new_key+":hour:avg")
                         rename(key+":hour:max",new_key+":hour:max")
+			rename(key+":hour:rate",new_key+":hour:rate")
                         reanme(key+":day:min",new_key+":day:min")
                         rename(key+":day:avg",new_key+":day:avg")
                         rename(key+":day:max",new_key+":day:max")
+			rename(key+":day:rate",new_key+":day:rate")
 		else: print "Usage: "+__file__+" <delete|rename> <module_id:group_id:sensor_id> [module_id:group_id:new_sensor_id]"

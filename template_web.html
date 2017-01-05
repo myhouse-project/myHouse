@@ -411,11 +411,9 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor summary widget
 	function add_sensor_group_summary_chart(tag,layout) {
-		split = split_group(layout,"group")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]; 
-		sensors = get_group(module_id,group_id)
+		if (!("group" in layout)) return
+		sensors = get_group_string(layout["group"])
+		if (sensors == null) return;
 		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_sensor_group_summary"]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts(options);
@@ -424,7 +422,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		for (var i = 0; i < sensors.length; i++) {
 			var sensor = sensors[i];
 			if ("group_summary_exclude" in sensor) continue;
-			var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			// skip flags
 			if (sensor['format'] == 'string') continue;
 			var is_flag = false;
@@ -447,11 +445,9 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor timeline widget
 	function add_sensor_group_timeline_chart(tag,layout) {
-		split = split_group(layout,"group")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1];
-		sensors = get_group(module_id,group_id)
+		if (!("group" in layout)) return
+		sensors = get_group_string(layout["group"])
+		if (sensors == null) return;
 		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+layout["type"]+"_"+layout["timeframe"]]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts('StockChart',options);
@@ -459,7 +455,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		// for each sensor
 		for (var i = 0; i < sensors.length; i++) {
 			var sensor = sensors[i];
-			var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			if (! ("series" in sensor)) continue;
 			// add each series, to the chart
 			for (var j = 0; j < sensor["series"].length; j++) {
@@ -474,13 +470,10 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a generic sensor chart widget
 	function add_sensor_chart(tag,layout) {
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]
-		sensor_id = split[2];
-		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		if (!("sensor" in layout)) return
+		sensor = get_sensor_string(layout["sensor"])
+		if (sensor == null) return;
+		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][layout["type"]]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
@@ -498,13 +491,10 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add an image widget
 	function add_sensor_image(tag,layout) {
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]
-		sensor_id = split[2];
-		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		if (!("sensor" in layout)) return
+		sensor = get_sensor_string(layout["sensor"])
+		if (sensor == null) return;
+		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// add the image to the layout
 		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
 	}
@@ -532,15 +522,13 @@ th.dt-center, td.dt-center { text-align: center; }
 							zoom: 2
 						});
 						// retrieve the sensors belonging to the group
-						split = split_group(layout,"group")
-						if (split == null) return;
-						module_id = split[0]
-						group_id = split[1];
-						sensors = get_group(module_id,group_id)
+						if (!("group" in layout)) return
+						sensors = get_group_string(layout["group"])
+						if (sensors == null) return;
 						for (var i = 0; i < sensors.length; i++) {
 							// for each sensor
 							var sensor = sensors[i];
-							var sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];							
+							var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];							
 							// request the data 
 							$.getJSON(sensor_url+"/"+layout["timeframe"]+"/avg",function(tag,layout,map) {
 								return function (data) {
@@ -647,13 +635,10 @@ th.dt-center, td.dt-center { text-align: center; }
 		$(tag+"_table").DataTable(options);
 		var table = $(tag+"_table").DataTable();
 		// load the table
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]
-		sensor_id = split[2];
-		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		if (!("sensor" in layout)) return
+		sensor = get_sensor_string(layout["sensor"])
+		if (sensor == null) return;
+		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// add the image to the layout
 		$.getJSON(sensor_url+"/current",function(table) {
 			return function (data) {
@@ -670,13 +655,10 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor data widget
 	function add_sensor_data(tag,layout) {
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		module_id = split[0]
-		group_id = split[1]
-		sensor_id = split[2];
-		var sensor = get_sensor(module_id,group_id,sensor_id)
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		if (!("sensor" in layout)) return
+		sensor = get_sensor_string(layout["sensor"])
+		if (sensor == null) return;
+		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// add the image to the layout
 		$.getJSON(sensor_url+"/current",function(tag) {
 			return function (data) {
@@ -874,12 +856,10 @@ th.dt-center, td.dt-center { text-align: center; }
 			$(body).append(checkbox_html);	
 		}
 		// retrieve the sensor to control
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		var module_id = split[0]
-		var group_id = split[1]
-		var sensor_id = split[2];
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		if (!("sensor" in layout)) return
+		sensor = get_sensor_string(layout["sensor"])
+		if (sensor == null) return;
+		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// set the current value
 		$.getJSON(hostname+sensor_url+"/current",function(tag) {
 			return function (data) {
@@ -997,12 +977,10 @@ th.dt-center, td.dt-center { text-align: center; }
 			return "Temperature:<b> "+event.text+"°C</b>";
 		}
 		// load the events
-		split = split_sensor(layout,"sensor")
-		if (split == null) return;
-		var module_id = split[0]
-		var group_id = split[1]
-		var sensor_id = split[2];
-		var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+		if (!("sensor" in layout)) return
+		sensor = get_sensor_string(layout["sensor"])
+		if (sensor == null) return;
+		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		$.getJSON(hostname+sensor_url+"/current", function (data) {
 			data = JSON.parse(data)
 			if (data.length > 0)  scheduler.parse(data[0],"json");
@@ -1082,14 +1060,10 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 		// set the current measure
 		if ("sensor" in layout) {
-			split = split_sensor(layout,"sensor")
-			if (split == null) return;
-			module_id = split[0]
-			group_id = split[1]
-			sensor_id = split[2];
-			var sensor = get_sensor(module_id,group_id,sensor_id)
+			if (!("sensor" in layout)) return
+			sensor = get_sensor_string(layout["sensor"])
 			if (sensor == null) return;
-			var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			set_html(tag+"_current",sensor_url+"/current");
 			$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
 			// set the timestamp
@@ -1097,14 +1071,9 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 		// if a different timestamp has to be set, retrieve it
 		if ("timestamp" in layout) {
-			split = split_sensor(layout,"timestamp")
-			if (split == null) return;
-			module_id = split[0]
-			group_id = split[1]
-			sensor_id = split[2];
-			var sensor = get_sensor(module_id,group_id,sensor_id)
+			sensor = get_sensor_string(layout["timestamp"])
 			if (sensor == null) return;
-			var sensor_url = module_id+"/"+group_id+"/"+sensor_id;
+			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 			// set the timestamp
 			set_html(tag+"_timestamp",sensor_url+"/timestamp");			
 		}
@@ -1226,69 +1195,54 @@ th.dt-center, td.dt-center { text-align: center; }
 		if (module_id == null) module_id = current_module;
 		for (var i = 0; i < conf["modules"].length; i++) {
 			var module = conf["modules"][i];
+			if (! module["enabled"]) continue
 			if (module["module_id"] == module_id) return module;
 		}
+		return null
 	}
 	
-	// return a sensor group data
+	// return the sensors belonging to the same group
 	function get_group(module_id,group_id) {
-		module = get_module(module_id);
-		if (module == null) return null;
-		if (!("sensors" in module)) return null;
 		sensors = []
-		for (var i = 0; i < module["sensors"].length; i++) {
-			var sensor = module["sensors"][i];
-			sensor["module_id"] = module_id
-			if (sensor["group_id"] == group_id) sensors.push(sensor);
+		if (module_id == null) module_id = current_module;
+		for (var i = 0; i < conf["modules"].length; i++) {
+			var module = conf["modules"][i];
+			if (! module["enabled"]) continue
+			if (!("sensors" in module)) continue
+			for (var j = 0; j < module["sensors"].length; j++) {
+				var sensor = module["sensors"][j];
+				if (sensor["module_id"] == module_id && sensor["group_id"] == group_id) sensors.push(sensor);
+			}
 		}
+		if (sensors.length == 0) return null
 		return sensors
 	}
 	
-	// return a sensor data
+	// return the sensors belonging to the same group
+	function get_group_string(group_string) {
+		var split = group_string.split(":",2)
+		if (split.length < 2) return null
+		return get_group(split[0],split[1])
+	}
+
+	// fetch a sensor
 	function get_sensor(module_id,group_id,sensor_id) {
+		if (module_id == null) module_id = current_module;
 		sensors = get_group(module_id,group_id);
 		if (sensors == null) return null;
 		for (var j = 0; j < sensors.length; j++) {
 			var sensor = sensors[j];
 			if (sensor["sensor_id"] == sensor_id) return sensor;
 		}
+		return null
 	}
 	
-	// split group
-	function split_group(widget,key) {
-		// ensure the key is in widget
-		if (!(key in widget)) {
-			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
-			return null
-		}
-		// split it
-		split = widget[key].split(":")
-		// ensure the group exists
-		group = get_group(split[0],split[1])
-		if (group == null) {
-			log("warning","Unable to find group "+widget[key]+" for widget "+widget["widget_id"])
-			return null
-		}
-		return split
-	}
-	
-	// split sensor
-	function split_sensor(widget,key) {
-		// ensure the key is in widget
-		if (!(key in widget)) {
-			log("warning","Unable to find "+key+" in widget "+widget["widget_id"])
-			return null
-		}
-		// split it
-		split = widget[key].split(":")
-		// ensure the sensor exists
-		sensor = get_sensor(split[0],split[1],split[2])
-		if (sensor == null) {
-			log("warning","Unable to find sensor "+widget[key]+" for widget "+widget["widget_id"])
-			return null
-		}
-		return split
-	}
+	// fetch a sensor
+	function get_sensor_string(sensor_string) {
+		var split = sensor_string.split(":",3)
+		if (split.length < 3) return null
+		return get_sensor(split[0],split[1],split[2])
+	}	
 
 	// auto refresh the page
 	function auto_refresh(seconds) {
