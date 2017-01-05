@@ -65,8 +65,10 @@ def install_deps():
         run_command("apt-get install -y mpg123")
         print "Installing python-speech-recognition..."
         run_command("pip install SpeechRecognition")
-        print "Installing python-pyaudio..."
-        run_command("apt-get install -y python-pyaudio")
+#        print "Installing python-pyaudio..."
+#        run_command("apt-get install -y python-pyaudio")
+	print "Installing sox..."
+        run_command("apt-get install -y sox")
         print "Installing flac..."
         run_command("apt-get install -y flac")
         print "Installing pocketsphinx..."

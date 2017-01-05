@@ -336,9 +336,9 @@
 							"type": "boolean",
 							"description": "Enable the module"
 						},
-						"device_index": {
-							"type": "number",
-							"description": "Force the selection of a specific input device by its index. Review the logs for a list the list of devices and their indexes. Use -1 for automatic detection"
+						"device": {
+							"type": "string",
+							"description": "Optional explicit alsa PCM device name. Get a list by running aplay -l/arecord -l"
 						},
 						"engine": {
 							"type": "string",
@@ -356,6 +356,38 @@
 						"echo_request": {
 							"type": "boolean",
 							"description": "For debugging purposes, repeats the request and what has been understood"
+						},
+						"recorder": {
+							"type": "object",
+							"description": "Configuration settings for the voice recorder",
+							"properties": {
+								"max_duration": {
+									"type": "number",
+									"description": "Maximum duration in seconds of the audio sample"
+								},
+								"start_duration": {
+									"type": "number",
+									"description": "Amount of time that non-silence must be detected before it stops trimming audio. By increasing the duration, burst of noise can be treated as silence and trimmed off"
+								},
+								"start_threshold": {
+									"type": "number",
+									"description": "Start recording when the audio will be this percentage above true silence"
+								},
+								"end_duration": {
+									"type": "number",
+									"description": "Period of silence that must exist before the recorder is stopped"
+								},
+								"end_threshold": {
+									"type": "number",
+									"description": "Stop recording when the audio will be this percentage below true silence"
+								}
+							},
+							"required": [
+								"start_duration",
+								"start_threshold",
+								"end_duration",
+								"end_threshold"								
+							]
 						}
 					},
 					"required": [
@@ -573,7 +605,7 @@
 						},
 						"device": {
 							"type": "string",
-							"description": "Optional PCM device name"
+							"description": "Optional explicit alsa PCM device name. Get a list by running aplay -l/arecord -l"
 						},
 						"engine": {
 							"type": "string",
@@ -619,7 +651,6 @@
 					"required": [
 						"enabled",
 						"engine",
-						"device",
 						"language"
 					]
 				}

@@ -263,22 +263,22 @@ def is_night():
 
 # convert the temperature if needed
 def temperature_unit(temperature,force=False):
-	if conf["general"]["units"]["fahrenheit"] or force: return (temperature * 1.8) + 32
+	if conf["general"]["units"]["fahrenheit"] or force: return "{0:.1f}".format(float(temperature * 1.8 + 32))
 	else: return temperature
 
 # convert a length if neeeded
 def length_unit(length,force=False):
-        if conf["general"]["units"]["imperial"] or force: return length*0.039370
+        if conf["general"]["units"]["imperial"] or force: return "{0:.1f}".format(float(length*0.039370))
         else: return length
 
 # convert a pressure if neeeded
 def pressure_unit(pressure,force=False):
-        if conf["general"]["units"]["imperial"] or force: return (29.92 * pressure) / 1013.25
+        if conf["general"]["units"]["imperial"] or force: return "{0:.2f}".format(float((29.92 * pressure) / 1013.25))
         else: return pressure
 
 # convert a speed if needed
 def speed_unit(speed,force=False):
-	if conf["general"]["units"]["imperial"] or force: return speed*0.621371
+	if conf["general"]["units"]["imperial"] or force: return "{0:.1f}".format(float(speed*0.621371))
 	else: return speed
 
 # return the file path of a given widget id
