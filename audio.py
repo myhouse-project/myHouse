@@ -1,11 +1,6 @@
 #!/usr/bin/python
 import sys
-from array import array
-from struct import pack
-from sys import byteorder
 import copy
-import pyaudio
-import wave
 import speech_recognition
 
 import utils
@@ -20,8 +15,6 @@ output_settings = conf["output"]["audio"]
 input_settings = conf["input"]["audio"]
 output_file = conf["constants"]["tmp_dir"]+"/audio_output.wav"
 input_file = conf["constants"]["tmp_dir"]+"/audio_input.wav"
-# voice recorder variables
-format = pyaudio.paInt16
 
 # use text to speech to notify about a given text
 def notify(text):
@@ -48,55 +41,22 @@ def notify(text):
 
 # play an audio file
 def play(filename):
-	device = "-D "+str(output_settings["device"]) if output_settings["device"] != "" else ""
-	log.debug(utils.run_command("aplay "+device+" "+filename+" &",shell=True))
-
-# list and select an input device
-def get_input_device():
-	audio = pyaudio.PyAudio()
-	info = audio.get_host_api_info_by_index(0)
-	#for each audio device, determine if is an input or an output and add it to the appropriate list and dictionary
-	log.info("Probing for audio devices...")
-	device = None
-	for i in range (0,info.get('deviceCount')):
-		# this is an output device
-                if audio.get_device_info_by_host_api_device_index(0,i).get('maxOutputChannels')>0:
-	                log.info("- ["+str(i)+"][output] "+str( audio.get_device_info_by_host_api_device_index(0,i).get('name')))
-		# this is an input device
-	        if audio.get_device_info_by_host_api_device_index(0,i).get('maxInputChannels')>0:
-			# detect the supported sample rate
-			sample_rate = None
-			for rate in [32000, 44100, 48000, 96000, 128000]:
-				devinfo = audio.get_device_info_by_index(i)
-				try: 
-					audio.is_format_supported(rate,input_device=i,input_channels=devinfo['maxInputChannels'],input_format=format)
-					sample_rate = rate
-					break
-				except: 
-					pass
-	                log.info("- ["+str(i)+"][input] "+str(audio.get_device_info_by_host_api_device_index(0,i).get('name'))+", sample rate "+str(sample_rate)+"Hz")
-			# select the input device
-			if device is not None: continue
-			if "device_index" not in input_settings or i == input_settings["device_index"]:
-				device = {"index": i, "sample_rate": rate, "channels": devinfo['maxInputChannels'], "name": str(audio.get_device_info_by_host_api_device_index(0,i).get('name'))}
-	return device
+	device = "-t alsa "+str(output_settings["device"]) if output_settings["device"] != "" else ""
+	log.debug(utils.run_command("sox "+filename+" "+device+" &"))
 
 # capture voice and perform speech recognition
 def listen():
-	# get the input device
-	device = get_input_device()
-	if device is None: 
-		log.warning("No input device found")
-		return
-	log.info("Selected input device: "+device["name"])
 	# initialize the oracle
 	kb = oracle.init(include_widgets=False)
 	while True:
-		# record a voice sample
 		log.info("Listening for voice commands...")
-		sample_width, data = record_voice(device)
-		# save it to file
-		save_to_file(device,sample_width,data)
+		# run sox to record a voice sample trimming silence at the beginning and at the end
+	        device = "-t alsa "+str(input_settings["device"]) if input_settings["device"] != "" else ""
+        	command = "sox "+device+" "+input_file+" trim 0 "+str(input_settings["recorder"]["max_duration"])+" silence 1 "+str(input_settings["recorder"]["start_duration"])+" "+str(input_settings["recorder"]["start_threshold"])+"% 1 "+str(input_settings["recorder"]["end_duration"])+" "+str(input_settings["recorder"]["end_threshold"])+"%"
+	        utils.run_command(command)
+		# ensure the sample contains any sound
+		max_amplitude = utils.run_command("sox "+input_file+" -n stat 2>&1|grep 'Maximum amplitude'|awk '{print $3}'")
+		if float(max_amplitude) == 0: continue
 		log.info("Captured voice sample, processing...")
 		# recognize the speech
 		request = ""
@@ -133,75 +93,6 @@ def listen():
 		response = oracle.ask(request,custom_kb=kb)
 		if response["type"] == "text":
 			notify(response["content"])
-
-# save data to a wav file
-def save_to_file(device,sample_width,data):
-	data = pack('<' + ('h' * len(data)), *data)
-        wave_file = wave.open(input_file, 'wb')
-        wave_file.setnchannels(device["channels"])
-        wave_file.setsampwidth(sample_width)
-        wave_file.setframerate(device["sample_rate"])
-        wave_file.writeframes(data)
-        wave_file.close()
-
-# record the voice from the microphone and return it as an array of signed shorts
-def record_voice(device):
-	# open the input device
-	audio = pyaudio.PyAudio()
-	stream = audio.open(format=format, channels=device["channels"], rate=device["sample_rate"], input=True, output=True, frames_per_buffer=conf["constants"]["voice_recorder"]["chunk_size"])
-	# initialize
-	audio_started = False
-	silent_chunks = 0
-	data_all = array('h')
-	# record the voice
-	while True:
-        	# little endian, signed short
-		data_chunk = array('h', stream.read(conf["constants"]["voice_recorder"]["chunk_size"]))
-		if byteorder == 'big': data_chunk.byteswap()
-	        data_all.extend(data_chunk)
-		# check if the recorded chunk was silent
-        	silent = max(data_chunk) < conf["constants"]["voice_recorder"]["threshold"]
-		# record the voice when not in silent
-	        if audio_started:
-        		if silent:
-				# if there is silence count the number of silent_chunks and exit when there was too much silence at the end
-	        		silent_chunks += 1
-	        	        if silent_chunks > (conf["constants"]["voice_recorder"]["silent_chunks_threshold"] * device["sample_rate"] / 1024): break
-		        else: 
-				# there is still voice, reset the silent_chunk counter
-				silent_chunks = 0
-		elif not silent: 
-			# there is voice for the first time, set the audio as started
-			audio_started = True
-	# get the sample
-	sample_width = audio.get_sample_size(format)
-	stream.stop_stream()
-	stream.close()
-	audio.terminate()
-	# normalize the data
-	data_all = normalize(device,data_all)
-	# return the sample
-	return sample_width, data_all
-
-# normalize a voice sample
-def normalize(device,data_all):
-	_from = 0
-	_to = len(data_all) - 1
-	# normalize the sample
-	for i, b in enumerate(data_all):
-		if abs(b) > conf["constants"]["voice_recorder"]["threshold"]:
-			_from = max(0, i - device["sample_rate"]/conf["constants"]["voice_recorder"]["trim_append_ratio"])
-			break
-	for i, b in enumerate(reversed(data_all)):
-        	if abs(b) > conf["constants"]["voice_recorder"]["threshold"]:
-			_to = min(len(data_all) - 1, len(data_all) - 1 - i + device["sample_rate"]/conf["constants"]["voice_recorder"]["trim_append_ratio"])
-			break
-	data_all = copy.deepcopy(data_all[_from:(_to + 1)])
-	# amplify the volume
-	normalize_factor = (float(conf["constants"]["voice_recorder"]["normalize_db"] * conf["constants"]["voice_recorder"]["frame_max_value"])/ max(abs(i) for i in data_all))
-	r = array('h')
-	for i in data_all: r.append(int(i * normalize_factor))
-	return r
 
 # main
 if __name__ == '__main__':

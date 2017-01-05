@@ -34,7 +34,7 @@ constants = {
 	'image_unavailable': base_dir+"/web/images/image_unavailable.png",
 	'web_dir': base_dir+"/web",
 	'web_template': "template_web.html",
-	'web_timeout': 10,
+	'web_timeout': 20,
 	'linux_timeout': 30,
 	'web_use_reloader': True,
 	'bot_brain_file': base_dir+"/bot.txt",
@@ -42,15 +42,6 @@ constants = {
 	'chart_short_height': 230,
 	'image_detection_save_on_disk': True,
 	'image_detection_max_saved_images': 10,
-	'voice_recorder': {
-		'chunk_size': 4096,
-		'silent_chunks_threshold': 3,
-		'silent_chunks': 2,
-		'threshold': 500,
-		'frame_max_value': 2 ** 15 - 1,
-		'normalize_db': 10 ** (-1.0 / 20),
-		'trim_append_ratio': 4,
-	},
 	'formats': {
 		'int': { 
 			'formatter': 'int', 
