@@ -203,24 +203,32 @@ def merge(template,delta):
 
 # return a given module
 def get_module(module_id):
-	if "modules" not in conf: return None
 	for i in range(len(conf["modules"])):
 		module = conf["modules"][i]
+		if not module["enabled"]: continue
 		if module["module_id"] == module_id: return module
+	return None
 
-# return a given sensor group
+# return the sensors belonging to the same group
 def get_group(module_id,group_id):
-	module = get_module(module_id)
-	if module is None: return None
-	if "sensors" not in module: return None
 	sensors = []
-	for i in range(len(module["sensors"])):
-		sensor = module["sensors"][i]
-		sensor["module_id"] = module_id
-		if sensor["group_id"] == group_id: sensors.append(sensor)
+        for i in range(len(conf["modules"])):
+                module = conf["modules"][i]
+                if not module["enabled"]: continue
+		if "sensors" not in module: continue
+		for j in range(len(module["sensors"])):
+			sensor = module["sensors"][j]
+			if sensor["module_id"] == module_id and sensor["group_id"] == group_id: sensors.append(sensor)
+	if len(sensors) == 0: return None
 	return sensors
 
-# return a given sensor
+# return the sensors belonging to the same group
+def get_group_string(group_string):
+        split = group_string.split(":",2)
+        if len(split) < 2: return None
+        return get_group(split[0],split[1])
+
+# fetch a sensor
 def get_sensor(module_id,group_id,sensor_id):
 	sensors = get_group(module_id,group_id)
 	if sensors is None: return None
@@ -229,35 +237,11 @@ def get_sensor(module_id,group_id,sensor_id):
 		if sensor["sensor_id"] == sensor_id: return sensor
 	return None
 
-# split a given group string
-def split_group(widget,key):
-        # ensure the key is in widget
-        if key not in widget:
-                log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
-                return None
-        # split it
-        split = widget[key].split(":")
-        # ensure the group exists
-        group = get_group(split[0],split[1])
-	if group is None:
-        	log.warning("Unable to find group "+key+" for widget "+widget["widget_id"])
-                return None
-	return split
-
-# split a given sensor string
-def split_sensor(widget,key):
-        # ensure the key is in widget
-        if key not in widget:
-                log.warning("Unable to find "+key+" in widget "+widget["widget_id"])
-                return None
-        # split it
-	split = widget[key].split(":")
-        # ensure the sensor exists
-        sensor = get_sensor(split[0],split[1],split[2])
-        if sensor is None:
-        	log.warning("Unable to find sensor "+key+" for widget "+widget["widget_id"])
-                return None
-        return split
+# fetch a sensor
+def get_sensor_string(sensor_string):
+	split = sensor_string.split(":",3)
+	if len(split) < 3: return None
+	return get_sensor(split[0],split[1],split[2])
 
 # run a command and return the output
 def run_command(command,timeout=conf["constants"]["linux_timeout"],shell=True):

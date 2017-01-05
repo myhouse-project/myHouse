@@ -96,7 +96,7 @@ def parse(sensor):
 			measure["key"] = sensor["sensor_id"]
 			measure["value"] = value
 			measures.append(measure)
-		# format each values
+		# format each value
 		for i in range(len(measures)): 
 			# normalize the measures
 			if sensor["format"] == "temperature": measures[i]["value"] = utils.temperature_unit(measures[i]["value"])
@@ -161,15 +161,15 @@ def store(sensor,measures,ifnotexists=False):
 		# check if there is already a value stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
-			# same value and same timestamp, do not store
+			# same timestamp, do not store
 			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") already in the database, ignoring "+measure["key"]+": "+str(measure["value"]))
 			continue
-		# apply the bias of the sensor if configured
+		# apply the bias to the sensor if configured
 		if "bias" in sensor: measure["value"] = measure["value"]+sensor["bias"]
 		# store the value into the database
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"]))+conf["constants"]["formats"][sensor["format"]]["suffix"])
 		db.set(key,measure["value"],measure["timestamp"])
-		# re-calculate the avg/min/max of the hour/day
+		# re-calculate the derived measures for the hour/day
 		if "summarize" in sensor:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
 	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
@@ -193,13 +193,13 @@ def summarize(sensor,timeframe,start,end):
 		values.append(data[i][1])
 	# calculate the derived values
 	timestamp = start
-	min = avg = max = "-"
-	if sensor["summarize"]["avg"]:
+	min = avg = max = rate = "-"
+	if "avg" in sensor["summarize"] and sensor["summarize"]["avg"]:
 		# calculate avg
 		avg = utils.avg(values)
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
-	if sensor["summarize"]["min_max"]:
+	if "min_max" in sensor["summarize"] and sensor["summarize"]["min_max"]:
 		# calculate min
 		min = utils.min(values)
 		db.deletebyscore(key_to_write+":min",start,end)
@@ -208,7 +208,7 @@ def summarize(sensor,timeframe,start,end):
 		max = utils.max(values)
 		db.deletebyscore(key_to_write+":max",start,end)
                 db.set(key_to_write+":max",max,timestamp)
-	if sensor["summarize"]["rate"]:
+	if "rate" in sensor["summarize"] and sensor["summarize"]["rate"]:
 		# calculate the rate of change
 		rate = utils.velocity(timestamps,values)
 		db.deletebyscore(key_to_write+":rate",start,end)
@@ -221,8 +221,8 @@ def expire(sensor):
 	# define which stat to expire for each retention policy
 	policies = {
 		"realtime_days": [""],
-		"recent_days": [":hour:min",":hour:avg",":hour:max"],
-		"history_days": [":day:min",":day:avg",":day:max"],
+		"recent_days": [":hour:min",":hour:avg",":hour:max","hour:rate"],
+		"history_days": [":day:min",":day:avg",":day:max",":day:rate"],
 	}
 	# for each policy
 	for policy, stats in policies.iteritems():
@@ -243,10 +243,9 @@ def expire(sensor):
 	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
 
 # initialize a sensor data structure
-def init_sensor(sensor,module_id):
+def init_sensor(sensor):
 	# initialize a new data structure
 	sensor = copy.deepcopy(sensor)
-        sensor['module_id'] = module_id
         # define the database schema
         sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
         sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
@@ -267,7 +266,7 @@ def init_sensor(sensor,module_id):
 def run(module_id,group_id,sensor_id,action):
 	# ensure the group and sensor exist
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor = init_sensor(sensor,module_id)
+	sensor = init_sensor(sensor)
 	if sensor is None: 
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found, skipping it")
 		return
@@ -308,16 +307,16 @@ def schedule_all():
 		if "sensors" not in module: continue
 		for sensor in module["sensors"]:
 			# initialize the sensor data structure
-			sensor = init_sensor(sensor,module['module_id'])
+			sensor = init_sensor(sensor)
 			if sensor is None: continue
 			# skip sensors without a plugin
 			if 'plugin' not in sensor: continue
-			# the plugin needs sensors to be registered with it first
+			# this plugin needs sensors to be registered with it first
 			if hasattr(plugins[sensor['plugin']['plugin_name']],'register'):
 				# register the sensor
 				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] registering with plugin service "+sensor['plugin']['plugin_name'])
 				plugins[sensor['plugin']['plugin_name']].register(sensor)
-			# the plugin needs the sensor to be polled
+			# this plugin needs the sensor to be polled
 			if "polling_interval" in sensor["plugin"]:
 				# schedule polling
 				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["plugin"]["polling_interval"])+" minutes")
@@ -332,16 +331,19 @@ def schedule_all():
               	        	log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
                      	        schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
                              	schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
-	# start the services
+	# start all the plugin services
 	start_plugins()
 
 # return the latest read of a sensor for a web request
 def data_get_current(module_id,group_id,sensor_id):
+	data = []
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None: 
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+		return json.dumps(data)
 	if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"]:
 		# the sensor needs to be polled on demand
 		run(module_id,group_id,sensor_id,"save")
-        data = []
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
         # return the latest measure
         data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
@@ -351,6 +353,10 @@ def data_get_current(module_id,group_id,sensor_id):
 
 # return the latest image of a sensor for a web request
 def data_get_current_image(module_id,group_id,sensor_id,night_day):
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        if sensor is None:
+                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+                return json.dumps("")
 	data = json.loads(data_get_current(module_id,group_id,sensor_id))
 	if len(data) == 0: return ""
 	filename = str(data[0])
@@ -362,7 +368,11 @@ def data_get_current_image(module_id,group_id,sensor_id,night_day):
 
 # return the time difference between now and the latest measure
 def data_get_current_timestamp(module_id,group_id,sensor_id):
-        data = []
+	data = []
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        if sensor is None: 
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+		return json.dumps(data)
         key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
 	if len(data) > 0: return json.dumps([utils.timestamp_difference(utils.now(),data[0][0]/1000)])
@@ -370,11 +380,14 @@ def data_get_current_timestamp(module_id,group_id,sensor_id):
 
 # return the data of a requested sensor based on the timeframe and stat requested
 def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
+	data = []
 	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None: 
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+		return json.dumps(data)
         if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"] and timeframe == "realtime":
                 # the sensor needs to be polled on demand
                 run(module_id,group_id,sensor_id,"save")
-        data = []
         # get the parameters for the requested timeframe
         if timeframe == "realtime":
                 # recent hourly measures up to now
@@ -439,13 +452,12 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 
 # set a sensor value
 def data_set(module_id,group_id,sensor_id,value,ifnotexists=False):
-	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
-        # ensure the group and sensor exist
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        sensor = init_sensor(sensor,module_id)
-        if sensor is None:
-                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
-                return json.dumps("KO")
+        if sensor is None: 
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+		return json.dumps("KO")
+	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
+        sensor = init_sensor(sensor)
 	# prepare the measure
 	measures = []
 	measure = {}
@@ -458,12 +470,12 @@ def data_set(module_id,group_id,sensor_id,value,ifnotexists=False):
 
 # send a message to a sensor
 def data_send(module_id,group_id,sensor_id,value,force=False):
-	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] sending message: "+str(value))
-	sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor = init_sensor(sensor,module_id)
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
         if sensor is None:
-	        log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
-		return json.dumps("KO")
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+                return json.dumps("KO")
+	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] sending message: "+str(value))
+	sensor = init_sensor(sensor)
 	if not hasattr(plugins[sensor["plugin"]["plugin_name"]], 'send'):
 		log.error("the plugin "+sensor["plugin"]["plugin_name"]+" does not allow sending messages")
 		return json.dumps("KO")
@@ -472,12 +484,12 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 
 # manually run a command for a sensor
 def data_run(module_id,group_id,sensor_id,action):
-        log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] executing: "+str(action))
-	init_plugins()
         sensor = utils.get_sensor(module_id,group_id,sensor_id)
         if sensor is None:
-                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found")
+                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
                 return json.dumps("KO")
+        log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] executing: "+str(action))
+	init_plugins()
 	run(module_id,group_id,sensor_id,action)
         return json.dumps("OK")
 

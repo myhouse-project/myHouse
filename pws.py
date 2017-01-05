@@ -27,8 +27,7 @@ def run():
 	count = 0
 	for field,sensor_key in conf["pws"]["data"].iteritems():
 		# for each mapping, retrieve the sensor
-		split = sensor_key.split(":")
-		sensor = utils.get_sensor(split[0],split[1],split[2])
+		sensor = utils.get_sensor_string(sensor_key)
 	        if sensor is None:
 			log.warning("invalid sensor "+sensor_key+" associated to field "+field)
 			continue

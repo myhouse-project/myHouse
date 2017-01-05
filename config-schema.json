@@ -1057,14 +1057,150 @@
 															"value": "sensor_group_summary"
 														},
 														"group": {
+															"description": "Plot the series of a given group of sensors (in the format module_id:group_id). Has precedence over 'sensors'",
+															"type": "string"
+														},
+														"sensors": {
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Sensor"
+															},
+															"description": "An optional list of sensors to plot. If not specified."
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "sensor_group_timeline",
+													"description": "Generate a chart with a timeline of the given timeframe for the sensors belonging to the given group",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"sensor_group_timeline"
+															],
+															"value": "sensor_group_timeline"
+														},
+														"group": {
 															"description": "The group in the format module_id:group_id",
 															"type": "string"
+														},
+														"sensors": {
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Sensor"
+															},
+															"description": "An optional list of sensors to plot. If not specified."
+														},
+														"series": {
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Series"
+															},
+															"description": "An optional list of series_id to plot. If not specified, all the series will be considered"
+														},
+														"timeframe": {
+															"type": "string",
+															"description": "The timeframe to be used for the chart",
+															"enum": [
+																"recent",
+																"history",
+																"realtime",
+																"forecast"
+															]
 														}
 													},
 													"additionalProperties": false,
 													"required": [
 														"type",
-														"group"
+														"timeframe"
+													]
+												},
+												{
+													"title": "chart_short",
+													"description": "Generate a chart with a limited size for the sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"chart_short"
+															],
+															"value": "chart_short"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"timeframe": {
+															"type": "string",
+															"description": "The timeframe to be used for the chart",
+															"enum": [
+																"recent",
+																"history",
+																"realtime",
+																"forecast"
+															]
+														},
+														"series": {
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Series"
+															},
+															"description": "An optional list of series_id to plot. If not specified, all the series will be considered"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor",
+														"timeframe"
+													]
+												},
+												{
+													"title": "chart_short_inverted",
+													"description": "Generate a chart with a limited size for the sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"chart_short_inverted"
+															],
+															"value": "chart_short_inverted"
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
+															"type": "string"
+														},
+														"timeframe": {
+															"type": "string",
+															"enum": [
+																"recent",
+																"history",
+																"realtime",
+																"forecast"
+															]
+														},
+														"series": {
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Series"
+															},
+															"description": "An optional list of series_id to plot. If not specified, all the series will be considered"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type",
+														"sensor",
+														"timeframe"
 													]
 												},
 												{
@@ -1151,104 +1287,6 @@
 														"type",
 														"send",
 														"display_name"
-													]
-												},
-												{
-													"title": "sensor_group_timeline",
-													"description": "Generate a chart with a timeline of the given timeframe for the sensors belonging to the given group",
-													"properties": {
-														"type": {
-															"type": "string",
-															"enum": [
-																"sensor_group_timeline"
-															],
-															"value": "sensor_group_timeline"
-														},
-														"group": {
-															"description": "The group in the format module_id:group_id",
-															"type": "string"
-														},
-														"timeframe": {
-															"type": "string",
-															"description": "The timeframe to be used for the chart",
-															"enum": [
-																"recent",
-																"history",
-																"realtime",
-																"forecast"
-															]
-														}
-													},
-													"additionalProperties": false,
-													"required": [
-														"type",
-														"group",
-														"timeframe"
-													]
-												},
-												{
-													"title": "chart_short",
-													"description": "Generate a chart with a limited size for the sensor",
-													"properties": {
-														"type": {
-															"type": "string",
-															"enum": [
-																"chart_short"
-															],
-															"value": "chart_short"
-														},
-														"sensor": {
-															"description": "The sensor in the format module_id:group_id:sensor_id",
-															"type": "string"
-														},
-														"timeframe": {
-															"type": "string",
-															"description": "The timeframe to be used for the chart",
-															"enum": [
-																"recent",
-																"history",
-																"realtime",
-																"forecast"
-															]
-														}
-													},
-													"additionalProperties": false,
-													"required": [
-														"type",
-														"sensor",
-														"timeframe"
-													]
-												},
-												{
-													"title": "chart_short_inverted",
-													"description": "Generate a chart with a limited size for the sensor",
-													"properties": {
-														"type": {
-															"type": "string",
-															"enum": [
-																"chart_short_inverted"
-															],
-															"value": "chart_short_inverted"
-														},
-														"sensor": {
-															"description": "The sensor in the format module_id:group_id:sensor_id",
-															"type": "string"
-														},
-														"timeframe": {
-															"type": "string",
-															"enum": [
-																"recent",
-																"history",
-																"realtime",
-																"forecast"
-															]
-														}
-													},
-													"additionalProperties": false,
-													"required": [
-														"type",
-														"sensor",
-														"timeframe"
 													]
 												},
 												{
@@ -1606,13 +1644,17 @@
 							"type": "object",
 							"title": "Sensor",
 							"properties": {
+								"module_id": {
+									"type": "string",
+									"description": "The identifier of the module this sensor belongs to"
+								},
 								"group_id": {
 									"type": "string",
-									"description": "The ID of a group of sensors. Sensors belonging to the same group can be presented within the same widget"
+									"description": "The identifier of a group of sensors. Sensors belonging to the same group can be presented within the same widget"
 								},
 								"sensor_id": {
 									"type": "string",
-									"description": "ID of the sensor, must be unique within the group"
+									"description": "The identifier of a sensor, must be unique within the group"
 								},
 								"display_name": {
 									"type": "string",

@@ -95,16 +95,14 @@ def add_series(chart,url,sensor,series_index):
 
 # add a sensor summary widget
 def add_sensor_group_summary_chart(layout,widget):
-	split = utils.split_group(layout,"group")
-	if split is None: return
-	module_id = split[0]
-	group_id = split[1] 
-	sensors = utils.get_group(module_id,group_id)
+	if "group" not in layout: return
+	sensors = utils.get_group_string(layout["group"])
+	if sensors is None: return
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_sensor_group_summary"])
 	for i in range(len(sensors)):
 		sensor = sensors[i];
 		if "group_summary_exclude" in sensor: continue
-		sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+		sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		# skip flags
 		if sensor['format'] == 'string': continue
 		is_flag = False
@@ -125,16 +123,14 @@ def add_sensor_group_summary_chart(layout,widget):
 
 # add a sensor timeline widget
 def add_sensor_group_timeline_chart(layout,widget):
-        split = utils.split_group(layout,"group")
-        if split is None: return
-        module_id = split[0]
-        group_id = split[1]
-        sensors = utils.get_group(module_id,group_id)
+	if "group" not in layout: return
+        sensors = utils.get_group_string(layout["group"])
+        if sensors is None: return
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+layout["type"]+"_"+layout["timeframe"]])
 	# for each sensor
 	for i in range(len(sensors)):
 		sensor = sensors[i]
-		sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+		sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 		if "series" not in sensor: continue
 		# add each series, to the chart
 		for j in range(len(sensor["series"])):
@@ -150,13 +146,10 @@ def add_sensor_group_timeline_chart(layout,widget):
 
 # add a generic sensor chart widget
 def add_sensor_chart(layout,widget):
-	split = utils.split_sensor(layout,"sensor")
-        if split is None: return
-        module_id = split[0]
-        group_id = split[1]
-	sensor_id = split[2]		
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor_url = module_id+"/"+group_id+"/"+sensor_id
+        if "sensor" not in layout: return
+        sensors = utils.get_sensor_string(layout["sensor"])
+        if sensor is None: return
+	sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 	chart = copy.deepcopy(conf["constants"]["charts"][layout["type"]])
 	if sensor["format"] == "percentage": chart["yAxis"]["max"] = 100
 	# add each series to the chart
@@ -171,29 +164,24 @@ def add_sensor_chart(layout,widget):
 
 # add an image widget
 def add_sensor_image(layout,widget):
-        split = utils.split_sensor(layout,"sensor")
-        if split is None: return
-        module_id = split[0]
-        group_id = split[1]
-        sensor_id = split[2]
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor_url = module_id+"/"+group_id+"/"+sensor_id
+        if "sensor" not in layout: return
+        sensors = utils.get_sensor_string(layout["sensor"])
+        if sensors is None: return
+        sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,widget["widget_id"])
 
 # add a map widget
 def add_sensor_map(layout,widget):
-        split = utils.split_group(layout,"group")
-        if split is None: return
-        module_id = split[0]
-        group_id = split[1]
-        sensors = utils.get_group(module_id,group_id)
+        if "group" not in layout: return
+        sensors = utils.get_group_string(layout["group"])
+        if sensors is None: return
         # setup the map
         map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
         for i in range(len(sensors)):
 		# for each sensor of the group
                 sensor = sensors[i];
-                sensor_url = module_id+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+                sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 	        # retrieve the data
         	marker = json.loads(utils.web_get(hostname+sensor_url+"/current"))
 		if len(marker) == 0: continue
