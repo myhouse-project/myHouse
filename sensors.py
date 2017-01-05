@@ -184,24 +184,36 @@ def summarize(sensor,timeframe,start,end):
                 key_to_read = sensor["db_sensor"]+":hour:avg"
                 key_to_write = sensor["db_sensor"]+":day"
 	# retrieve from the database the data based on the given timeframe
-	data = db.rangebyscore(key_to_read,start,end,withscores=False)
+	data = db.rangebyscore(key_to_read,start,end,withscores=True)
+	# split between values and timestamps
+	values = []
+	timestamps = []
+	for i in range(0,len(data)):
+		timestamps.append(data[i][0])
+		values.append(data[i][1])
+	# calculate the derived values
 	timestamp = start
 	min = avg = max = "-"
 	if sensor["summarize"]["avg"]:
 		# calculate avg
-		avg = utils.avg(data)
+		avg = utils.avg(values)
 		db.deletebyscore(key_to_write+":avg",start,end)
        		db.set(key_to_write+":avg",avg,timestamp)
 	if sensor["summarize"]["min_max"]:
 		# calculate min
-		min = utils.min(data)
+		min = utils.min(values)
 		db.deletebyscore(key_to_write+":min",start,end)
                 db.set(key_to_write+":min",min,timestamp)
 		# calculate max
-		max = utils.max(data)
+		max = utils.max(values)
 		db.deletebyscore(key_to_write+":max",start,end)
                 db.set(key_to_write+":max",max,timestamp)
-	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max): ("+str(min)+","+str(avg)+","+str(max)+")")
+	if sensor["summarize"]["rate"]:
+		# calculate the rate of change
+		rate = utils.velocity(timestamps,values)
+		db.deletebyscore(key_to_write+":rate",start,end)
+		db.set(key_to_write+":rate",rate,timestamp)
+	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max,rate): ("+str(min)+","+str(avg)+","+str(max)+","+str(rate)+")")
 
 # purge old data from the database
 def expire(sensor):

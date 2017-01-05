@@ -154,6 +154,25 @@ def max(data):
 		else: return None
 	else: return None
 
+# calculate the velocity of change of a given array of data
+def velocity(x,y):
+	# if data is invalid, remove it from both the x and y arrays
+	for i in range(0,len(y)):
+		if y[i] is None or y[i] == "None" or not is_number(y[i]):
+			del y[i]
+			del x[i]
+	# at least two values needed
+        if len(y) >= 2:
+		# normalize the x data to be in the range [0,1]
+		min = x[0]
+		max = x[len(x)-1]
+		for i in range(0,len(x)): x[i] = float(x[i]-min)/float(max-min)
+		# apply linear regression to interpolate the data
+		z = numpy.polyfit(x,y,1)
+		# return the coefficient
+		return  normalize(z[0],"float_2")
+        else: return None
+
 # calculate the avg of a given array of data
 def avg(data):
 	data = remove_all(data,None)
@@ -306,3 +325,4 @@ def distance(a,b):
 # check if a file exists on the filesystem
 def file_exists(file):
 	return os.path.isfile(file)
+

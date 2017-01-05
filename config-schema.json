@@ -48,6 +48,7 @@
 							"description": "Timeframe to show alerts in the alert table"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"realtime_hours",
 						"recent_hours",
@@ -71,12 +72,14 @@
 							"description": "Use Fahrenheit degrees"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"imperial",
 						"fahrenheit"
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"latitude",
 				"longitude",
@@ -105,6 +108,7 @@
 					"description": "Instance number"
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"enabled",
 				"hostname",
@@ -192,6 +196,7 @@
 							"description": "Google Maps API key (get one from https://developers.google.com/maps/documentation/javascript/get-api-key)"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"type",
 						"size_x",
@@ -200,6 +205,7 @@
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"enabled",
 				"compress",
@@ -224,6 +230,7 @@
 					"type": "integer"
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"enabled",
 				"data_expire_days"
@@ -270,6 +277,7 @@
 							"description": "After how many days daily data are purged out of the database. 0 for keeping forever"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"realtime_new_only",
 						"realtime_count",
@@ -279,6 +287,7 @@
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"enabled",
 				"poll_at_startup",
@@ -310,6 +319,7 @@
 							"description": "The minimum score to determine if a request has been understood correctly"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"algorithm",
 						"score"
@@ -324,6 +334,7 @@
 							"description": "Enable interactive communication with the Slack bot"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled"
 					]
@@ -382,6 +393,7 @@
 									"description": "Stop recording when the audio will be this percentage below true silence"
 								}
 							},
+							"additionalProperties": false,
 							"required": [
 								"start_duration",
 								"start_threshold",
@@ -390,6 +402,7 @@
 							]
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"engine",
@@ -397,6 +410,7 @@
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"slack",
 				"audio",
@@ -463,6 +477,7 @@
 							]
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"hostname",
@@ -519,6 +534,7 @@
 							]
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"bot_name",
@@ -586,6 +602,7 @@
 							]
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"hostname",
@@ -648,6 +665,7 @@
 							]
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"engine",
@@ -655,6 +673,7 @@
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"email",
 				"slack",
@@ -687,6 +706,7 @@
 							"description": "Log file"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"level",
 						"filename"
@@ -705,6 +725,7 @@
 							"description": "Log file"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"level",
 						"filename"
@@ -723,12 +744,14 @@
 							"description": "Log file"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"level",
 						"filename"
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"rotate_size_mb",
 				"rotate_count",
@@ -750,6 +773,7 @@
 							"description": "Wunderground API key (https://www.wunderground.com/weather/api/)"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"api_key"
 					]
@@ -767,6 +791,7 @@
 							"description": "Retrieve data in the given language"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"api_key",
 						"language"
@@ -785,6 +810,7 @@
 							"description": "Timeout in seconds when running a linux command"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"timeout"
 					]
@@ -814,6 +840,7 @@
 							"description": "Send to this port updates to messagebridge"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"port_listen",
@@ -833,6 +860,7 @@
 							"description": "The command for running rtl_433 followed by any required command line arguments. -F json will appended by default"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"command"
@@ -856,6 +884,7 @@
 							"value": "board"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"mode"
@@ -882,6 +911,7 @@
 							"description": "The port the gateway is listening to"
 						}
 					},
+					"additionalProperties": false,
 					"required": [
 						"enabled",
 						"hostname",
@@ -889,6 +919,7 @@
 					]
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"wunderground",
 				"weatherchannel",
@@ -928,6 +959,7 @@
 					"description": "Mapping between the field (full list available at http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol) and the sensor to pull the data from in the format module_id:group_id:sensor_id"
 				}
 			},
+			"additionalProperties": false,
 			"required": [
 				"enabled",
 				"username",
@@ -1452,6 +1484,7 @@
 										}
 									}
 								},
+								"additionalProperties": false,
 								"required": [
 									"widget_id",
 									"display_name",
@@ -1554,6 +1587,7 @@
 									}
 								}
 							},
+							"additionalProperties": false,
 							"required": [
 								"rule_id",
 								"display_name",
@@ -2167,6 +2201,7 @@
 												"description": "Maximum possible object size. Objects larger than that are ignored."
 											}
 										},
+										"additionalProperties": false,
 										"required": [
 											"display_name",
 											"filename",
@@ -2190,12 +2225,41 @@
 											"description": "The minimum difference in percentage between two images to trigger an alert"
 										}
 									},
+									"additionalProperties": false,
 									"required": [
 										"display_name",
 										"threshold"
 									]
-								}
+								},
+								"bias": {
+									"type": "number",
+									"description": "Optional bias to apply at the sensor at every measure (e.g. a temperature sensor always returning 1 degree more)"
+								},
+								"group_summary_exclude": {
+									"type": "boolean",
+									"description": "Exclude the sensor from widgets which are considering an entire group"
+								},
+								"summarize": {
+									"type": "object",
+									"description": "Which derived measures automatically compute every hour and day",
+									"properties": {
+										"avg": {
+											"type": "boolean",
+											"description": "Calculate and store the average measure for every hour/day"
+										},
+										"min_max": {
+											"type": "boolean",
+											"description": "Calculate the minimum and maximum measures for every hour/day"
+										},
+										"rate": {
+											"type": "boolean",
+											"description": "Calculate the rate of change of the measures for every hour/day"
+										}
+									},
+									"additionalProperties": false
+								}								
 							},
+							"additionalProperties": false,
 							"required": [
 								"group_id",
 								"sensor_id",
@@ -2204,6 +2268,7 @@
 						}
 					}
 				},
+				"additionalProperties": false,
 				"required": [
 					"module_id",
 					"section_id",
@@ -2215,6 +2280,7 @@
 			}
 		}
 	},
+	"additionalProperties": false,
 	"required": [
 		"general",
 		"db",
