@@ -65,14 +65,16 @@ def install_deps():
         run_command("apt-get install -y mpg123")
         print "Installing python-speech-recognition..."
         run_command("pip install SpeechRecognition")
-#        print "Installing python-pyaudio..."
-#        run_command("apt-get install -y python-pyaudio")
 	print "Installing sox..."
         run_command("apt-get install -y sox")
         print "Installing flac..."
         run_command("apt-get install -y flac")
         print "Installing pocketsphinx..."
         run_command("apt-get install -y pocketsphinx")
+        print "Installing python-dht..."
+        run_command("pip install Adafruit_Python_DHT")
+        print "Installing python-ads1x15..."
+        run_command("pip install Adafruit_ADS1x15")
 
 # installation routine
 def install():
