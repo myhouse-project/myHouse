@@ -10,15 +10,15 @@ def poll(sensor):
 	command = sensor['plugin']['command_poll']
 	# run the poll command
 	command = "cd '"+conf["constants"]["base_dir"]+"'; "+command
-	return utils.run_command(command,timeout=conf["plugins"]["linux"]["timeout"])
+	return utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])
 
 # parse the data
 def parse(sensor,data):
 	data = str(data).replace("'","''")
 	# no command parse, return the raw data
 	if 'command_parse' not in sensor['plugin'] or sensor['plugin']['command_parse'] == "": return data
-	command = sensor['plugin']['command_parse']
-	return utils.run_command("cd '"+conf["constants"]["base_dir"]+"'; echo '"+data+"' |"+command,timeout=conf["plugins"]["linux"]["timeout"])
+	command = "cd '"+conf["constants"]["base_dir"]+"'; echo '"+data+"' |"+sensor['plugin']['command_parse']
+	return utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])
 
 # return the cache schema
 def cache_schema(sensor):
@@ -28,4 +28,4 @@ def cache_schema(sensor):
 def send(sensor,data):
         # run the command in the script directory
         command = "cd '"+conf["constants"]["base_dir"]+"'; "+data
-	utils.run_command(command,timeout=conf["plugins"]["linux"]["timeout"])
+	utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])

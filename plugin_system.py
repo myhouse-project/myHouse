@@ -97,8 +97,8 @@ def parse(sensor,data):
 	# no command to run, return the raw data
 	if command_parse == "": return data
 	# run command parse
-        command = "cd '"+conf["constants"]["base_dir"]+"'; "+command_parse
-	return utils.run_command("cd '"+conf["constants"]["base_dir"]+"'; echo '"+data+"' |"+command,timeout=conf["plugins"]["system"]["timeout"])
+	command = "cd '"+conf["constants"]["base_dir"]+"'; echo '"+data+"' |"+command_parse
+	return utils.run_command(command,timeout=conf["plugins"]["system"]["timeout"])
 
 # return the cache schema
 def cache_schema(sensor):

@@ -24,7 +24,7 @@ def parse(sensor,data):
 	# find t=
         pos = data.find('t=')
         if pos != -1:
-                temp_string = data[equals_pos+2:]
+                temp_string = data[pos+2:]
                 temp = float(temp_string) / 1000.0
 		return temp
 

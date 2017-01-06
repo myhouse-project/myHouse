@@ -19,14 +19,22 @@ def get_image_unavailable():
 
 # poll the sensor
 def poll(sensor):
-	# set the parameters
-	username = sensor['plugin']['username'] if 'username' in sensor['plugin'] else None
-	password = sensor['plugin']['password'] if 'password' in sensor['plugin'] else None
-	# visit the page
-	try:
-		data = utils.web_get(sensor['plugin']['url'],username,password,binary=True)
-        except Exception,e:
-                log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to visit "+sensor['plugin']['url']+": "+utils.get_exception(e))
+	# retrieve the image from a url
+	if "url" in sensor["plugin"]:
+		# set the parameters
+		username = sensor['plugin']['username'] if 'username' in sensor['plugin'] else None
+		password = sensor['plugin']['password'] if 'password' in sensor['plugin'] else None
+		# visit the page
+		try:
+			data = utils.web_get(sensor['plugin']['url'],username,password,binary=True,timeout=conf["plugins"]["image"]["timeout"])
+	        except Exception,e:
+	                log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to visit "+sensor['plugin']['url']+": "+utils.get_exception(e))
+			return ""
+	# run a command to retrieve the image
+	elif "command" in sensor["plugin"]:
+		data = utils.run_command(sensor["plugin"]["command"],timeout=conf["plugins"]["image"]["timeout"])
+	else: 
+		log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] must have a url or a command configured")
 		return ""
 	# return empty if the data is not binary
 	if "<html" in data.lower() or data == "": return ""
@@ -41,5 +49,6 @@ def parse(sensor,data):
 
 # return the cache schema
 def cache_schema(sensor):
-	return sensor['plugin']['url']
+	if "url" in sensor["plugin"]: return sensor['plugin']['url']
+	elif "command" in sensor["plugin"]: return sensor['plugin']['command']
 

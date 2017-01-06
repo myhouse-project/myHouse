@@ -830,8 +830,18 @@
 					]
 				},
 				"image": {
-					"type": "null",
-					"description": "Image plugin configuration"
+					"type": "object",
+					"description": "Image plugin configuration",
+					"properties": {
+						"timeout": {
+							"type": "integer",
+							"description": "Timeout in seconds when retrieving the image"
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"timeout"
+					]
 				},
 				"icloud": {
 					"type": "null",
@@ -1844,7 +1854,7 @@
 										},
 										{
 											"title": "image",
-											"description": "Retrive an image from a given url",
+											"description": "Retrive an image from a given url or by running a command",
 											"properties": {
 												"plugin_name": {
 													"type": "string",
@@ -1855,6 +1865,10 @@
 												},
 												"url": {
 													"description": "Download the image from this URL",
+													"type": "string"
+												},
+												"command": {
+													"description": "Run a command returning an image (e.g. raspistill -w 640 -h 480 -o -)",
 													"type": "string"
 												},
 												"username": {
@@ -1877,8 +1891,7 @@
 											},
 											"additionalProperties": false,
 											"required": [
-												"plugin_name",
-												"url"
+												"plugin_name"
 											]
 										},
 										{
