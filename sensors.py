@@ -18,7 +18,7 @@ schedule = scheduler.get_scheduler()
 
 import plugin_wunderground
 import plugin_weatherchannel
-import plugin_linux
+import plugin_command
 import plugin_image
 import plugin_csv
 import plugin_messagebridge
@@ -27,6 +27,10 @@ import plugin_rtl_433
 import plugin_gpio
 import plugin_fdsnws
 import plugin_mqtt
+import plugin_system
+import plugin_dht
+import plugin_ds18b20
+import plugin_ads1x15
 
 # variables
 plugins = {}
@@ -39,7 +43,7 @@ def init_plugins():
 	        plugin = None
 	        if name == "wunderground": plugin = plugin_wunderground
 	        elif name == "weatherchannel": plugin = plugin_weatherchannel
-	        elif name == "linux": plugin = plugin_linux
+	        elif name == "command": plugin = plugin_command
 	        elif name == "image": plugin = plugin_image
 		elif name == "icloud": plugin = plugin_icloud
 	        elif name == "csv": plugin = plugin_csv
@@ -48,6 +52,10 @@ def init_plugins():
 		elif name == "gpio": plugin = plugin_gpio
 		elif name == "fdsnws": plugin = plugin_fdsnws
 		elif name == "mqtt": plugin = plugin_mqtt
+		elif name == "system": plugin = plugin_system
+		elif name == "dht": plugin = plugin_dht
+		elif name == "ds18b20": plugin = plugin_ds18b20
+		elif name == "ads1x15": plugin = plugin_ads1x15
                 if plugin is None:
                         log.error("plugin "+name+" not supported")
                         continue
@@ -210,8 +218,6 @@ def summarize(sensor,timeframe,start,end):
                 db.set(key_to_write+":max",max,timestamp)
 	if "rate" in sensor["summarize"] and sensor["summarize"]["rate"]:
 		# calculate the rate of change
-		print timestamps
-		print values
 		rate = utils.velocity(timestamps,values)
 		db.deletebyscore(key_to_write+":rate",start,end)
 		db.set(key_to_write+":rate",rate,timestamp)

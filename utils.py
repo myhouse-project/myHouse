@@ -161,8 +161,8 @@ def velocity(in_x,in_y):
 	# if data is invalid, remove it from both the x and y arrays
 	for i in range(len(in_y)):
 		if in_y[i] is not None and in_y[i] != "None" and is_number(in_y[i]):
-			x.append(x_in[i])
-			y.append(y_in[i])
+			x.append(in_x[i])
+			y.append(in_y[i])
 	# at least two values needed
         if len(y) >= 2:
 		# normalize the x data to be in the range [0,1]
@@ -246,7 +246,7 @@ def get_sensor_string(sensor_string):
 	return get_sensor(split[0],split[1],split[2])
 
 # run a command and return the output
-def run_command(command,timeout=conf["constants"]["linux_timeout"],shell=True):
+def run_command(command,timeout=conf["constants"]["command_timeout"],shell=True):
         log.debug("Executing "+str(command))
         process = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = ''

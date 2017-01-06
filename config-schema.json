@@ -801,13 +801,27 @@
 					"type": "null",
 					"description": "CSV plugin configuration"
 				},
-				"linux": {
+				"command": {
 					"type": "object",
-					"description": "Linux plugin configuration",
+					"description": "Plugin for running custom system commands",
 					"properties": {
 						"timeout": {
 							"type": "integer",
-							"description": "Timeout in seconds when running a linux command"
+							"description": "Timeout in seconds when running the command"
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"timeout"
+					]
+				},
+				"system": {
+					"type": "object",
+					"description": "Plugin for gathering system statistics",
+					"properties": {
+						"timeout": {
+							"type": "integer",
+							"description": "Timeout in seconds when running the command"
 						}
 					},
 					"additionalProperties": false,
@@ -917,6 +931,18 @@
 						"hostname",
 						"port"
 					]
+				},
+				"ds18b20": {
+					"type": "null",
+					"description": "ds18b20 plugin configuration"
+				},
+				"dht": {
+					"type": "null",
+					"description": "DHT11 and DHT22 plugin configuration"
+				},
+				"ads1x15": {
+					"type": "null",
+					"description": "DHT11 and DHT22 plugin configuration"
 				}
 			},
 			"additionalProperties": false,
@@ -924,14 +950,18 @@
 				"wunderground",
 				"weatherchannel",
 				"csv",
-				"linux",
+				"command",
+				"system",
 				"image",
 				"icloud",
 				"messagebridge",
 				"rtl_433",
 				"gpio",
 				"fdsnws",
-				"mqtt"
+				"mqtt",
+				"ds18b20",
+				"dht",
+				"ads1x15"
 			]
 		},
 		"pws": {
@@ -1852,19 +1882,54 @@
 											]
 										},
 										{
-											"title": "linux",
-											"description": "Run a linux command to poll a sensor. It can be either a pre-defined measure or if set to custom command_poll and command_parse can be defined",
+											"title": "command",
+											"description": "Run a custom system command to poll a sensor",
 											"properties": {
 												"plugin_name": {
 													"type": "string",
 													"enum": [
-														"linux"
+														"command"
 													],
-													"value": "linux"
+													"value": "command"
+												},
+												"command_poll": {
+													"description": "The command to run to poll the raw data of the sensor (e.g. top)",
+													"type": "string"
+												},
+												"command_parse": {
+													"description": "The command to run to parse the the raw data retrieved with command_poll (e.g. awk, sed, etc.)",
+													"type": "string"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"command_poll"
+											]
+										},
+										{
+											"title": "system",
+											"description": "Gather statistics from the main system",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"system"
+													],
+													"value": "system"
 												},
 												"measure": {
 													"type": "string",
-													"description": "The statistic to retrieve. Set to custom to provide custom commands to run",
+													"description": "The statistic to retrieve",
 													"enum": [
 														"cpu_user",
 														"cpu_system",
@@ -1876,16 +1941,14 @@
 														"network_services",
 														"network_connections",
 														"temperature",
-														"custom"
+														"application_database",
+														"uptime",
+														"logwatch",
+														"reboot",
+														"shutdown",
+														"application_logs",
+														"system_logs"
 													]
-												},
-												"command_poll": {
-													"description": "The command to run to poll the raw data of the sensor (e.g. top)",
-													"type": "string"
-												},
-												"command_parse": {
-													"description": "The command to run to parse the the raw data retrieved with command_poll (e.g. awk, sed, etc.)",
-													"type": "string"
 												},
 												"polling_interval": {
 													"description": "Poll the sensor every X minutes",
@@ -2160,6 +2223,156 @@
 												"plugin_name",
 												"topic",
 												"mode"
+											]
+										},
+										{
+											"title": "ds18b20",
+											"description": "Retrieve the temperature from a local ds18b20 sensor",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"ds18b20"
+													],
+													"value": "ds18b20"
+												},
+												"device": {
+													"type": "string",
+													"description": "The device identifier that can be found under /sys/bus/w1/devices (e.g. 28-0000067b9508)"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"device"
+											]
+										},
+										{
+											"title": "dht",
+											"description": "Retrieve temperature and humidity from DHT11 and DHT22 sensors. More information on https://github.com/adafruit/Adafruit_Python_DHT",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"dht"
+													],
+													"value": "dht"
+												},
+												"type": {
+													"type": "string",
+													"enum": [
+														"dht11",
+														"dht22"
+													],
+													"description": "Weather this is a DHT11 or DHT22 sensor"
+												},
+												"measure": {
+													"type": "string",
+													"enum": [
+														"temperature",
+														"humidity"
+													],
+													"description": "Weather to retrieve the temperature or the humidity"
+												},
+												"pin": {
+													"type": "string",
+													"description": "The GPIO pin to which the sensor is connected"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"type",
+												"pin"
+											]
+										},
+										{
+											"title": "ads1x15",
+											"description": "Retrieve measures from the analog to digital converter ads1x15",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"ads1x15"
+													],
+													"value": "ads1x15"
+												},
+												"type": {
+													"type": "string",
+													"enum": [
+														"ads1115",
+														"ads1015"
+													],
+													"description": "Weather this is a ADS1115 or ADS1015 device"
+												},
+												"address": {
+													"type": "string",
+													"description": "The i2c address of the device",
+													"value": "0x48"
+												},
+												"gain": {
+													"type": "string",
+													"description": "Which gain to use to amplify the signal",
+													"enum": [
+														"2/3",
+														"1",
+														"2",
+														"4",
+														"8",
+														"16"
+													],
+													"value": "1"
+												},
+												"channel": {
+													"type": "integer",
+													"description": "The analog channel where the sensor is attached to the device"
+												},
+												"output": {
+													"type": "string",
+													"description": "The format of the output. It can be a volt measure, an integer in the scale 0-1024, a percentage or the raw measure ",
+													"enum": [
+														"volt",
+														"integer",
+														"percentage",
+														"raw"
+													]
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"type",
+												"address",
+												"gain",
+												"channel",
+												"output"
 											]
 										}
 									]
