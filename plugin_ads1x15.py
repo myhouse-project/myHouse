@@ -23,10 +23,10 @@ def poll(sensor):
         # convert the address in hex
 	address = int(sensor["plugin"]["address"][2:],16)
 	# select the device
-        if sensor["plugin"]["device"] == "ads1115": adc = Adafruit_ADS1x15.ADS1115(address=sensor["plugin"]["address"])
-        elif sensor["plugin"]["device"] == "ads1015": adc = Adafruit_ADS1x15.ADS1015(address=sensor["plugin"]["address"])
+        if sensor["plugin"]["type"] == "ads1115": adc = Adafruit_ADS1x15.ADS1115(address=address)
+        elif sensor["plugin"]["type"] == "ads1015": adc = Adafruit_ADS1x15.ADS1015(address=address)
 	# read the value and return the raw value
-        value = adc.read_adc(channel, gain=int(sensor["plugin"]["gain"]))
+        value = adc.read_adc(sensor["plugin"]["channel"], gain=int(sensor["plugin"]["gain"]))
 	log.debug("Read "+str(value))
 	return value
 
@@ -34,8 +34,8 @@ def poll(sensor):
 def parse(sensor,data):
 	max = 1
 	# ads1115 is 16bit, ads1015 12 bit
-        if sensor["plugin"]["device"] == "ads1115": max = 32768
-        elif sensor["plugin"]["device"] == "ads1015": max = 2048
+        if sensor["plugin"]["type"] == "ads1115": max = 32768
+        elif sensor["plugin"]["type"] == "ads1015": max = 2048
         # normalize the value
 	value = float(data)
 	# calculate the voltage based on the maximum voltage from the gain set

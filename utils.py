@@ -20,8 +20,8 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 
 # remove all occurences of value from array
-def remove_all(array,value):
-        return [x for x in array if x != value]
+def remove_all(array,value_array):
+        return [x for x in array if x not in value_array]
 
 # return the current offset from utc time
 def get_utc_offset():
@@ -131,16 +131,16 @@ def normalize(value,formatter=None):
 	else: return str(value)
 
 # request a given url
-def web_get(url,username=None,password=None,binary=False,params={}):
+def web_get(url,username=None,password=None,binary=False,params={},timeout=conf['constants']['web_timeout']):
 	log.debug("Requesting web page "+url)
-	if username is not None: request = requests.get(url,params=params,auth=(username,password),timeout=conf['constants']['web_timeout'],verify=False)
+	if username is not None: request = requests.get(url,params=params,auth=(username,password),timeout=timeout,verify=False)
 	else: request = requests.get(url,params=params,timeout=conf['constants']['web_timeout'],verify=False)
 	if binary: return request.content
 	else: return request.text
 
 # calculate the min of a given array of data
 def min(data):
-	data = remove_all(data,None)
+	data = remove_all(data,[None,""])
 	if len(data) > 0: 
 		if is_number(data[0]): return __builtin__.min(data)
 		else: return None
@@ -148,7 +148,7 @@ def min(data):
 
 # calculate the max of a given array of data
 def max(data):
-	data = remove_all(data,None)
+	data = remove_all(data,[None,""])
 	if len(data) > 0: 
 		if is_number(data[0]): return __builtin__.max(data)
 		else: return None
@@ -177,7 +177,7 @@ def velocity(in_x,in_y):
 
 # calculate the avg of a given array of data
 def avg(data):
-	data = remove_all(data,None)
+	data = remove_all(data,[None,""])
 	if len(data) > 0:
 		if is_number(data[0]): return normalize(numpy.mean(data))
 		else: return __builtin__.max(set(data), key=data.count)
