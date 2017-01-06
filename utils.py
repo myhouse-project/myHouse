@@ -155,12 +155,14 @@ def max(data):
 	else: return None
 
 # calculate the velocity of change of a given array of data
-def velocity(x,y):
+def velocity(in_x,in_y):
+	x = []
+	y = []
 	# if data is invalid, remove it from both the x and y arrays
-	for i in range(0,len(y)):
-		if y[i] is None or y[i] == "None" or not is_number(y[i]):
-			del y[i]
-			del x[i]
+	for i in range(len(in_y)):
+		if in_y[i] is not None and in_y[i] != "None" and is_number(in_y[i]):
+			x.append(x_in[i])
+			y.append(y_in[i])
 	# at least two values needed
         if len(y) >= 2:
 		# normalize the x data to be in the range [0,1]

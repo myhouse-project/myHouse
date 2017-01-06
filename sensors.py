@@ -210,6 +210,8 @@ def summarize(sensor,timeframe,start,end):
                 db.set(key_to_write+":max",max,timestamp)
 	if "rate" in sensor["summarize"] and sensor["summarize"]["rate"]:
 		# calculate the rate of change
+		print timestamps
+		print values
 		rate = utils.velocity(timestamps,values)
 		db.deletebyscore(key_to_write+":rate",start,end)
 		db.set(key_to_write+":rate",rate,timestamp)

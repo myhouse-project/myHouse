@@ -15,10 +15,10 @@ import db
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
-import generate_image
+import generate_widget
 
 # variables
-run_generate_image = True
+run_generate_widget = True
 
 # attach the image to the given message
 def attach_image(msg,image):
@@ -74,7 +74,7 @@ def module_digest(module_id):
 	widgets = []
 	module = utils.get_module(module_id)
 	if module is None: return
-	if run_generate_image: widgets = generate_image.run(module_id,generate_image=run_generate_image)
+	if run_generate_widget: widgets = generate_widget.run(module_id,generate_widget=run_generate_widget)
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
 	title = module['display_name']+" Report "+date
 	template = get_email_body(title)
