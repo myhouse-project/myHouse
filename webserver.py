@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from flask import Flask,request,send_from_directory,render_template,current_app
 from flask_compress import Compress
+from flask import Response
 import logging
 import sys
 import json
@@ -60,7 +61,11 @@ def get_internet_status():
 # return the latest read of a sensor
 @app.route('/<module_id>/<group_id>/<sensor_id>/current')
 def sensor_get_current(module_id,group_id,sensor_id):
-	return sensors.data_get_current(module_id,group_id,sensor_id)
+	# can return an image or text, set the correct content type
+	content_type = "text/html"
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is not None and sensor["format"] == "image": content_type = "image"
+	return Response(sensors.data_get_current(module_id,group_id,sensor_id), mimetype=content_type)
 
 # return the latest image of a sensor
 @app.route('/<module_id>/<group_id>/<sensor_id>/image')
