@@ -56,7 +56,7 @@ def listen():
         	command = "sox "+device+" "+input_file+" trim 0 "+str(input_settings["recorder"]["max_duration"])+" silence 1 "+str(input_settings["recorder"]["start_duration"])+" "+str(input_settings["recorder"]["start_threshold"])+"% 1 "+str(input_settings["recorder"]["end_duration"])+" "+str(input_settings["recorder"]["end_threshold"])+"%"
 	        utils.run_command(command)
 		# ensure the sample contains any sound
-		max_amplitude = utils.run_command("sox "+input_file+" -n stat 2>&1|grep 'Maximum amplitude'|awk '{print $3}'")
+		max_amplitude = utils.run_command("killall sox 2>&1 2>/dev/null; sox "+input_file+" -n stat 2>&1|grep 'Maximum amplitude'|awk '{print $3}'")
 		if not utils.is_number(max_amplitude) or float(max_amplitude) == 0: 
 			listening_message = False
 			continue
@@ -92,7 +92,7 @@ def listen():
 			notify("You have said:")
 			play(input_file)
 			notify("I have understood: "+request)
-			notify("So I'd respond with:")
+			notify("So I will respond with:")
 		# ask the oracle what to do
 		response = oracle.ask(request,custom_kb=kb)
 		if response["type"] == "text":
