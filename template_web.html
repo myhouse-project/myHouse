@@ -411,9 +411,21 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor summary widget
 	function add_sensor_group_summary_chart(tag,layout) {
-		if (!("group" in layout)) return
-		sensors = get_group_string(layout["group"])
-		if (sensors == null) return;
+		if ("group" in layout) {
+			sensors = get_group_string(layout["group"])
+			if (sensors == null) return;
+		}
+		else if ("sensors" in layout) {
+			sensors = []
+			for (var i = 0; i < layout["sensors"].length; i++) { 
+				// for each sensor, retrieve it and add it to the array
+				var sensor_string = layout["sensors"][i]
+				var sensor = get_sensor_string(sensor_string)
+				if (sensor != null) sensors.push(sensor)
+			}
+			if (sensors.length == 0) return
+		}
+		else return
 		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_sensor_group_summary"]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts(options);
@@ -421,8 +433,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		// for each sensor	
 		for (var i = 0; i < sensors.length; i++) {
 			var sensor = sensors[i];
-			if ("group_summary_exclude" in sensor) continue;
 			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			if ("exclude" in layout && layout["exclude"].indexOf(sensor_url.replaceAll("/",":")) > -1) continue
 			// skip flags
 			if (sensor['format'] == 'string') continue;
 			var is_flag = false;
@@ -445,9 +457,21 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a sensor timeline widget
 	function add_sensor_group_timeline_chart(tag,layout) {
-		if (!("group" in layout)) return
-		sensors = get_group_string(layout["group"])
-		if (sensors == null) return;
+		if ("group" in layout) {
+			sensors = get_group_string(layout["group"])
+			if (sensors == null) return;
+		}
+		else if ("sensors" in layout) {
+			sensors = []
+			for (var i = 0; i < layout["sensors"].length; i++) { 
+				// for each sensor, retrieve it and add it to the array
+				var sensor_string = layout["sensors"][i]
+				var sensor = get_sensor_string(sensor_string)
+				if (sensor != null) sensors.push(sensor)
+			}
+			if (sensors.length == 0) return
+		}
+		else return
 		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+layout["type"]+"_"+layout["timeframe"]]);
 		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts('StockChart',options);
@@ -460,6 +484,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			// add each series, to the chart
 			for (var j = 0; j < sensor["series"].length; j++) {
 				series = sensor["series"][j]
+				if ("exclude" in layout && (layout["exclude"].indexOf(sensor_url.replaceAll("/",":")) > -1 || layout["exclude"].indexOf(sensor_url.replaceAll("/",":")+","+series["series_id"]) > -1)) continue
 				// ignore range series for realtime charts
 				if (layout["timeframe"] == "realtime" && series["series_id"] == "range") continue
 				// add the series to the chart
@@ -485,6 +510,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		if (! ("series" in sensor)) return;
 		for (var i = 0; i < sensor["series"].length; i++) {
 			series = sensor["series"][i];
+				if ("exclude" in layout && (layout["exclude"].indexOf(sensor_url.replaceAll("/",":")) > -1 || layout["exclude"].indexOf(sensor_url.replaceAll("/",":")+","+series["series_id"]) > -1)) continue
 			add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,i);
 		}
 	}
@@ -1203,7 +1229,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// return the sensors belonging to the same group
 	function get_group(module_id,group_id) {
-		sensors = []
+		var sensors = []
 		if (module_id == null) module_id = current_module;
 		for (var i = 0; i < conf["modules"].length; i++) {
 			var module = conf["modules"][i];
@@ -1228,7 +1254,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	// fetch a sensor
 	function get_sensor(module_id,group_id,sensor_id) {
 		if (module_id == null) module_id = current_module;
-		sensors = get_group(module_id,group_id);
+		var sensors = get_group(module_id,group_id);
 		if (sensors == null) return null;
 		for (var j = 0; j < sensors.length; j++) {
 			var sensor = sensors[j];

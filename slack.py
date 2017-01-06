@@ -10,7 +10,7 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import oracle
-import generate_image
+import generate_widget
 
 # variables
 initialized = False
@@ -146,9 +146,9 @@ def run():
 						# generate the image
 						module_id,widget_id = response["content"].split(",")
 						try: 
-							widgets = generate_image.run(module_id,widget_id)
+							widgets = generate_widget.run(module_id,widget_id)
 						except Exception,e:
-							log.warning("unable to generate the image for "+module_id+":"+widget_id+": "+utils.get_exception(e))
+							log.warning("unable to generate the widget for "+module_id+":"+widget_id+": "+utils.get_exception(e))
 							continue
 						# upload the chart to the channel
 						if len(widgets) > 0:

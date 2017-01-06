@@ -1066,8 +1066,16 @@
 																"type": "string",
 																"title": "Sensor"
 															},
-															"description": "An optional list of sensors to plot. If not specified."
-														}
+															"description": "An optional list of sensors to plot."
+														},
+														"exclude": {
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Sensor"
+															},
+															"description": "An optional list of sensors and series to exclude, in the format module_id:group_id:sensor_id[,series_id]"
+														}														
 													},
 													"additionalProperties": false,
 													"required": [
@@ -1095,15 +1103,15 @@
 																"type": "string",
 																"title": "Sensor"
 															},
-															"description": "An optional list of sensors to plot. If not specified."
+															"description": "An optional list of sensors to plot."
 														},
-														"series": {
+														"exclude": {
 															"type": "array",
 															"items": {
 																"type": "string",
-																"title": "Series"
+																"title": "Sensor"
 															},
-															"description": "An optional list of series_id to plot. If not specified, all the series will be considered"
+															"description": "An optional list of sensors and series to exclude, in the format module_id:group_id:sensor_id[,series_id]"
 														},
 														"timeframe": {
 															"type": "string",
@@ -1147,13 +1155,13 @@
 																"forecast"
 															]
 														},
-														"series": {
+														"exclude": {
 															"type": "array",
 															"items": {
 																"type": "string",
-																"title": "Series"
+																"title": "Sensor"
 															},
-															"description": "An optional list of series_id to plot. If not specified, all the series will be considered"
+															"description": "An optional list of sensors and series to exclude, in the format module_id:group_id:sensor_id[,series_id]"
 														}
 													},
 													"additionalProperties": false,
@@ -1187,13 +1195,13 @@
 																"forecast"
 															]
 														},
-														"series": {
+														"exclude": {
 															"type": "array",
 															"items": {
 																"type": "string",
-																"title": "Series"
+																"title": "Sensor"
 															},
-															"description": "An optional list of series_id to plot. If not specified, all the series will be considered"
+															"description": "An optional list of sensors and series to exclude, in the format module_id:group_id:sensor_id[,series_id]"
 														}
 													},
 													"additionalProperties": false,
