@@ -6,6 +6,7 @@ import sys
 import json
 from collections import OrderedDict
 import copy
+import subprocess
 
 import config
 conf = config.get_config(validate=False)
@@ -14,11 +15,21 @@ import db
 import sensors
 
 db_file = "/var/lib/redis/dump.rdb"
+debug = False
 
 # change into a given database number
 def change_db(database):
         db.db = None
         conf['db']['database'] = database
+
+# run a command and return the output
+def run_command(command):
+        if debug: print "Executing "+command
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = ''
+        for line in process.stdout.readlines():
+                output = output+line
+        if debug: print output.rstrip()
 
 # backup the database and the configuration file
 def backup(version):
@@ -233,8 +244,9 @@ def upgrade_2_1():
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
         # CONFIGURATION
-        upgrade_db = True
-        upgrade_conf = True
+        upgrade_db = False
+        upgrade_conf = False
+	upgrade_modules = False
 	# END
         conf = config.get_config(validate=False)
         print "[Migration from v2.1 to v2.2]\n"
@@ -247,6 +259,35 @@ def upgrade_2_2():
 		# add the command plugin
 		new["plugins"]["command"] = {}
 		new["plugins"]["command"]["timeout"] = 30
+		# add the system plugin
+                new["plugins"]["system"] = {}
+                new["plugins"]["system"]["timeout"] = 30
+		# add timeout to image
+		new["plugins"]["image"] = {}
+		new["plugins"]["image"]["timeout"] = 30
+		# add the earthquake plugin
+		new["plugins"]["earthquake"] = None
+		# add the mqtt plugin
+		new["plugins"]["mqtt"] = {}
+		new["plugins"]["mqtt"]["enabled"] = False
+		new["plugins"]["mqtt"]["hostname"] = "localhost"
+		new["plugins"]["mqtt"]["port"] = 1883
+		# add the ds18b20 plugin
+		new["plugins"]["ds18b20"] = None
+		# add the dht plugin
+		new["plugins"]["dht"] = None
+		# add the ads1x15 plugin
+		new["plugins"]["ads1x15"] = None
+		print "\tINFO: please be aware the following new plugins are now available: earthquake, mqtt, ds18b20, dht, ads1x15"
+		# add general
+		new["general"]["latitude"] = 0
+		new["general"]["longitude"] = 0
+		print "\tWARNING: different plugins use the new 'latitude' and 'longitude' in 'general', customize them"
+		# move units and timeframe under general
+		new["general"]["units"] = conf["units"]
+		del new["units"]
+                new["general"]["timeframes"] = conf["timeframes"]
+                del new["timeframes"]
 		# add the power module
 		power =  {
 		      "module_id": "power",
@@ -328,18 +369,112 @@ def upgrade_2_2():
 		# delete location from weatherchannel and wunderground
 		del new["plugins"]["weatherchannel"]["location"]
 		del new["plugins"]["wunderground"]["location"]
-		print "WARNING: 'location' in 'plugins/wunderground' and 'plugins/weatherchannel' has been precated, use e 'latitude' and 'longitude' in 'general' instead"
+		print "\tWARNING: 'location' in 'plugins/wunderground' and 'plugins/weatherchannel' has been precated, use e 'latitude' and 'longitude' in 'general' instead"
 		# delete csv_file from the csv plugin
 		if "csv_file" in new["plugins"]["csv"]:
 			del new["plugins"]["csv"]["csv_file"]
 			print "WARNING: 'csv_file' in 'plugins/csv' has been deprecated, specify the filename in each sensor"
 		# warn about data_expire_days
-		print "WARNING: data_expire_days in 'sensors' has been deprecated, use 'retention' instead"
+		print "\tWARNING: data_expire_days in 'sensors' has been deprecated, use 'retention' instead"
 		# warn about icloud widget
-		print "WARNING: if you have any widget displaying the position of an icloud-based sensor, please manually edit it. Set 'type' to 'map', 'group' to the group of sensors, 'tracking' to 'true' and 'timeframe' to 'realtime'"
+		print "\tWARNING: if you have any widget displaying the position of an icloud-based sensor, please manually edit it. Set 'type' to 'map', 'group' to the group of sensors, 'tracking' to 'true' and 'timeframe' to 'realtime'"
+		# add output
+		new["output"] = {}
+		# migrate notifications into output
+		new["output"]["email"] = conf["notifications"]["email"]
+                new["output"]["slack"] = conf["notifications"]["slack"]
+                del new["notifications"]
+		# add sms notification
+		sms =  {
+			"enabled": False,
+		        "ssl": False,
+		        "hostname": "www.freevoipdeal.com",
+                        "username": "",
+                        "password": "",
+                        "from": "",
+                        "to": [   ],
+                        "min_severity": "alert",
+                        "rate_limit": 1
+                }
+		new["output"]["sms"] = sms
+		# add audio notification
+		output_audio = {
+			"enabled": False,
+			"engine": "google",
+			"language": "en-US"
+		}
+		new["output"]["audio"] = output_audio
+		print "\tINFO: added the following new notification channels: sms, audio. Enable them if interested"
+		# remove options from email
+		del new["output"]["email"]["module_digest"]
+		new["output"]["email"]["enabled"] = new["output"]["email"]["realtime_alerts"]
+		del new["output"]["email"]["realtime_alerts"]
+		print "\tWARNING: 'module_digest' in 'email' has been deprecated, if 'daily_digest' is set to 'true' in the module, the digest will be sent"
+                # add input
+                new["input"] = {}
+                new["input"]["settings"] = {}
+                new["input"]["settings"]["algorithm"] = "token_set_ratio"
+                new["input"]["settings"]["score"] = 50
+		# remove options from slack
+		new["output"]["slack"]["enabled"] = new["output"]["slack"]["realtime_alerts"]
+		del new["output"]["slack"]["realtime_alerts"]
+		new["input"]["slack"] = {}
+		new["input"]["slack"]["enabled"] = new["output"]["slack"]["interactive_bot"]
+		del new["output"]["slack"]["interactive_bot"]
+		# add skin
+		new["gui"]["skin"] = "blue"
+		# add audio input
+		input_audio = {
+			  "enabled": False,
+		          "engine": "google",
+		          "language": "en-US",
+		          "echo_request": False,
+		          "recorder": {
+		                "max_duration": 60,
+		                "start_duration": 0.1,
+		                "start_threshold": 1,
+		                "end_duration": 3,
+		                "end_threshold": 0.1
+			   }
+			}
+		new["input"]["audio"] = input_audio
+		print "\tINFO: added audio input. Enabled it if interested"
 		# cycle through the modules
 		group_to_delete = []
+		group_summary_exclude = {}
                 for module in new["modules"]:
+			module_id = module["module_id"]
+			# add uptime rule
+			if module_id == "system":
+				uptime_rule = {
+			          "rule_id": "system_reboot",
+			          "display_name": "The system has been recently rebooted",
+			          "enabled": True,
+			          "severity": "info",
+			          "run_every": "5 minutes",
+			          "conditions": [
+			            "last_uptime < prev_uptime"
+			          ],
+			          "definitions": {
+					  "last_uptime": "system:runtime:uptime,-1,-1",
+				          "prev_uptime": "system:runtime:uptime,-2,-2"
+			          }
+			        }
+				module["rules"].append(uptime_rule)
+				uptime_sensor = {
+		                  "module_id": "system",
+			          "group_id": "runtime",
+			          "sensor_id": "uptime",
+			          "display_name": "uptime",
+			          "plugin": {
+			            "plugin_name": "system",
+			            "measure": "uptime",
+			            "polling_interval": 10
+			          },
+			          "format": "int"
+			        }
+				module["sensors"].append(uptime_sensor)
+				print "\tINFO: I've added a rule called 'system_reboot' to notify when the system reboots"
                         if "widgets" in module:
                                 for i in range(len(module["widgets"])):
                                         for j in range(len(module["widgets"][i])):
@@ -351,11 +486,23 @@ def upgrade_2_2():
 								layout["tracking"] = True
 								# delete the data from the map sensors since format has changed
 								group_to_delete.append(layout["group"])
+			if "rules" in module:
+				for i in range(len(module["rules"])):
+					rule = module["rules"][i]
+					for a,b in module["rules"]["definitions"].iteritems():
+						# rename timestam in elapsed in rule definition
+						if ",timestamp" in b: module["rules"]["definitions"][a] = b.replace(",timestamp",",elapsed")
                         if "sensors" in module:
                                 for i in range(len(module["sensors"])):
                                         sensor = module["sensors"][i]
+					# add module_id to each sensor
+					sensor["module_id"] = module_id
+					# remove group_summary_exclude
+					if "group_summary_exclude" in sensor:
+						group_summary_exclude[module_id+":"+sensor["group_id"]] = module_id+":"+sensor["group_id"]+":"+sensor["sensor_id"]
+						del sensor["group_summary_exclude"]
 					# convert single_instance
-                                         if "single_instance" in sensor: 
+                                        if "single_instance" in sensor: 
 						sensor["retention"] = {}
 						sensor["retention"]["realtime_count"] = 1
 					if "plugin" in sensor:
@@ -370,18 +517,76 @@ def upgrade_2_2():
                                                         if "node_id_index" in sensor:
                                                                 sensor["plugin"]["filter_position"] = sensor["plugin"]["node_id_index"]
                                                                 del sensor["plugin"]["node_id_index"]
-                                                       if "measure" in sensor:
-                                                                sensor["plugin"]["prefix"] = sensor["plugin"][""measure""]
-                                                                del sensor["plugin"][""measure""]
-                                                       if "measure_index" in sensor:
+                                                        if "measure" in sensor:
+                                                                sensor["plugin"]["prefix"] = sensor["plugin"]["measure"]
+                                                                del sensor["plugin"]["measure"]
+                                                        if "measure_index" in sensor:
                                                                 sensor["plugin"]["value_position"] = sensor["plugin"]["measure_index"]
                                                                 del sensor["plugin"]["measure_index"]
 						if sensor["plugin"]["plugin_name"] == "icloud":
 							# device name mandatory
-							print "WARNING: the 'icloud' plugin requires a single 'device_name' to be set, please review all your sensors using this plugin"
+							print "\tWARNING: the 'icloud' plugin requires a single 'device_name' to be set, please review all your sensors using this plugin"
 							if "devices" in sensor["plugin"]:
 								sensor["plugin"]["device"] = sensor["plugin"]["devices"][0]
-	
+						if sensor["plugin"]["plugin_name"] == "linux":
+							# migrate the linux plugin
+							if sensor["plugin"]["measure"] == "custom":
+								# migrate to the command plugin
+								del sensor["plugin"]["measure"]
+								sensor["plugin"]["plugin_name"] = "command"
+							else:
+								# migrate to the system plugin
+								sensor["plugin"]["plugin_name"] = "system"
+		# second round
+                for module in new["modules"]:
+                        module_id = module["module_id"]
+                        if "widgets" in module:
+                                for i in range(len(module["widgets"])):
+                                        for j in range(len(module["widgets"][i])):
+                                                widget = module["widgets"][i][j]
+                                                for k in range(len(widget["layout"])):
+                                                        layout = widget["layout"][k]
+							if layout["type"] == "sensor_group_summary" and layout["type"]["group"] in group_summary_exclude:
+								# add exclude
+								layout["exclude"] = []
+								layout["exclude"].append(group_summary_exclude[layout["type"]["group"]])
+		# delete from the db the sensors in group_to_delete
+		for group in group_to_delete:
+			sensors = utils.get_group(group)
+			for sensor in sensors:
+				db.delete(sensor["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"])
+
+	if upgrade_modules:
+		print "Installing additional dependencies..."
+	        print "\tInstalling python-paho-mqtt..."
+	        run_command("pip install paho-mqtt")
+	        print "\tInstalling mosquitto..."
+	        run_command("apt-get install -y mosquitto")
+	        print "\tInstalling picotts..."
+	        run_command("apt-get install -y libttspico-utils")
+	        print "\tInstalling python-opencv..."
+	        run_command("apt-get install -y python-opencv")
+	        print "\tInstalling python-gtts..."
+	        run_command("pip install gTTS")
+	        print "\tInstalling mpg123..."
+	        run_command("apt-get install -y mpg123")
+	        print "\tInstalling python-speech-recognition..."
+	        run_command("pip install SpeechRecognition")
+	        print "\tInstalling sox..."
+	        run_command("apt-get install -y sox")
+	        print "\tInstalling flac..."
+	        run_command("apt-get install -y flac")
+	        print "\tInstalling pocketsphinx..."
+	        run_command("apt-get install -y pocketsphinx")
+        	print "\tInstalling python-dht..."
+	        run_command("pip install Adafruit_Python_DHT")
+	        print "\tInstalling python-ads1x15..."
+	        run_command("pip install Adafruit_ADS1x15")
+        if upgrade_db:
+                print "Upgrading database..."
+                version_key = conf["constants"]["db_schema"]["version"]
+                db.set_simple(version_key,"2.2")
+
 # main 
 def main():
 	# ensure it is run as root
@@ -398,6 +603,7 @@ def main():
 	if version == conf["constants"]["version"]: exit("Already running the latest version ("+str(version)+"). Exiting.")
 	if version == "1.0": upgrade_2_0()
 	if version == "2.0": upgrade_2_1()
+	if version == "2.1": upgrade_2_2()
 
 # run main()
 main()
