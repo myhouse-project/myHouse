@@ -918,9 +918,9 @@
 						"mode"
 					]
 				},
-				"fdsnws": {
+				"earthquake": {
 					"type": "null",
-					"description": "Federation of Digital Seismograph Network Web Service plugin configuration"
+					"description": "Earthquake from the Federation of Digital Seismograph Network Web Service plugin configuration"
 				},
 				"mqtt": {
 					"type": "object",
@@ -971,7 +971,7 @@
 				"messagebridge",
 				"rtl_433",
 				"gpio",
-				"fdsnws",
+				"earthquake",
 				"mqtt",
 				"ds18b20",
 				"dht",
@@ -2172,15 +2172,15 @@
 											]
 										},
 										{
-											"title": "fdsnws",
+											"title": "earthquake",
 											"description": "Retrieve earthquake events from a FDSN web service",
 											"properties": {
 												"plugin_name": {
 													"type": "string",
 													"enum": [
-														"fdsnws"
+														"earthquake"
 													],
-													"value": "fdsnws"
+													"value": "earthquake"
 												},
 												"domain": {
 													"description": "A domain hosting a FDSNWS web service (e.g. earthquake.usgs.gov). Visit http://www.fdsn.org/webservices/ for a full list",

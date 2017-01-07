@@ -9,7 +9,7 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-plugin_conf = conf['plugins']['fdsnws']
+plugin_conf = conf['plugins']['earthquake']
 limit = 10000
 query = "format=text&limit="+str(limit)+"&orderby=time-asc"
 
