@@ -554,6 +554,10 @@
 							"type": "string",
 							"description": "Your Betamax VOIP service. An account on one of the Betamax powered services (http://backsla.sh/betamax) is required"
 						},
+						"ssl": {
+							"type": "boolean",
+							"description": "Use SSL when connecting to the VOIP service"
+						},
 						"username": {
 							"type": "string",
 							"description": "The username of the VOIP service"
