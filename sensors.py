@@ -25,7 +25,7 @@ import plugin_messagebridge
 import plugin_icloud
 import plugin_rtl_433
 import plugin_gpio
-import plugin_fdsnws
+import plugin_earthquake
 import plugin_mqtt
 import plugin_system
 import plugin_dht
@@ -50,7 +50,7 @@ def init_plugins():
 	        elif name == "messagebridge": plugin = plugin_messagebridge
 		elif name == "rtl_433": plugin = plugin_rtl_433
 		elif name == "gpio": plugin = plugin_gpio
-		elif name == "fdsnws": plugin = plugin_fdsnws
+		elif name == "earthquake": plugin = plugin_earthquake
 		elif name == "mqtt": plugin = plugin_mqtt
 		elif name == "system": plugin = plugin_system
 		elif name == "dht": plugin = plugin_dht

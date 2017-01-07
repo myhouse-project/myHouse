@@ -5,6 +5,7 @@ import os
 import sys
 import json
 from collections import OrderedDict
+import copy
 
 import config
 conf = config.get_config(validate=False)
@@ -19,11 +20,13 @@ def change_db(database):
         db.db = None
         conf['db']['database'] = database
 
+# backup the database and the configuration file
 def backup(version):
-	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)
+	if not utils.file_exists(db_file): exit("unable to find the database at "+db_file)
+	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)+"_"+utils.now()
 	print "Backing up the database "+db_file+" into "+backup_db_file
 	utils.run_command("cp "+db_file+" "+backup_db_file)
-        backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
+        backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)+"_"+utils.now()
         print "Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file
         utils.run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
 
@@ -227,6 +230,158 @@ def upgrade_2_1():
 		# delete the old main.py
 		utils.run_command("rm -f "+conf["constants"]["base_dir"]+"/main.py")
 
+# upgrade from 2.1 to 2.2
+def upgrade_2_2():
+        # CONFIGURATION
+        upgrade_db = True
+        upgrade_conf = True
+	# END
+        conf = config.get_config(validate=False)
+        print "[Migration from v2.1 to v2.2]\n"
+        backup("2.1")
+        if upgrade_conf:
+                print "Upgrading configuration file..."
+		new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
+		# delete the linux plugin
+		del new["plugins"]["linux"]
+		# add the command plugin
+		new["plugins"]["command"] = {}
+		new["plugins"]["command"]["timeout"] = 30
+		# add the power module
+		power =  {
+		      "module_id": "power",
+		      "section_id": "System",
+		      "display_name": "Reboot/Shutdown",
+		      "icon": "fa-power-off",
+		      "enabled": True,
+		      "widgets": [
+        		[
+		          {
+		            "widget_id": "reboot",
+		            "display_name": "Reboot the system",
+		            "enabled": True,
+		            "size": 4,
+		            "offset": 1,
+		            "layout": [
+		              {
+		                "type": "button",
+		                "display_name": "Reboot",
+			        "send": "power/command/reboot/run/poll"
+		              }
+		            ]
+	                   },
+                           {
+		            "widget_id": "shutdown",
+		            "display_name": "Shutdown the system",
+		            "enabled": True,
+		            "size": 4,
+	                    "offset": 2,
+		            "layout": [
+		              {
+		                "type": "button",
+                                "display_name": "Shutdown",
+                		"send": "power/command/shutdown/run/poll"
+		              }
+		            ]
+		          }
+		        ]
+		      ],
+		      "sensors": [
+		        {
+	                  "module_id": "power",
+		          "group_id": "command",
+		          "sensor_id": "reboot",
+		          "plugin": {
+		            "plugin_name": "system",
+		            "measure": "reboot"
+		          },
+		          "format": "string",
+	                  "retention": {
+	                    "realtime_count": 1
+	                  }
+		        },
+		        {
+	                  "module_id": "power",
+		          "group_id": "command",
+		          "sensor_id": "shutdown",
+		          "plugin": {
+		            "plugin_name": "system",
+		            "measure": "shutdown"
+		          },
+		          "format": "string",
+	                  "retention": {
+	                        "realtime_count": 1
+	                  }
+		        }
+		      ]
+	    	}
+		new["modules"].append(power)
+		# add retention to sensors
+		new["sensors"]["retention"] = {}
+		new["sensors"]["retention"]["realtime_new_only"] = False
+		new["sensors"]["retention"]["realtime_count"] = 0
+		new["sensors"]["retention"]["realtime_days"] = 5
+		new["sensors"]["retention"]["recent_days"] = 5
+		new["sensors"]["retention"]["history_days"] = 0
+		# add language to weatherchannel
+		new["plugins"]["weatherchannel"]["language"] = "en"
+		# delete location from weatherchannel and wunderground
+		del new["plugins"]["weatherchannel"]["location"]
+		del new["plugins"]["wunderground"]["location"]
+		print "WARNING: 'location' in 'plugins/wunderground' and 'plugins/weatherchannel' has been precated, use e 'latitude' and 'longitude' in 'general' instead"
+		# delete csv_file from the csv plugin
+		if "csv_file" in new["plugins"]["csv"]:
+			del new["plugins"]["csv"]["csv_file"]
+			print "WARNING: 'csv_file' in 'plugins/csv' has been deprecated, specify the filename in each sensor"
+		# warn about data_expire_days
+		print "WARNING: data_expire_days in 'sensors' has been deprecated, use 'retention' instead"
+		# warn about icloud widget
+		print "WARNING: if you have any widget displaying the position of an icloud-based sensor, please manually edit it. Set 'type' to 'map', 'group' to the group of sensors, 'tracking' to 'true' and 'timeframe' to 'realtime'"
+		# cycle through the modules
+		group_to_delete = []
+                for module in new["modules"]:
+                        if "widgets" in module:
+                                for i in range(len(module["widgets"])):
+                                        for j in range(len(module["widgets"][i])):
+                                                widget = module["widgets"][i][j]
+                                                for k in range(len(widget["layout"])):
+                                                        layout = widget["layout"][k]
+							# add tracking to map
+							if "type" in layout and layout["type"] == "map": 
+								layout["tracking"] = True
+								# delete the data from the map sensors since format has changed
+								group_to_delete.append(layout["group"])
+                        if "sensors" in module:
+                                for i in range(len(module["sensors"])):
+                                        sensor = module["sensors"][i]
+					# convert single_instance
+                                         if "single_instance" in sensor: 
+						sensor["retention"] = {}
+						sensor["retention"]["realtime_count"] = 1
+					if "plugin" in sensor:
+						# rename csv plugin settings
+						if sensor["plugin"]["plugin_name"] == "csv":
+							if "date_position" in sensor:
+								sensor["plugin"]["date_position"] = sensor["plugin"]["date_index"]
+								del sensor["plugin"]["date_index"]
+                                                       	if "node_id" in sensor:
+                                                                sensor["plugin"]["filter"] = sensor["plugin"]["node_id"]
+                                                                del sensor["plugin"]["node_id"]
+                                                        if "node_id_index" in sensor:
+                                                                sensor["plugin"]["filter_position"] = sensor["plugin"]["node_id_index"]
+                                                                del sensor["plugin"]["node_id_index"]
+                                                       if "measure" in sensor:
+                                                                sensor["plugin"]["prefix"] = sensor["plugin"][""measure""]
+                                                                del sensor["plugin"][""measure""]
+                                                       if "measure_index" in sensor:
+                                                                sensor["plugin"]["value_position"] = sensor["plugin"]["measure_index"]
+                                                                del sensor["plugin"]["measure_index"]
+						if sensor["plugin"]["plugin_name"] == "icloud":
+							# device name mandatory
+							print "WARNING: the 'icloud' plugin requires a single 'device_name' to be set, please review all your sensors using this plugin"
+							if "devices" in sensor["plugin"]:
+								sensor["plugin"]["device"] = sensor["plugin"]["devices"][0]
+	
 # main 
 def main():
 	# ensure it is run as root
@@ -244,4 +399,5 @@ def main():
 	if version == "1.0": upgrade_2_0()
 	if version == "2.0": upgrade_2_1()
 
+# run main()
 main()
