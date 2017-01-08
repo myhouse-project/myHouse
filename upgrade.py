@@ -240,7 +240,6 @@ def upgrade_2_1():
 			file.write(filedata)
 		# delete the old main.py
 		utils.run_command("rm -f "+conf["constants"]["base_dir"]+"/main.py")
-	print "\n\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to ensure there are no errors before restarting the service"
 
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
@@ -331,7 +330,7 @@ def upgrade_2_2():
 		            "display_name": {
                                 "en": "Shutdown the system",
                             },
-		            "enabled": true,
+		            "enabled": True,
 		            "size": 4,
 		            "offset": 2,
 		            "layout": [
@@ -375,7 +374,6 @@ def upgrade_2_2():
 			}
 		      ]
 		}
-		new["modules"].append(power)
 		# add retention to sensors
 		new["sensors"]["retention"] = {}
 		new["sensors"]["retention"]["realtime_new_only"] = False
@@ -593,6 +591,8 @@ def upgrade_2_2():
 							else:
 								# migrate to the system plugin
 								sensor["plugin"]["plugin_name"] = "system"
+		# add the power module
+		new["modules"].append(power)
 		# second round
                 for module in new["modules"]:
                         module_id = module["module_id"]
@@ -663,6 +663,7 @@ def main():
 	if version == "1.0": upgrade_2_0()
 	if version == "2.0": upgrade_2_1()
 	if version == "2.1": upgrade_2_2()
+        print "\n\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service"
 
 # run main()
 main()

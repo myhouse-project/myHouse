@@ -3,20 +3,7 @@
     "enabled": true,
     "hostname": "localhost",
     "port": 6379,
-    "database": 1
-  },
-  "units": {
-    "imperial": false,
-    "fahrenheit": false
-  },
-  "timeframes": {
-    "realtime_hours": 4,
-    "recent_hours": 24,
-    "history_days": 365,
-    "short_history_days": 30,
-    "forecast_days": 7,
-    "alerter_recent_hours": 24,
-    "alerter_history_days": 7
+    "database": 2
   },
   "gui": {
     "enabled": true,
@@ -26,19 +13,20 @@
     "default_module": "system",
     "auto_refresh_min": 5,
     "debug_console": false,
-    "sections": [
-      "Main",
-      "Sensors",
-      "Actuators",
-      "System",
-      "myHouse"
-    ],
+    "sections": {
+      "Actuators": "Actuators",
+      "Sensors": "Sensors",
+      "Main": "Main",
+      "System": "System",
+      "myHouse": "myHouse"
+    },
     "maps": {
       "size_x": 640,
       "api_key": "YOUR_API_KEY",
       "type": "hybrid",
       "size_y": 640
-    }
+    },
+    "skin": "blue"
   },
   "alerter": {
     "enabled": true,
@@ -48,28 +36,12 @@
     "enabled": true,
     "poll_at_startup": true,
     "cache_expire_min": 1,
-    "data_expire_days": 5
-  },
-  "notifications": {
-    "enabled": true,
-    "email": {
-      "enabled": false,
-      "hostname": "localhost",
-      "from": "your@email.com",
-      "to": [
-        "your@email.com"
-      ],
-      "alerts_digest": false,
-      "module_digest": false,
-      "realtime_alerts": false
-    },
-    "slack": {
-      "enabled": false,
-      "bot_name": "housebot",
-      "bot_token": "YOUR_SLACK_API_KEY",
-      "channel": "general",
-      "realtime_alerts": false,
-      "interactive_bot": false
+    "retention": {
+      "realtime_count": 0,
+      "realtime_days": 5,
+      "realtime_new_only": false,
+      "history_days": 0,
+      "recent_days": 5
     }
   },
   "logging": {
@@ -90,18 +62,16 @@
   },
   "plugins": {
     "wunderground": {
-      "api_key": "YOUR_API_KEY",
-      "location": "40.71,74.00"
+      "api_key": "YOUR_API_KEY"
     },
     "weatherchannel": {
       "api_key": "YOUR_API_KEY",
-      "location": "40.71/74.00"
+      "language": "en"
     },
-    "csv": {
-      "csv_file": "/opt/MessageBridge/CSVLogs/CSV_MessageBridge.csv"
+    "csv": null,
+    "image": {
+      "timeout": 30
     },
-    "linux": null,
-    "image": null,
     "icloud": null,
     "messagebridge": {
       "enabled": false,
@@ -115,13 +85,30 @@
     "gpio": {
       "enabled": false,
       "mode": "bcm"
-    }
+    },
+    "command": {
+      "timeout": 30
+    },
+    "system": {
+      "timeout": 30
+    },
+    "earthquake": null,
+    "mqtt": {
+      "hostname": "localhost",
+      "enabled": false,
+      "port": 1883
+    },
+    "ds18b20": null,
+    "dht": null,
+    "ads1x15": null
   },
   "modules": [
     {
       "module_id": "dashboard",
       "section_id": "Main",
-      "display_name": "Dashboard",
+      "display_name": {
+        "en": "Dashboard"
+      },
       "icon": "fa-pie-chart",
       "enabled": false,
       "daily_digest": false,
@@ -129,7 +116,9 @@
         [
           {
             "widget_id": "dashboard_external_temperature_summary",
-            "display_name": "External Temperature",
+            "display_name": {
+              "en": "External Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -140,13 +129,18 @@
               },
               {
                 "type": "sensor_group_summary",
-                "group": "outdoor:temperature"
+                "group": "outdoor:temperature",
+                "exclude": [
+                  "outdoor:temperature:record_year"
+                ]
               }
             ]
           },
           {
             "widget_id": "dashboard_external_temperature_recent",
-            "display_name": "External Temperature Recent",
+            "display_name": {
+              "en": "External Temperature Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -159,7 +153,9 @@
           },
           {
             "widget_id": "dashboard_internal_temperature_summary",
-            "display_name": "Internal Temperature",
+            "display_name": {
+              "en": "Internal Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -170,13 +166,18 @@
               },
               {
                 "type": "sensor_group_summary",
-                "group": "indoor:temperature"
+                "group": "indoor:temperature",
+                "exclude": [
+                  "indoor:temperature:boiler_status_prev"
+                ]
               }
             ]
           },
           {
             "widget_id": "boiler_control",
-            "display_name": "Boiler Control",
+            "display_name": {
+              "en": "Boiler Control"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -190,19 +191,25 @@
               },
               {
                 "type": "checkbox",
-                "display_name": "Boiler Manual Switch",
+                "display_name": {
+                  "en": "Boiler Manual Switch"
+                },
                 "sensor": "boiler:main:switch",
                 "send_on": "boiler/main/switch/send/OUTA1",
                 "send_off": "boiler/main/switch/send/OUTA0"
               },
               {
                 "type": "input",
-                "display_name": "Target Temperature",
+                "display_name": {
+                  "en": "Target Temperature"
+                },
                 "sensor": "boiler:main:max_temperature"
               },
               {
                 "type": "checkbox",
-                "display_name": "Scheduler Status",
+                "display_name": {
+                  "en": "Scheduler Status"
+                },
                 "sensor": "boiler:scheduler:switch",
                 "disabled": true
               }
@@ -212,7 +219,9 @@
         [
           {
             "widget_id": "dashboard_webcam_external",
-            "display_name": "Webcam External",
+            "display_name": {
+              "en": "Webcam External"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -224,7 +233,9 @@
           },
           {
             "widget_id": "dashboard_forecast_temperature",
-            "display_name": "Forecast",
+            "display_name": {
+              "en": "Forecast"
+            },
             "enabled": false,
             "size": 4,
             "layout": [
@@ -237,7 +248,9 @@
           },
           {
             "widget_id": "dashboard_forecast_pop",
-            "display_name": "Chance of rain",
+            "display_name": {
+              "en": "Chance of rain"
+            },
             "enabled": false,
             "size": 2,
             "layout": [
@@ -250,7 +263,9 @@
           },
           {
             "widget_id": "dashboard_webcam_first_floor",
-            "display_name": "Webcam First Floor",
+            "display_name": {
+              "en": "Webcam First Floor"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -265,7 +280,9 @@
       "rules": [
         {
           "rule_id": "sensors_startup",
-          "display_name": "Initializing all the sensors",
+          "display_name": {
+            "en": "Initializing all the sensors"
+          },
           "enabled": false,
           "severity": "debug",
           "run_every": "startup",
@@ -285,7 +302,8 @@
             "set,indoor:alerts:flood,OFF",
             "set,boiler:main:heartbeat_alert_status,0",
             "set,boiler:keyfob:keyfob_a,0",
-            "set,boiler:keyfob:keyfob_b,0"
+            "set,boiler:keyfob:keyfob_b,0",
+			"set,earthquake:alert:world,0,ifnotexists"
           ]
         }
       ]
@@ -293,7 +311,9 @@
     {
       "module_id": "outdoor",
       "section_id": "Sensors",
-      "display_name": "Outdoor",
+      "display_name": {
+        "en": "Outdoor"
+      },
       "icon": "fa-sun-o",
       "enabled": false,
       "daily_digest": false,
@@ -301,7 +321,9 @@
         [
           {
             "widget_id": "outdoor_forecast_temperature",
-            "display_name": "Forecast: Temperature",
+            "display_name": {
+              "en": "Forecast: Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -314,7 +336,9 @@
           },
           {
             "widget_id": "outdoor_forecast_condition",
-            "display_name": "Forecast: Condition",
+            "display_name": {
+              "en": "Forecast: Condition"
+            },
             "enabled": false,
             "size": 2,
             "layout": [
@@ -327,7 +351,9 @@
           },
           {
             "widget_id": "outdoor_forecast_pop",
-            "display_name": "Forecast: Chance of rain",
+            "display_name": {
+              "en": "Forecast: Chance of rain"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -340,7 +366,9 @@
           },
           {
             "widget_id": "outdoor_forecast_rain",
-            "display_name": "Forecast: Rain",
+            "display_name": {
+              "en": "Forecast: Rain"
+            },
             "enabled": false,
             "size": 2,
             "layout": [
@@ -353,7 +381,9 @@
           },
           {
             "widget_id": "outdoor_forecast_snow",
-            "display_name": "Forecast: Snow",
+            "display_name": {
+              "en": "Forecast: Snow"
+            },
             "enabled": false,
             "size": 2,
             "layout": [
@@ -368,7 +398,9 @@
         [
           {
             "widget_id": "outdoor_temperature_summary",
-            "display_name": "Temperature: Summary",
+            "display_name": {
+              "en": "Temperature: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -379,13 +411,18 @@
               },
               {
                 "type": "sensor_group_summary",
-                "group": "outdoor:temperature"
+                "group": "outdoor:temperature",
+                "exclude": [
+                  "outdoor:temperature:record_year"
+                ]
               }
             ]
           },
           {
             "widget_id": "outdoor_temperature_recent",
-            "display_name": "Temperature: Recent",
+            "display_name": {
+              "en": "Temperature: Recent"
+            },
             "enabled": false,
             "size": 5,
             "layout": [
@@ -398,7 +435,9 @@
           },
           {
             "widget_id": "outdoor_precipitation_history",
-            "display_name": "Precipitation: History",
+            "display_name": {
+              "en": "Precipitation: History"
+            },
             "enabled": false,
             "size": 4,
             "layout": [
@@ -411,7 +450,9 @@
           },
           {
             "widget_id": "outdoor_temperature_history",
-            "display_name": "Temperature: History",
+            "display_name": {
+              "en": "Temperature: History"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
@@ -426,7 +467,9 @@
         [
           {
             "widget_id": "outdoor_wind_summary",
-            "display_name": "Wind: Summary",
+            "display_name": {
+              "en": "Wind: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -443,7 +486,9 @@
           },
           {
             "widget_id": "outdoor_wind_recent",
-            "display_name": "Wind: Recent",
+            "display_name": {
+              "en": "Wind: Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -456,7 +501,9 @@
           },
           {
             "widget_id": "outdoor_wind_history",
-            "display_name": "Wind: History",
+            "display_name": {
+              "en": "Wind: History"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -469,7 +516,9 @@
           },
           {
             "widget_id": "outdoor_humidity_summary",
-            "display_name": "Humidity: Summary",
+            "display_name": {
+              "en": "Humidity: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -486,7 +535,9 @@
           },
           {
             "widget_id": "outdoor_humidity_recent",
-            "display_name": "Humidity: Recent",
+            "display_name": {
+              "en": "Humidity: Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -499,7 +550,9 @@
           },
           {
             "widget_id": "outdoor_humidity_history",
-            "display_name": "Humidity: History",
+            "display_name": {
+              "en": "Humidity: History"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -514,7 +567,9 @@
         [
           {
             "widget_id": "outdoor_light_summary",
-            "display_name": "Ambient Light: Summary",
+            "display_name": {
+              "en": "Ambient Light: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -531,7 +586,9 @@
           },
           {
             "widget_id": "outdoor_light_recent",
-            "display_name": "Ambient Light: Recent",
+            "display_name": {
+              "en": "Ambient Light: Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -544,7 +601,9 @@
           },
           {
             "widget_id": "outdoor_light_history",
-            "display_name": "Ambient Light: History",
+            "display_name": {
+              "en": "Ambient Light: History"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -559,7 +618,9 @@
         [
           {
             "widget_id": "outdoor_pressure_summary",
-            "display_name": "Pressure: Summary",
+            "display_name": {
+              "en": "Pressure: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -576,7 +637,9 @@
           },
           {
             "widget_id": "outdoor_pressure_recent",
-            "display_name": "Pressure: Recent",
+            "display_name": {
+              "en": "Pressure: Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -589,7 +652,9 @@
           },
           {
             "widget_id": "outdoor_pressure_history",
-            "display_name": "pressure: History",
+            "display_name": {
+              "en": "pressure: History"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -605,7 +670,9 @@
       "rules": [
         {
           "rule_id": "weather_alert",
-          "display_name": "%alert_latest%",
+          "display_name": {
+            "en": "%alert_latest%"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -620,8 +687,26 @@
           }
         },
         {
+          "rule_id": "temperature_yesterday",
+          "display_name": {
+            "en": "Yesterday average temperature outside was %temperature_avg_yesterday% with a %condition_avg_yesterday% weather, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%"
+          },
+          "enabled": false,
+          "severity": "info",
+          "run_every": "day",
+          "conditions": [],
+          "definitions": {
+            "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
+            "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
+            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2",
+			"condition_avg_yesterday": "outdoor:temperature:condition:day:avg,-2,-2"
+          }
+        },
+        {
           "rule_id": "temperature_max_record",
-          "display_name": "Yesterday outdoor maximum temperature was %temperature_max_yesterday%, higher than the record %record_max_yesterday% (%record_max_yesterday_year%) for that day",
+          "display_name": {
+            "en": "Yesterday outdoor maximum temperature was %temperature_max_yesterday%, higher than the record %record_max_yesterday% (%record_max_yesterday_year%) for that day"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -636,7 +721,9 @@
         },
         {
           "rule_id": "temperature_max_normal",
-          "display_name": "Yesterday outdoor maximum temperature was %temperature_max_yesterday%, higher than %normal_max_yesterday% which I would have expected for this time of the year",
+          "display_name": {
+            "en": "Yesterday outdoor maximum temperature was %temperature_max_yesterday%, higher than %normal_max_yesterday% which I would have expected for this time of the year"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -650,7 +737,9 @@
         },
         {
           "rule_id": "temperature_max_week",
-          "display_name": "Yesterday outdoor maximum temperature %temperature_max_yesterday% was the highest of the last 5 days",
+          "display_name": {
+            "en": "Yesterday outdoor maximum temperature %temperature_max_yesterday% was the highest of the last 5 days"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -664,7 +753,9 @@
         },
         {
           "rule_id": "temperature_min_record",
-          "display_name": "Yesterday outdoor minimum temperature was %temperature_min_yesterday%, lower than the record %record_min_yesterday% (%record_min_yesterday_year%) for that day",
+          "display_name": {
+            "en": "Yesterday outdoor minimum temperature was %temperature_min_yesterday%, lower than the record %record_min_yesterday% (%record_min_yesterday_year%) for that day"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -679,7 +770,9 @@
         },
         {
           "rule_id": "temperature_min_normal",
-          "display_name": "Yesterday outdoor mininum temperature was %temperature_min_yesterday%, lower than %normal_min_yesterday% which I would have expected for this time of the year",
+          "display_name": {
+            "en": "Yesterday outdoor mininum temperature was %temperature_min_yesterday%, lower than %normal_min_yesterday% which I would have expected for this time of the year"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -693,7 +786,9 @@
         },
         {
           "rule_id": "temperature_min_week",
-          "display_name": "Yesterday outdoor min temperature %temperature_min_yesterday% was the lowest of the last 5 days",
+          "display_name": {
+            "en": "Yesterday outdoor min temperature %temperature_min_yesterday% was the lowest of the last 5 days"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -707,7 +802,9 @@
         },
         {
           "rule_id": "temperature_avg_max_week",
-          "display_name": "Yesterday outdoor average temperature %temperature_avg_yesterday% was the highest of the last five days",
+          "display_name": {
+            "en": "Yesterday outdoor average temperature %temperature_avg_yesterday% was the highest of the last five days"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -721,7 +818,9 @@
         },
         {
           "rule_id": "temperature_avg_min_week",
-          "display_name": "Yesterday outdoor average temperature %temperature_avg_yesterday% was the lowest of the last five days",
+          "display_name": {
+            "en": "Yesterday outdoor average temperature %temperature_avg_yesterday% was the lowest of the last five days"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -735,7 +834,9 @@
         },
         {
           "rule_id": "high_temperature",
-          "display_name": "Weather is getting too hot, external temperature has reached %temperature_current% during the last hour",
+          "display_name": {
+            "en": "Weather is getting too hot, external temperature has reached %temperature_current% during the last hour"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -749,7 +850,9 @@
         },
         {
           "rule_id": "low_temperature",
-          "display_name": "Weather is getting too cold, external temperature has reached %temperature_current% during the last hour",
+          "display_name": {
+            "en": "Weather is getting too cold, external temperature has reached %temperature_current% during the last hour"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -763,7 +866,9 @@
         },
         {
           "rule_id": "rain",
-          "display_name": "Expect rain in the next few days",
+          "display_name": {
+            "en": "Expect rain in the next few days"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -777,7 +882,9 @@
         },
         {
           "rule_id": "snow",
-          "display_name": "Expect snow in the next few days",
+          "display_name": {
+            "en": "Expect snow in the next few days"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -790,21 +897,10 @@
           }
         },
         {
-          "rule_id": "temperature_yesterday",
-          "display_name": "Yesterday average temperature outside was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
-          "enabled": false,
-          "severity": "info",
-          "run_every": "day",
-          "conditions": [],
-          "definitions": {
-            "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
-            "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
-            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2"
-          }
-        },
-        {
           "rule_id": "temperature_today",
-          "display_name": "So far, today's average temperature outside has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "display_name": {
+            "en": "So far, today's average temperature outside has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -817,22 +913,10 @@
           }
         },
         {
-          "rule_id": "temperature_record",
-          "display_name": "Today's temperature records outside are %temperature_min% (%temperature_min_year%) as minimum, %temperature_max% (%temperature_max_year%) as the maximum",
-          "enabled": false,
-          "severity": "info",
-          "run_every": "day",
-          "conditions": [],
-          "definitions": {
-            "temperature_max": "outdoor:temperature:record:day:max,-1,-1",
-            "temperature_min": "outdoor:temperature:record:day:min,-1,-1",
-            "temperature_max_year": "outdoor:temperature:record_year:day:max,-1,-1",
-            "temperature_min_year": "outdoor:temperature:record_year:day:min,-1,-1"
-          }
-        },
-        {
           "rule_id": "forecast_today",
-          "display_name": "Expect for today %condition% weather, temperature between %temperature_min% and %temperature_max% with a chance of rain of %pop%",
+          "display_name": {
+            "en": "Expect for today %condition% weather, temperature between %temperature_min% and %temperature_max% with a chance of rain of %pop%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "day",
@@ -846,7 +930,9 @@
         },
         {
           "rule_id": "forecast_tomorrow",
-          "display_name": "Forecast for tomorrow is %condition% weather, temperature between %temperature_min% and %temperature_max% with a chance of rain of %pop%",
+          "display_name": {
+            "en": "Forecast for tomorrow is %condition% weather, temperature between %temperature_min% and %temperature_max% with a chance of rain of %pop%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -863,7 +949,9 @@
         {
           "group_id": "forecast",
           "sensor_id": "temperature",
-          "display_name": "Temperature",
+          "display_name": {
+            "en": "Temperature"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "forecast_temperature",
@@ -875,12 +963,15 @@
               "series_id": "range",
               "type": "columnrange"
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "forecast",
           "sensor_id": "condition",
-          "display_name": "Condition",
+          "display_name": {
+            "en": "Condition"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "forecast_condition",
@@ -895,12 +986,15 @@
               "heigth": 20,
               "y": -80
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "forecast",
           "sensor_id": "pop",
-          "display_name": "Chance of rain",
+          "display_name": {
+            "en": "Chance of rain"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "forecast_pop",
@@ -912,12 +1006,15 @@
               "series_id": "avg",
               "type": "bar"
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "forecast",
           "sensor_id": "rain",
-          "display_name": "Rain",
+          "display_name": {
+            "en": "Rain"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "forecast_rain",
@@ -929,12 +1026,15 @@
               "series_id": "avg",
               "type": "bar"
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "forecast",
           "sensor_id": "snow",
-          "display_name": "Snow",
+          "display_name": {
+            "en": "Snow"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "forecast_snow",
@@ -946,23 +1046,29 @@
               "series_id": "avg",
               "type": "bar"
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "alerts",
           "sensor_id": "weather_alerts",
-          "display_name": "Weather Alert",
+          "display_name": {
+            "en": "Weather Alert"
+          },
           "plugin": {
             "plugin_name": "weatherchannel",
             "measure": "alerts",
             "polling_interval": 60
           },
-          "format": "string"
+          "format": "string",
+          "module_id": "outdoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "external",
-          "display_name": "External",
+          "display_name": {
+            "en": "External"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "TEMP",
@@ -983,12 +1089,15 @@
             "avg": true,
             "min_max": true
           },
-          "bias": 1.5
+          "bias": 1.5,
+          "module_id": "outdoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "record",
-          "display_name": "Record",
+          "display_name": {
+            "en": "Record"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "record_temperature",
@@ -1016,23 +1125,29 @@
                 "enabled": false
               }
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "normal",
-          "display_name": "Normal",
+          "display_name": {
+            "en": "Normal"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "normal_temperature",
             "polling_interval": 1440
           },
-          "format": "temperature"
+          "format": "temperature",
+          "module_id": "outdoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "condition",
-          "display_name": "Condition",
+          "display_name": {
+            "en": "Condition"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "condition",
@@ -1051,24 +1166,29 @@
           "summarize": {
             "avg": true,
             "min_max": false
-          }
+          },
+          "module_id": "outdoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "record_year",
-          "display_name": "Record Year",
+          "display_name": {
+            "en": "Record Year"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "record_temperature_year",
             "polling_interval": 1440
           },
           "format": "int",
-          "group_summary_exclude": true
+          "module_id": "outdoor"
         },
         {
           "group_id": "precipitation",
           "sensor_id": "rain",
-          "display_name": "Rain",
+          "display_name": {
+            "en": "Rain"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "rain",
@@ -1080,12 +1200,15 @@
               "series_id": "avg",
               "type": "bar"
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "precipitation",
           "sensor_id": "snow",
-          "display_name": "Snow",
+          "display_name": {
+            "en": "Snow"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "snow",
@@ -1097,12 +1220,15 @@
               "series_id": "avg",
               "type": "bar"
             }
-          ]
+          ],
+          "module_id": "outdoor"
         },
         {
           "group_id": "wind",
           "sensor_id": "speed",
-          "display_name": "Wind",
+          "display_name": {
+            "en": "Wind"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "wind",
@@ -1123,12 +1249,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "outdoor"
         },
         {
           "group_id": "wind",
           "sensor_id": "gust",
-          "display_name": "Wind Gust",
+          "display_name": {
+            "en": "Wind Gust"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "wind_gust",
@@ -1145,12 +1274,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "outdoor"
         },
         {
           "group_id": "wind",
           "sensor_id": "wind_direction",
-          "display_name": "Wind Direction",
+          "display_name": {
+            "en": "Wind Direction"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "wind_dir",
@@ -1169,12 +1301,15 @@
           "summarize": {
             "avg": true,
             "min_max": false
-          }
+          },
+          "module_id": "outdoor"
         },
         {
           "group_id": "humidity",
           "sensor_id": "external",
-          "display_name": "External",
+          "display_name": {
+            "en": "External"
+          },
           "plugin": {
             "plugin_name": "wunderground",
             "measure": "humidity",
@@ -1194,12 +1329,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "outdoor"
         },
         {
           "group_id": "light",
           "sensor_id": "external",
-          "display_name": "External",
+          "display_name": {
+            "en": "External"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "LVAL",
@@ -1219,12 +1357,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "outdoor"
         },
         {
           "group_id": "pressure",
           "sensor_id": "external",
-          "display_name": "External",
+          "display_name": {
+            "en": "External"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BAR",
@@ -1244,14 +1385,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "outdoor"
         }
       ]
     },
     {
       "module_id": "indoor",
       "section_id": "Sensors",
-      "display_name": "Indoor",
+      "display_name": {
+        "en": "Indoor"
+      },
       "icon": "fa-home",
       "enabled": false,
       "daily_digest": false,
@@ -1259,7 +1403,9 @@
         [
           {
             "widget_id": "living_room_temperature",
-            "display_name": "Living Room Temperature",
+            "display_name": {
+              "en": "Living Room Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1272,7 +1418,9 @@
           },
           {
             "widget_id": "ground_floor_temperature",
-            "display_name": "Ground Floor Temperature",
+            "display_name": {
+              "en": "Ground Floor Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1285,7 +1433,9 @@
           },
           {
             "widget_id": "bedroom_temperature",
-            "display_name": "Bedroom Temperature",
+            "display_name": {
+              "en": "Bedroom Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1298,7 +1448,9 @@
           },
           {
             "widget_id": "study_room_temperature",
-            "display_name": "Study Room Temperature",
+            "display_name": {
+              "en": "Study Room Temperature"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1313,19 +1465,26 @@
         [
           {
             "widget_id": "indoor_temperature_summary",
-            "display_name": "Temperature: Summary",
+            "display_name": {
+              "en": "Temperature: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
               {
                 "type": "sensor_group_summary",
-                "group": "indoor:temperature"
+                "group": "indoor:temperature",
+                "exclude": [
+                  "indoor:temperature:boiler_status_prev"
+                ]
               }
             ]
           },
           {
             "widget_id": "indoor_temperature_realtime",
-            "display_name": "Temperature: Realtime",
+            "display_name": {
+              "en": "Temperature: Realtime"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1338,7 +1497,9 @@
           },
           {
             "widget_id": "indoor_temperature_recent",
-            "display_name": "Temperature: Recent",
+            "display_name": {
+              "en": "Temperature: Recent"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -1353,7 +1514,9 @@
         [
           {
             "widget_id": "indoor_temperature_history",
-            "display_name": "Temperature: History",
+            "display_name": {
+              "en": "Temperature: History"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
@@ -1368,7 +1531,9 @@
         [
           {
             "widget_id": "indoor_humidity_summary",
-            "display_name": "Humidity: Summary",
+            "display_name": {
+              "en": "Humidity: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1385,7 +1550,9 @@
           },
           {
             "widget_id": "indoor_humidity_recent",
-            "display_name": "Humidity: Recent",
+            "display_name": {
+              "en": "Humidity: Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1398,7 +1565,9 @@
           },
           {
             "widget_id": "indoor_humidity_history",
-            "display_name": "Humidity: History",
+            "display_name": {
+              "en": "Humidity: History"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -1413,7 +1582,9 @@
         [
           {
             "widget_id": "indoor_fridge_summary",
-            "display_name": "Fridge: Summary",
+            "display_name": {
+              "en": "Fridge: Summary"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1430,7 +1601,9 @@
           },
           {
             "widget_id": "indoor_fridge_recent",
-            "display_name": "Fridge: Recent",
+            "display_name": {
+              "en": "Fridge: Recent"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -1443,7 +1616,9 @@
           },
           {
             "widget_id": "indoor_fridge_history",
-            "display_name": "Fridge: History",
+            "display_name": {
+              "en": "Fridge: History"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -1458,7 +1633,9 @@
         [
           {
             "widget_id": "indoor_battery_history",
-            "display_name": "Battery: History",
+            "display_name": {
+              "en": "Battery: History"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
@@ -1474,7 +1651,9 @@
       "rules": [
         {
           "rule_id": "indoor_temperature_high",
-          "display_name": "Pay attention, the temperature inside is very high, it has reached %temperature_avg% during the last hour",
+          "display_name": {
+            "en": "Pay attention, the temperature inside is very high, it has reached %temperature_avg% during the last hour"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -1493,7 +1672,9 @@
             "indoor:temperature:living_room",
             "indoor:temperature:bedroom"
           ],
-          "display_name": "Pay attention, the temperature inside is very low, %i% has reached %temperature_avg% during the last hour",
+          "display_name": {
+            "en": "Pay attention, the temperature inside is very low, %i% has reached %temperature_avg% during the last hour"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -1507,7 +1688,9 @@
         },
         {
           "rule_id": "refrigerator_temperature_high",
-          "display_name": "Pay attention, the temperature of the refrigerator is too high, it has reached %temperature_avg%",
+          "display_name": {
+            "en": "Pay attention, the temperature of the refrigerator is too high, it has reached %temperature_avg%"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -1521,7 +1704,9 @@
         },
         {
           "rule_id": "freezer_temperature_high",
-          "display_name": "Pay attention, the temperature of the freezer is too high, it has reached %temperature_avg%",
+          "display_name": {
+            "en": "Pay attention, the temperature of the freezer is too high, it has reached %temperature_avg%"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "hour",
@@ -1535,7 +1720,9 @@
         },
         {
           "rule_id": "indoor_temperature_yesterday",
-          "display_name": "Yesterday first floor average temperature was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
+          "display_name": {
+            "en": "Yesterday first floor average temperature was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -1548,7 +1735,9 @@
         },
         {
           "rule_id": "indoor_temperature_today",
-          "display_name": "So far, today's first floor average temperature has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "display_name": {
+            "en": "So far, today's first floor average temperature has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -1562,7 +1751,9 @@
         },
         {
           "rule_id": "ground_floor_temperature",
-          "display_name": "In the ground floor, the average temperature today has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "display_name": {
+            "en": "In the ground floor, the average temperature today has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -1576,7 +1767,9 @@
         },
         {
           "rule_id": "fridge_temperature",
-          "display_name": "The current temperature of the refrigerator is %refrigerator_temperature%, the temperature of the freezer is %freezer_temperature%",
+          "display_name": {
+            "en": "The current temperature of the refrigerator is %refrigerator_temperature%, the temperature of the freezer is %freezer_temperature%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -1588,7 +1781,9 @@
         },
         {
           "rule_id": "flood_alert_on",
-          "display_name": "Pay attention, we have a flood alert indoor!",
+          "display_name": {
+            "en": "Pay attention, we have a flood alert indoor!"
+          },
           "enabled": false,
           "severity": "alert",
           "run_every": "minute",
@@ -1608,7 +1803,9 @@
         },
         {
           "rule_id": "flood_alert_off",
-          "display_name": "Feel safe, no more flood alert indoor",
+          "display_name": {
+            "en": "Feel safe, no more flood alert indoor"
+          },
           "enabled": false,
           "severity": "alert",
           "run_every": "minute",
@@ -1631,23 +1828,29 @@
         {
           "group_id": "alerts",
           "sensor_id": "flood",
-          "display_name": "Flood Alert",
+          "display_name": {
+            "en": "Flood Alert"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "FLOOD",
             "node_id": "FA"
           },
-          "format": "string"
+          "format": "string",
+          "module_id": "indoor"
         },
         {
           "group_id": "alerts",
           "sensor_id": "flood_alert_status",
-          "format": "int"
+          "format": "int",
+          "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "living_room",
-          "display_name": "Living Room",
+          "display_name": {
+            "en": "Living Room"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "TEMP",
@@ -1667,12 +1870,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "ground_floor",
-          "display_name": "Ground Floor",
+          "display_name": {
+            "en": "Ground Floor"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "TEMP",
@@ -1688,12 +1894,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "bedroom",
-          "display_name": "Bedroom",
+          "display_name": {
+            "en": "Bedroom"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "TEMP",
@@ -1709,15 +1918,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "study_room",
-          "display_name": "Study Room",
+          "display_name": {
+            "en": "Study Room"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "cat /sys/bus/w1/devices/28-0000067b9508/w1_slave",
             "command_parse": "grep -o -E 't=[0-9]+' | sed 's/t=//'|awk '{printf \"%.1f\",$0/1000}'",
             "polling_interval": 10
@@ -1733,12 +1944,15 @@
             "avg": true,
             "min_max": true
           },
-          "bias": -1.5
+          "bias": -1.5,
+          "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "boiler_status",
-          "display_name": "Boiler Status",
+          "display_name": {
+            "en": "Boiler Status"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "OUTA",
@@ -1758,18 +1972,20 @@
             "avg": false,
             "min_max": true
           },
-          "group_summary_exclude": true
+          "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "boiler_status_prev",
           "format": "int",
-          "group_summary_exclude": true
+          "module_id": "indoor"
         },
         {
           "group_id": "humidity",
           "sensor_id": "first_floor",
-          "display_name": "First Floor",
+          "display_name": {
+            "en": "First Floor"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "RHUM",
@@ -1789,12 +2005,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "humidity",
           "sensor_id": "ground_floor",
-          "display_name": "Ground Floor",
+          "display_name": {
+            "en": "Ground Floor"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "RHUM",
@@ -1810,12 +2029,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "fridge",
           "sensor_id": "refrigerator",
-          "display_name": "Refrigerator",
+          "display_name": {
+            "en": "Refrigerator"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "TEMP",
@@ -1835,12 +2057,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "fridge",
           "sensor_id": "freezer",
-          "display_name": "Freezer",
+          "display_name": {
+            "en": "Freezer"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "TEMP",
@@ -1860,12 +2085,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "temperature_refrigerator",
-          "display_name": "Temperature Refrigerator",
+          "display_name": {
+            "en": "Temperature Refrigerator"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -1890,12 +2118,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "temperature_freezer",
-          "display_name": "Temperature Freezer",
+          "display_name": {
+            "en": "Temperature Freezer"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -1912,12 +2143,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "temperature_bedroom",
-          "display_name": "Temperature Bedroom",
+          "display_name": {
+            "en": "Temperature Bedroom"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -1934,12 +2168,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "humidity_ground_floor",
-          "display_name": "Temperature/Humidity Ground Floor",
+          "display_name": {
+            "en": "Temperature/Humidity Ground Floor"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -1956,12 +2193,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "humidity_first_floor",
-          "display_name": "Temperature/Humidity First Floor",
+          "display_name": {
+            "en": "Temperature/Humidity First Floor"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -1978,12 +2218,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "light",
-          "display_name": "Ambient Light",
+          "display_name": {
+            "en": "Ambient Light"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -2000,12 +2243,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "pressure",
-          "display_name": "Pressure/Temperature External",
+          "display_name": {
+            "en": "Pressure/Temperature External"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -2022,12 +2268,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "flood",
-          "display_name": "Flood",
+          "display_name": {
+            "en": "Flood"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -2044,12 +2293,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "switch",
-          "display_name": "Tilt Switch",
+          "display_name": {
+            "en": "Tilt Switch"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -2066,12 +2318,15 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         },
         {
           "group_id": "battery",
           "sensor_id": "boiler",
-          "display_name": "Boiler Switch",
+          "display_name": {
+            "en": "Boiler Switch"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BATT",
@@ -2088,14 +2343,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "indoor"
         }
       ]
     },
     {
       "module_id": "webcams",
       "section_id": "Sensors",
-      "display_name": "Webcams",
+      "display_name": {
+        "en": "Webcams"
+      },
       "icon": "fa-video-camera",
       "enabled": true,
       "daily_digest": false,
@@ -2103,7 +2361,9 @@
         [
           {
             "widget_id": "webcams_neighbourhood_1",
-            "display_name": "Neighbourhood: 1",
+            "display_name": {
+              "en": "Neighbourhood: 1"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2115,7 +2375,9 @@
           },
           {
             "widget_id": "webcams_neighbourhood_2",
-            "display_name": "Neighbourhood: 2",
+            "display_name": {
+              "en": "Neighbourhood: 2"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2127,7 +2389,9 @@
           },
           {
             "widget_id": "webcams_neighbourhood_3",
-            "display_name": "Neighbourhood: 3",
+            "display_name": {
+              "en": "Neighbourhood: 3"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2139,7 +2403,9 @@
           },
           {
             "widget_id": "webcams_neighbourhood_4",
-            "display_name": "Neighbourhood: 4",
+            "display_name": {
+              "en": "Neighbourhood: 4"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2153,71 +2419,137 @@
         [
           {
             "widget_id": "webcams_indoor",
-            "display_name": "webcam",
+            "display_name": {
+              "en": "webcam"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
               {
                 "type": "image",
                 "sensor": "webcams:inside:first_floor"
+              },
+              {
+                "type": "button",
+				"display_name": {
+					"en": "Refresh"
+				},
+                "send": "webcams/inside/first_floor/run/save"
+              },
+              {
+                "type": "separator"
+              },			  
+              {
+                "type": "checkbox",
+				"display_name": {
+					"en": "Alarm Status"
+				},
+				"style": "b",
+                "sensor": "webcams:inside:first_floor_alarm"
               }
             ]
           }
         ]
       ],
+      "rules": [
+        {
+          "rule_id": "webcam_monitoring", 
+		  "for": [
+			"webcams:inside:first_floor"
+		  ],
+          "display_name": {
+			"en": "Attention! Detected %image% in the webcam %i%"
+			},
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "5 minutes",
+          "conditions": [
+            "image != no_detection",
+			"alarm_status == status_on"
+          ],
+          "definitions": {
+			"image": "%i%,-2,-1",
+            "no_detection": "",
+			"alarm_status": "%i%_alarm,-1,-1",
+			"status_on": 1
+          }
+        }
+      ],
       "sensors": [
         {
           "group_id": "neighbourhood",
           "sensor_id": "1",
-          "display_name": "Webcam 1",
+          "display_name": {
+            "en": "Webcam 1"
+          },
           "plugin": {
             "plugin_name": "image",
             "url": "http://www.mylivestreams.com/images/camera/large_10724.jpg",
             "polling_interval": 20
           },
           "format": "image",
-          "single_instance": true
+          "module_id": "webcams",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "neighbourhood",
           "sensor_id": "2",
-          "display_name": "Webcam 2",
+          "display_name": {
+            "en": "Webcam 2"
+          },
           "plugin": {
             "plugin_name": "image",
             "url": "http://wirednewyork.com/images/webcams/wired-new-york-webcam1.jpg",
             "polling_interval": 20
           },
           "format": "image",
-          "single_instance": true
+          "module_id": "webcams",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "neighbourhood",
           "sensor_id": "3",
-          "display_name": "Webcam 3",
+          "display_name": {
+            "en": "Webcam 3"
+          },
           "plugin": {
             "plugin_name": "image",
             "url": "http://www.mylivestreams.com/images/camera/large_10059.jpg",
             "polling_interval": 20
           },
           "format": "image",
-          "single_instance": true
+          "module_id": "webcams",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "neighbourhood",
           "sensor_id": "4",
-          "display_name": "Webcam 4",
+          "display_name": {
+            "en": "Webcam 4"
+          },
           "plugin": {
             "plugin_name": "image",
             "url": "http://wirednewyork.com/images/webcams/wired-new-york-webcam2-fleet-week.jpg",
             "polling_interval": 20
           },
           "format": "image",
-          "single_instance": true
+          "module_id": "webcams",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "inside",
           "sensor_id": "first_floor",
-          "display_name": "First Floor",
+          "display_name": {
+            "en": "First Floor"
+          },
           "plugin": {
             "plugin_name": "image",
             "url": "http://webcam/snapshot.cgi",
@@ -2226,27 +2558,63 @@
             "polling_interval": 20
           },
           "format": "image",
-          "single_instance": true
+          "module_id": "webcams",
+		  "retention": {
+			"realtime_count": 2
+		  },
+		  "object_detection": [
+			{
+				"display_name": {
+					"en": "face(s)"
+					},
+				"filename": "haarcascade_frontalface_alt2.xml",
+				"scale_factor": 1.2,
+				"min_neighbors": 3,
+				"min_size": 10,
+				"max_size": 70
+			}
+		  ],
+		  "motion_detection": {
+			"display_name": {
+				"en": "motion"
+				},
+			"threshold": 10
+		  }
+        },
+        {
+		  "module_id": "webcams",
+          "group_id": "inside",
+          "sensor_id": "first_floor_alarm",
+          "format": "int",
+		  "retention": {
+            "realtime_count": 1
+          }
         }
       ]
     },
     {
       "module_id": "where_are_we",
       "section_id": "Sensors",
-      "display_name": "Where are we?",
+      "display_name": {
+        "en": "Where are we?"
+      },
       "icon": "fa-map-marker",
       "enabled": false,
       "widgets": [
         [
           {
             "widget_id": "location",
-            "display_name": "Location",
+            "display_name": {
+              "en": "Location"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
               {
-                "type": "image",
-                "sensor": "where_are_we:location:icloud"
+                "type": "map",
+                "group": "where_are_we:location",
+				"tracking": true,
+				"timeframe": "realtime"
               }
             ]
           }
@@ -2256,20 +2624,27 @@
         {
           "group_id": "location",
           "sensor_id": "icloud",
-          "display_name": "Location",
+          "display_name": {
+            "en": "Location"
+          },
           "plugin": {
             "plugin_name": "icloud",
             "username": "your@email.com",
-            "poll_on_demand": true
+			"device_name": "Your Phone",
+            "poll_on_demand": true,
+            "device_name": ""
           },
-          "format": "string"
+          "format": "string",
+          "module_id": "where_are_we"
         }
       ]
     },
     {
       "module_id": "system",
       "section_id": "System",
-      "display_name": "Status",
+      "display_name": {
+        "en": "Status"
+      },
       "icon": "fa-linux",
       "enabled": true,
       "daily_digest": false,
@@ -2277,7 +2652,9 @@
         [
           {
             "widget_id": "system_cpu_summary",
-            "display_name": "CPU: Summary",
+            "display_name": {
+              "en": "CPU: Summary"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2294,7 +2671,9 @@
           },
           {
             "widget_id": "system_cpu_recent",
-            "display_name": "CPU: Recent",
+            "display_name": {
+              "en": "CPU: Recent"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2307,7 +2686,9 @@
           },
           {
             "widget_id": "system_cpu_history",
-            "display_name": "CPU: History",
+            "display_name": {
+              "en": "CPU: History"
+            },
             "enabled": true,
             "size": 6,
             "layout": [
@@ -2322,7 +2703,9 @@
         [
           {
             "widget_id": "system_memory_summary",
-            "display_name": "Memory: Summary",
+            "display_name": {
+              "en": "Memory: Summary"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2339,7 +2722,9 @@
           },
           {
             "widget_id": "system_memory_recent",
-            "display_name": "Memory: Recent",
+            "display_name": {
+              "en": "Memory: Recent"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2352,7 +2737,9 @@
           },
           {
             "widget_id": "system_memory_history",
-            "display_name": "Memory: History",
+            "display_name": {
+              "en": "Memory: History"
+            },
             "enabled": true,
             "size": 6,
             "layout": [
@@ -2367,7 +2754,9 @@
         [
           {
             "widget_id": "system_load_summary",
-            "display_name": "Load: Summary",
+            "display_name": {
+              "en": "Load: Summary"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2384,7 +2773,9 @@
           },
           {
             "widget_id": "system_load_recent",
-            "display_name": "Load: Recent",
+            "display_name": {
+              "en": "Load: Recent"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2397,7 +2788,9 @@
           },
           {
             "widget_id": "system_load_history",
-            "display_name": "Load: History",
+            "display_name": {
+              "en": "Load: History"
+            },
             "enabled": true,
             "size": 6,
             "layout": [
@@ -2412,7 +2805,9 @@
         [
           {
             "widget_id": "system_network_connections_summary",
-            "display_name": "Network Connections: Summary",
+            "display_name": {
+              "en": "Network Connections: Summary"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2429,7 +2824,9 @@
           },
           {
             "widget_id": "system_network_connections_recent",
-            "display_name": "Network Connections: Recent",
+            "display_name": {
+              "en": "Network Connections: Recent"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2442,7 +2839,9 @@
           },
           {
             "widget_id": "system_network_connections_history",
-            "display_name": "Network Connections: History",
+            "display_name": {
+              "en": "Network Connections: History"
+            },
             "enabled": true,
             "size": 6,
             "layout": [
@@ -2457,7 +2856,9 @@
         [
           {
             "widget_id": "system_temperature_summary",
-            "display_name": "Temperature: Summary",
+            "display_name": {
+              "en": "Temperature: Summary"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2474,7 +2875,9 @@
           },
           {
             "widget_id": "system_temperature_recent",
-            "display_name": "Temperature: Recent",
+            "display_name": {
+              "en": "Temperature: Recent"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -2487,7 +2890,9 @@
           },
           {
             "widget_id": "system_temperature_history",
-            "display_name": "Temperature: History",
+            "display_name": {
+              "en": "Temperature: History"
+            },
             "enabled": true,
             "size": 6,
             "layout": [
@@ -2502,7 +2907,9 @@
         [
           {
             "widget_id": "system_database_history",
-            "display_name": "Database: History",
+            "display_name": {
+              "en": "Database: History"
+            },
             "enabled": true,
             "size": 12,
             "layout": [
@@ -2523,7 +2930,9 @@
       "rules": [
         {
           "rule_id": "cpu_user_high",
-          "display_name": "The CPU utilization has been too high during the last hour, %cpu_max% (user)",
+          "display_name": {
+            "en": "The CPU utilization has been too high during the last hour, %cpu_max% (user)"
+          },
           "enabled": true,
           "severity": "warning",
           "run_every": "hour",
@@ -2537,7 +2946,9 @@
         },
         {
           "rule_id": "cpu_system_high",
-          "display_name": "The CPU utilization has been too high during the last hour, %cpu_max% (system)",
+          "display_name": {
+            "en": "The CPU utilization has been too high during the last hour, %cpu_max% (system)"
+          },
           "enabled": true,
           "severity": "warning",
           "run_every": "hour",
@@ -2551,7 +2962,9 @@
         },
         {
           "rule_id": "load_high",
-          "display_name": "The CPU load (%load_max%) has been too high during the last hour",
+          "display_name": {
+            "en": "The CPU load (%load_max%) has been too high during the last hour"
+          },
           "enabled": true,
           "severity": "warning",
           "run_every": "hour",
@@ -2565,7 +2978,9 @@
         },
         {
           "rule_id": "too_many_connections",
-          "display_name": "We had up to %connections% network connections during the last hour, a bit too much",
+          "display_name": {
+            "en": "We had up to %connections% network connections during the last hour, a bit too much"
+          },
           "enabled": true,
           "severity": "warning",
           "run_every": "hour",
@@ -2579,7 +2994,9 @@
         },
         {
           "rule_id": "too_many_services",
-          "display_name": "I see %services% network services running right now",
+          "display_name": {
+            "en": "I see %services% network services running right now"
+          },
           "enabled": true,
           "severity": "warning",
           "run_every": "hour",
@@ -2593,7 +3010,9 @@
         },
         {
           "rule_id": "system_temperature_high",
-          "display_name": "The temperature of the system is too high, it has reached %temperature% during the last hour",
+          "display_name": {
+            "en": "The temperature of the system is too high, it has reached %temperature% during the last hour"
+          },
           "enabled": true,
           "severity": "warning",
           "run_every": "hour",
@@ -2604,15 +3023,33 @@
             "temperature": "system:temperature:temperature:hour:avg,-1,-1",
             "threshold": 50
           }
+        },
+        {
+          "display_name": {
+            "en": "The system has been recently rebooted"
+          },
+          "severity": "info",
+          "enabled": true,
+          "run_every": "5 minutes",
+          "definitions": {
+            "last_uptime": "system:runtime:uptime,-1,-1",
+            "prev_uptime": "system:runtime:uptime,-2,-2"
+          },
+          "conditions": [
+            "last_uptime < prev_uptime"
+          ],
+          "rule_id": "system_reboot"
         }
       ],
       "sensors": [
         {
           "group_id": "cpu",
           "sensor_id": "cpu_user",
-          "display_name": "CPU User",
+          "display_name": {
+            "en": "CPU User"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "cpu_user",
             "polling_interval": 10
           },
@@ -2626,14 +3063,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "cpu",
           "sensor_id": "cpu_system",
-          "display_name": "CPU System",
+          "display_name": {
+            "en": "CPU System"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "cpu_system",
             "polling_interval": 10
           },
@@ -2647,14 +3087,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "memory",
           "sensor_id": "ram",
-          "display_name": "RAM",
+          "display_name": {
+            "en": "RAM"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "ram_used",
             "polling_interval": 10
           },
@@ -2668,14 +3111,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "load",
           "sensor_id": "load_1",
-          "display_name": "Load 1 min",
+          "display_name": {
+            "en": "Load 1 min"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "load_1",
             "polling_interval": 10
           },
@@ -2689,14 +3135,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "network",
           "sensor_id": "services",
-          "display_name": "Services",
+          "display_name": {
+            "en": "Services"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "network_services",
             "polling_interval": 10
           },
@@ -2710,14 +3159,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "network",
           "sensor_id": "connections",
-          "display_name": "Connections",
+          "display_name": {
+            "en": "Connections"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "network_connections",
             "polling_interval": 10
           },
@@ -2731,14 +3183,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "temperature",
           "sensor_id": "temperature",
-          "display_name": "Temperature",
+          "display_name": {
+            "en": "Temperature"
+          },
           "plugin": {
-            "plugin_name": "linux",
+            "plugin_name": "system",
             "measure": "temperature",
             "polling_interval": 10
           },
@@ -2756,15 +3211,17 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
         },
         {
           "group_id": "myhouse_database",
           "sensor_id": "database",
-          "display_name": "Database Size",
+          "display_name": {
+            "en": "Database Size"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "ls -alh /var/lib/redis/",
             "command_parse": "grep dump.rdb|awk '{print $5}' |grep -o '[0-9.]\\+'",
             "polling_interval": 30
@@ -2780,21 +3237,40 @@
           "summarize": {
             "avg": true,
             "min_max": true
-          }
+          },
+          "module_id": "system"
+        },
+        {
+          "sensor_id": "uptime",
+          "display_name": {
+            "en": "uptime"
+          },
+          "format": "int",
+          "plugin": {
+            "polling_interval": 10,
+            "plugin_name": "system",
+            "measure": "uptime"
+          },
+          "module_id": "system",
+          "group_id": "runtime"
         }
       ]
     },
     {
       "module_id": "alerts",
       "section_id": "Main",
-      "display_name": "Alerts",
+      "display_name": {
+        "en": "Alerts"
+      },
       "icon": "fa-bell-o",
       "enabled": true,
       "widgets": [
         [
           {
             "widget_id": "alerts",
-            "display_name": "History",
+            "display_name": {
+              "en": "History"
+            },
             "enabled": true,
             "size": 12,
             "layout": [
@@ -2809,14 +3285,18 @@
     {
       "module_id": "boiler",
       "section_id": "Actuators",
-      "display_name": "Boiler",
+      "display_name": {
+        "en": "Boiler"
+      },
       "icon": "fa-fire",
       "enabled": false,
       "widgets": [
         [
           {
             "widget_id": "boiler_control",
-            "display_name": "Boiler Control",
+            "display_name": {
+              "en": "Boiler Control"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -2830,13 +3310,17 @@
               },
               {
                 "type": "checkbox",
-                "display_name": "Boiler Manual Switch",
+                "display_name": {
+                  "en": "Boiler Manual Switch"
+                },
                 "sensor": "boiler:main:switch",
                 "send": "boiler/main/switch/send/OUTA"
               },
               {
                 "type": "input",
-                "display_name": "Target Temperature",
+                "display_name": {
+                  "en": "Target Temperature"
+                },
                 "sensor": "boiler:main:max_temperature"
               },
               {
@@ -2844,7 +3328,9 @@
               },
               {
                 "type": "checkbox",
-                "display_name": "Scheduler Status",
+                "display_name": {
+                  "en": "Scheduler Status"
+                },
                 "sensor": "boiler:scheduler:switch",
                 "disabled": true
               }
@@ -2852,7 +3338,9 @@
           },
           {
             "widget_id": "calendar",
-            "display_name": "Boiler Scheduler",
+            "display_name": {
+              "en": "Boiler Scheduler"
+            },
             "enabled": false,
             "size": 9,
             "layout": [
@@ -2867,7 +3355,9 @@
       "rules": [
         {
           "rule_id": "boiler_status",
-          "display_name": "The boiler status is %boiler_status%, the main switch is set to %main_switch%, the scheduler switch to %scheduler_switch%",
+          "display_name": {
+            "en": "The boiler status is %boiler_status%, the main switch is set to %main_switch%, the scheduler switch to %scheduler_switch%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -2880,7 +3370,9 @@
         },
         {
           "rule_id": "boiler_main_on",
-          "display_name": "Turning on the boiler",
+          "display_name": {
+            "en": "Turning on the boiler"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -2893,7 +3385,9 @@
         },
         {
           "rule_id": "boiler_main_off",
-          "display_name": "Turning off the boiler",
+          "display_name": {
+            "en": "Turning off the boiler"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -2906,7 +3400,9 @@
         },
         {
           "rule_id": "boiler_off_max_temperature",
-          "display_name": "I'm turning off the boiler because the current temperature %temperature% is higher than %max_temperature%",
+          "display_name": {
+            "en": "I'm turning off the boiler because the current temperature %temperature% is higher than %max_temperature%"
+          },
           "enabled": false,
           "severity": "warning",
           "run_every": "minute",
@@ -2927,7 +3423,9 @@
         },
         {
           "rule_id": "boiler_on_schedule",
-          "display_name": "I'm turning on the boiler as scheduled since the current temperature %temperature% is lower than the target %calendar%",
+          "display_name": {
+            "en": "I'm turning on the boiler as scheduled since the current temperature %temperature% is lower than the target %calendar%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -2952,7 +3450,9 @@
         },
         {
           "rule_id": "boiler_off_schedule",
-          "display_name": "I'm turning off the boiler as scheduled. The temperature is now %temperature%",
+          "display_name": {
+            "en": "I'm turning off the boiler as scheduled. The temperature is now %temperature%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -2977,7 +3477,9 @@
         },
         {
           "rule_id": "boiler_off_schedule_high_temperature",
-          "display_name": "I'm turning off the boiler because the current temperature %temperature% is higher than the scheduled target %calendar%",
+          "display_name": {
+            "en": "I'm turning off the boiler because the current temperature %temperature% is higher than the scheduled target %calendar%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3003,7 +3505,9 @@
         },
         {
           "rule_id": "sensor_battery",
-          "display_name": "Requesting battery status to the boiler sensor",
+          "display_name": {
+            "en": "Requesting battery status to the boiler sensor"
+          },
           "enabled": false,
           "severity": "debug",
           "run_every": "day",
@@ -3019,18 +3523,22 @@
         },
         {
           "rule_id": "boiler_sensor_heartbeat",
-          "display_name": "Last time I've heard from the boiler sensor was %minutes_since% ago",
+          "display_name": {
+            "en": "Last time I've heard from the boiler sensor was %minutes_since% ago"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
           "conditions": [],
           "definitions": {
-            "minutes_since": "boiler:main:heartbeat,-1,-1,timestamp"
+            "minutes_since": "boiler:main:heartbeat,-1,-1,elapsed"
           }
         },
         {
           "rule_id": "boiler_sensor_lost_alert_on",
-          "display_name": "The boiler sensor became unreachable, last time I've heard from it was %minutes_since% ago",
+          "display_name": {
+            "en": "The boiler sensor became unreachable, last time I've heard from it was %minutes_since% ago"
+          },
           "enabled": false,
           "severity": "alert",
           "run_every": "minute",
@@ -3039,7 +3547,7 @@
             "heartbeat_alert_status == status_off"
           ],
           "definitions": {
-            "minutes_since": "boiler:main:heartbeat,-1,-1,timestamp",
+            "minutes_since": "boiler:main:heartbeat,-1,-1,elapsed",
             "threshold": 10,
             "heartbeat_alert_status": "boiler:main:heartbeat_alert_status,-1,-1",
             "status_off": 0
@@ -3050,7 +3558,9 @@
         },
         {
           "rule_id": "boiler_sensor_lost_alert_off",
-          "display_name": "The boiler sensor is now reachable again",
+          "display_name": {
+            "en": "The boiler sensor is now reachable again"
+          },
           "enabled": false,
           "severity": "alert",
           "run_every": "minute",
@@ -3059,7 +3569,7 @@
             "heartbeat_alert_status == status_on"
           ],
           "definitions": {
-            "minutes_since": "boiler:main:heartbeat,-1,-1,timestamp",
+            "minutes_since": "boiler:main:heartbeat,-1,-1,elapsed",
             "threshold": 10,
             "heartbeat_alert_status": "boiler:main:heartbeat_alert_status,-1,-1",
             "status_on": 1
@@ -3070,7 +3580,9 @@
         },
         {
           "rule_id": "boiler_status_on",
-          "display_name": "The boiler is now on",
+          "display_name": {
+            "en": "The boiler is now on"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3090,7 +3602,9 @@
         },
         {
           "rule_id": "boiler_status_off",
-          "display_name": "The boiler is now off",
+          "display_name": {
+            "en": "The boiler is now off"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3110,7 +3624,9 @@
         },
         {
           "rule_id": "keyfob_a_boiler_on",
-          "display_name": "Turning on the boiler as requested by keyfob A",
+          "display_name": {
+            "en": "Turning on the boiler as requested by keyfob A"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3129,7 +3645,9 @@
         },
         {
           "rule_id": "keyfob_a_boiler_off",
-          "display_name": "Turning off the boiler as requested by keyfob A",
+          "display_name": {
+            "en": "Turning off the boiler as requested by keyfob A"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3148,7 +3666,9 @@
         },
         {
           "rule_id": "keyfob_b_boiler_on",
-          "display_name": "Turning on the boiler as requested by keyfob B",
+          "display_name": {
+            "en": "Turning on the boiler as requested by keyfob B"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3167,7 +3687,9 @@
         },
         {
           "rule_id": "keyfob_a_boiler_off",
-          "display_name": "Turning off the boiler as requested by keyfob B",
+          "display_name": {
+            "en": "Turning off the boiler as requested by keyfob B"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
@@ -3186,7 +3708,9 @@
         },
         {
           "rule_id": "boiler_sensor_recovering",
-          "display_name": "Trying to recover the boiler sensor",
+          "display_name": {
+            "en": "Trying to recover the boiler sensor"
+          },
           "enabled": false,
           "severity": "debug",
           "run_every": "minute",
@@ -3206,7 +3730,9 @@
         {
           "group_id": "main",
           "sensor_id": "switch",
-          "display_name": "Boiler main Switch",
+          "display_name": {
+            "en": "Boiler main Switch"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "node_id": "GA",
@@ -3216,99 +3742,134 @@
           "summarize": {
             "avg": false,
             "min_max": true
-          }
+          },
+          "module_id": "boiler"
         },
         {
           "group_id": "main",
           "sensor_id": "heartbeat",
-          "display_name": "Boiler Heartbeat",
+          "display_name": {
+            "en": "Boiler Heartbeat"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "AWAKE",
             "node_id": "GA"
           },
-          "format": "string"
+          "format": "string",
+          "module_id": "boiler"
         },
         {
           "group_id": "main",
           "sensor_id": "heartbeat_alert_status",
-          "format": "int"
+          "format": "int",
+          "module_id": "boiler"
         },
         {
           "group_id": "main",
           "sensor_id": "max_temperature",
-          "display_name": "Target Temperature",
-          "format": "temperature"
+          "display_name": {
+            "en": "Target Temperature"
+          },
+          "format": "temperature",
+          "module_id": "boiler"
         },
         {
           "group_id": "scheduler",
           "sensor_id": "calendar",
-          "display_name": "Boiler Scheduler",
+          "display_name": {
+            "en": "Boiler Scheduler"
+          },
           "format": "calendar",
-          "single_instance": true
+          "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "scheduler",
           "sensor_id": "switch",
-          "display_name": "Scheduler Switch",
+          "display_name": {
+            "en": "Scheduler Switch"
+          },
           "format": "int",
           "summarize": {
             "avg": false,
             "min_max": true
-          }
+          },
+          "module_id": "boiler"
         },
         {
           "group_id": "keyfob",
           "sensor_id": "keyfob_a",
-          "display_name": "Keyfob A",
+          "display_name": {
+            "en": "Keyfob A"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BUTTON",
             "node_id": "KA"
           },
           "format": "string",
-          "single_instance": true,
-          "series": []
+          "series": [],
+          "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "keyfob",
           "sensor_id": "keyfob_b",
-          "display_name": "Keyfob B",
+          "display_name": {
+            "en": "Keyfob B"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BUTTON",
             "node_id": "KB"
           },
           "format": "string",
-          "single_instance": true,
-          "series": []
+          "series": [],
+          "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "keyfob",
           "sensor_id": "keyfob_b",
-          "display_name": "Keyfob B",
+          "display_name": {
+            "en": "Keyfob B"
+          },
           "plugin": {
             "plugin_name": "messagebridge",
             "measure": "BUTTON",
             "node_id": "KB"
           },
           "format": "string",
-          "single_instance": true,
-          "series": []
+          "series": [],
+          "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1
+          }
         }
       ]
     },
-{
+    {
       "module_id": "alarm",
       "section_id": "Actuators",
-      "display_name": "Alarm",
+      "display_name": {
+        "en": "Alarm"
+      },
       "icon": "fa-bullhorn",
       "enabled": false,
       "widgets": [
-		[
+        [
           {
             "widget_id": "alarm_status",
-            "display_name": "Alarm Status",
+            "display_name": {
+              "en": "Alarm Status"
+            },
             "enabled": true,
             "size": 3,
             "layout": [
@@ -3325,7 +3886,9 @@
           },
           {
             "widget_id": "alarm_sensors_realtime",
-            "display_name": "Sensors: Realtime",
+            "display_name": {
+              "en": "Sensors: Realtime"
+            },
             "enabled": true,
             "size": 9,
             "layout": [
@@ -3336,11 +3899,13 @@
               }
             ]
           }
-		],
+        ],
         [
           {
             "widget_id": "pir_first_floor",
-            "display_name": "Indoor first floor sensor",
+            "display_name": {
+              "en": "Indoor first floor sensor"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -3351,14 +3916,16 @@
               },
               {
                 "type": "checkbox",
-				"style": "b",
+                "style": "b",
                 "sensor": "alarm:sensors:pir_first_floor_armed"
               }
             ]
           },
           {
             "widget_id": "pir_study_room",
-            "display_name": "Indoor study room sensor",
+            "display_name": {
+              "en": "Indoor study room sensor"
+            },
             "enabled": false,
             "size": 3,
             "layout": [
@@ -3369,17 +3936,19 @@
               },
               {
                 "type": "checkbox",
-				"style": "b",
+                "style": "b",
                 "sensor": "alarm:sensors:pir_study_room_armed"
               }
             ]
           }
-		]
-	  ],
+        ]
+      ],
       "rules": [
         {
           "rule_id": "alarm_status",
-          "display_name": "The alarm status is %alarm_status%",
+          "display_name": {
+            "en": "The alarm status is %alarm_status%"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "never",
@@ -3390,75 +3959,83 @@
         },
         {
           "rule_id": "alarm_set_on",
-          "display_name": "The alarm has been armed",
+          "display_name": {
+            "en": "The alarm has been armed"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
           "conditions": [
-			"alarm_set_on == status_on"
-		  ],
+            "alarm_set_on == status_on"
+          ],
           "definitions": {
             "alarm_set_on": "alarm:main:alarm_set_on,-1,-1",
             "status_on": 1
           },
           "actions": [
             "set,alarm:main:alarm_set_on,0",
-			"set,alarm:main:alarm_status,1"
+            "set,alarm:main:alarm_status,1"
           ]
-		},
-		{
+        },
+        {
           "rule_id": "alarm_set_off",
-          "display_name": "The alarm has been disarmed",
+          "display_name": {
+            "en": "The alarm has been disarmed"
+          },
           "enabled": false,
           "severity": "info",
           "run_every": "minute",
           "conditions": [
-			"alarm_set_off == status_on"
-		  ],
+            "alarm_set_off == status_on"
+          ],
           "definitions": {
             "alarm_set_off": "alarm:main:alarm_set_off,-1,-1",
             "status_on": 1
           },
           "actions": [
             "set,alarm:main:alarm_set_off,0",
-			"set,alarm:main:alarm_status,0"
+            "set,alarm:main:alarm_status,0"
           ]
-		},
+        },
         {
           "rule_id": "alarm",
-		  "for": [
-			"alarm:sensors:pir_study_room",
-			"alarm:sensors:door_ground_floor"
-		  ],
-          "display_name": "Alarm! The sensor %i% has triggered",
+          "for": [
+            "alarm:sensors:pir_study_room",
+            "alarm:sensors:door_ground_floor"
+          ],
+          "display_name": {
+            "en": "Alarm! The sensor %i% has triggered"
+          },
           "enabled": false,
           "severity": "alert",
           "run_every": "minute",
           "conditions": [
-			"sensor_armed == status_on",
-			"sensor == status_on",
-			"alarm_status == status_on"
-		  ],
+            "sensor_armed == status_on",
+            "sensor == status_on",
+            "alarm_status == status_on"
+          ],
           "definitions": {
-			"sensor_armed": "%i%_armed,-1,-1",
-			"sensor": "%i%,-1,-1",
-			"alarm_status": "alarm:main:alarm_status,-1,-1",
+            "sensor_armed": "%i%_armed,-1,-1",
+            "sensor": "%i%,-1,-1",
+            "alarm_status": "alarm:main:alarm_status,-1,-1",
             "status_on": 1
           }
-		},
+        },
         {
           "rule_id": "sensor_reset",
-		  "for": [
-			"alarm:sensors:pir_study_room",
-			"alarm:sensors:door_ground_floor"
-		  ],
-          "display_name": "Resetting the alarm sensor %i% to its normal state",
+          "for": [
+            "alarm:sensors:pir_study_room",
+            "alarm:sensors:door_ground_floor"
+          ],
+          "display_name": {
+            "en": "Resetting the alarm sensor %i% to its normal state"
+          },
           "enabled": false,
           "severity": "debug",
           "run_every": "minute",
           "conditions": [
-			"sensor_status == status_on"
-		  ],
+            "sensor_status == status_on"
+          ],
           "definitions": {
             "sensor_status": "%i%,-1,-1",
             "status_on": 1
@@ -3466,19 +4043,21 @@
           "actions": [
             "set,%i%,0"
           ]
-		}
-	  ],
-	  "sensors": [
+        }
+      ],
+      "sensors": [
         {
           "group_id": "sensors",
           "sensor_id": "pir_ground_floor",
-          "display_name": "PIR ground floor",
+          "display_name": {
+            "en": "PIR ground floor"
+          },
           "plugin": {
             "plugin_name": "rtl_433",
             "search": {
-				"model": "Generic Sensor",
-				"id": "3a 11 4c"
-			}
+              "model": "Generic Sensor",
+              "id": "3a 11 4c"
+            }
           },
           "format": "int",
           "series": [
@@ -3487,18 +4066,24 @@
               "type": "line",
               "step": true
             }
-          ]
+          ],
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         },
         {
           "group_id": "sensors",
           "sensor_id": "pir_study_room",
-          "display_name": "PIR study room",
+          "display_name": {
+            "en": "PIR study room"
+          },
           "plugin": {
             "plugin_name": "gpio",
-			"setup": "input",
-			"pin": 21,
-			"pull_up_down": "down",
-			"edge_detect": "rising"
+            "setup": "input",
+            "pin": 21,
+            "pull_up_down": "down",
+            "edge_detect": "rising"
           },
           "format": "int",
           "series": [
@@ -3507,63 +4092,97 @@
               "type": "line",
               "step": true
             }
-          ]
+          ],
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         },
         {
           "group_id": "sensors",
           "sensor_id": "pir_ground_floor_armed",
-          "format": "int"
+          "format": "int",
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         },
         {
           "group_id": "sensors",
           "sensor_id": "pir_study_room_armed",
-          "format": "int"
+          "format": "int",
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         },
         {
           "group_id": "main",
           "sensor_id": "alarm_set_on",
-          "display_name": "Alarm On",
+          "display_name": {
+            "en": "Alarm On"
+          },
           "plugin": {
             "plugin_name": "rtl_433",
             "search": {
-				"model": "Generic Sensor",
-				"id": "01 09 c0"
-			}
+              "model": "Generic Sensor",
+              "id": "01 09 c0"
+            }
           },
-          "format": "int"
+          "format": "int",
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         },
         {
           "group_id": "main",
           "sensor_id": "alarm_set_off",
-          "display_name": "Alarm Off",
+          "display_name": {
+            "en": "Alarm Off"
+          },
           "plugin": {
             "plugin_name": "rtl_433",
             "search": {
-				"model": "Generic Sensor",
-				"id": "00 08 0c"
-			}
+              "model": "Generic Sensor",
+              "id": "00 08 0c"
+            }
           },
-          "format": "int"
+          "format": "int",
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         },
         {
           "group_id": "main",
           "sensor_id": "alarm_status",
-          "display_name": "Alarm Status",
-          "format": "int"
+          "display_name": {
+            "en": "Alarm Status"
+          },
+          "format": "int",
+          "module_id": "alarm",
+		  "retention": {
+			"realtime_count": 1
+		  }
         }
-	  ]
-	},
+      ]
+    },
     {
       "module_id": "network",
       "section_id": "System",
-      "display_name": "Local Network",
+      "display_name": {
+        "en": "Local Network"
+      },
       "icon": "fa-exchange",
       "enabled": false,
       "widgets": [
         [
           {
             "widget_id": "dhcp_lease",
-            "display_name": "Current DHCP Lease",
+            "display_name": {
+              "en": "Current DHCP Lease"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
@@ -3578,7 +4197,9 @@
         [
           {
             "widget_id": "static_dhcp",
-            "display_name": "Static DHCP Mapping",
+            "display_name": {
+              "en": "Static DHCP Mapping"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -3591,7 +4212,9 @@
           },
           {
             "widget_id": "static_dns",
-            "display_name": "Static DNS Mapping",
+            "display_name": {
+              "en": "Static DNS Mapping"
+            },
             "enabled": false,
             "size": 6,
             "layout": [
@@ -3608,58 +4231,74 @@
         {
           "group_id": "dnsmasq",
           "sensor_id": "lease",
-          "display_name": "DHCP Lease",
+          "display_name": {
+            "en": "DHCP Lease"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "cat /var/log/dnsmasq.leases",
             "command_parse": "sed 's/ /|_|/g'",
             "poll_on_demand": true
           },
           "format": "string",
-          "single_instance": true
+          "module_id": "network",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "dnsmasq",
           "sensor_id": "dhcp",
-          "display_name": "DHCP Mapping",
+          "display_name": {
+            "en": "DHCP Mapping"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "cat /etc/dnsmasq.dhcp",
             "command_parse": "sed 's/dhcp-host=//'|sed 's/,/|_|/g'",
             "poll_on_demand": true
           },
           "format": "string",
-          "single_instance": true
+          "module_id": "network",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "dnsmasq",
           "sensor_id": "dns",
-          "display_name": "DNS Mapping",
+          "display_name": {
+            "en": "DNS Mapping"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "cat /etc/dnsmasq.dns",
             "command_parse": "sed 's/\t/|_|/g'",
             "poll_on_demand": true
           },
           "format": "string",
-          "single_instance": true
+          "module_id": "network",
+          "retention": {
+            "realtime_count": 1
+          }
         }
       ]
     },
     {
       "module_id": "logwatch",
       "section_id": "System",
-      "display_name": "Log Analysis",
+      "display_name": {
+        "en": "Log Analysis"
+      },
       "icon": "fa-line-chart",
       "enabled": false,
       "widgets": [
         [
           {
             "widget_id": "logwatch",
-            "display_name": "Yesterday",
+            "display_name": {
+              "en": "Yesterday"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
@@ -3675,30 +4314,38 @@
         {
           "group_id": "logs",
           "sensor_id": "yesterday",
-          "display_name": "LogWatch",
+          "display_name": {
+            "en": "LogWatch"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "logwatch --range yesterday --output stdout --format text",
             "command_parse": "cat",
             "polling_interval": 1440
           },
           "format": "string",
-          "single_instance": true
+          "module_id": "logwatch",
+          "retention": {
+            "realtime_count": 1
+          }
         }
       ]
     },
     {
       "module_id": "logs",
       "section_id": "myHouse",
-      "display_name": "Logs",
+      "display_name": {
+        "en": "Logs"
+      },
       "icon": "fa-file-text",
       "enabled": true,
       "widgets": [
         [
           {
             "widget_id": "logs_myhouse",
-            "display_name": "myHouse",
+            "display_name": {
+              "en": "myHouse"
+            },
             "enabled": false,
             "size": 12,
             "layout": [
@@ -3713,7 +4360,9 @@
         [
           {
             "widget_id": "logs_messages",
-            "display_name": "/var/log/messages",
+            "display_name": {
+              "en": "/var/log/messages"
+            },
             "enabled": true,
             "size": 12,
             "layout": [
@@ -3730,35 +4379,41 @@
         {
           "group_id": "myhouse",
           "sensor_id": "main",
-          "display_name": "myHouse",
+          "display_name": {
+            "en": "myHouse"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "tail -500 /opt/myHouse/logs/myHouse.log",
             "command_parse": "perl -ne '/^\\[([^\\]]+)\\] \\[([^\\]]+)\\] (\\w+): (.+)$/;print \"$1|_|$2|_|$3|_|$4\\n\"'",
             "poll_on_demand": true
           },
-          "format": "string"
+          "format": "string",
+          "module_id": "logs"
         },
         {
           "group_id": "system",
           "sensor_id": "messages",
-          "display_name": "Messages",
+          "display_name": {
+            "en": "Messages"
+          },
           "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
+            "plugin_name": "command",
             "command_poll": "tail -500 /var/log/messages",
             "command_parse": "perl -ne '/^(\\S+ \\S+ \\S+) \\S+ (\\S+): (.+)$/;print \"$1|_|$2|_|$3\\n\"'",
             "poll_on_demand": true
           },
-          "format": "string"
+          "format": "string",
+          "module_id": "logs"
         }
       ]
     },
     {
       "module_id": "configuration",
       "section_id": "myHouse",
-      "display_name": "Configuration",
+      "display_name": {
+        "en": "Configuration"
+      },
       "icon": "fa-wrench",
       "enabled": true,
       "auto_refresh_min": 0,
@@ -3766,7 +4421,9 @@
         [
           {
             "widget_id": "configuration_editor",
-            "display_name": "Editor",
+            "display_name": {
+              "en": "Editor"
+            },
             "enabled": true,
             "size": 12,
             "layout": [
@@ -3777,6 +4434,256 @@
           }
         ]
       ]
+    },
+    {
+      "display_name": {
+          "en": "Reboot/Shutdown"
+      },
+      "enabled": true,
+      "section_id": "System",
+      "widgets": [
+        [
+          {
+            "display_name": {
+                "en": "Reboot the system"
+            },
+            "enabled": true,
+            "offset": 1,
+            "layout": [
+              {
+                "display_name": {
+                    "en": "Reboot"
+                },
+                "type": "button",
+                "send": "power/command/reboot/run/save"
+              }
+            ],
+            "widget_id": "reboot",
+            "size": 4
+          },
+          {
+            "display_name": {
+                "en": "Shutdown the system"
+            },
+            "enabled": true,
+            "offset": 2,
+            "layout": [
+              {
+                "display_name": {
+                    "en": "Shutdown"
+                },
+                "type": "button",
+                "send": "power/command/shutdown/run/save"
+              }
+            ],
+            "widget_id": "shutdown",
+            "size": 4
+          }
+        ]
+      ],
+      "module_id": "power",
+      "sensors": [
+        {
+          "sensor_id": "reboot",
+          "format": "string",
+          "plugin": {
+            "plugin_name": "system",
+            "measure": "reboot"
+          },
+          "module_id": "power",
+          "group_id": "command",
+          "retention": {
+            "realtime_count": 1
+          }
+        },
+        {
+          "sensor_id": "shutdown",
+          "format": "string",
+          "plugin": {
+            "plugin_name": "system",
+            "measure": "shutdown"
+          },
+          "module_id": "power",
+          "group_id": "command",
+          "retention": {
+            "realtime_count": 1
+          }
+        }
+      ],
+      "icon": "fa-power-off"
+    },
+	{
+      "module_id": "earthquake",
+      "section_id": "Sensors",
+      "display_name": {
+		"en": "Earthquakes"
+		},
+      "icon": "fa-bullseye",
+      "enabled": true,
+      "widgets": [
+        [
+          {
+            "widget_id": "earthquake_map",
+            "display_name": {
+				"en": "Earthquake Map"
+				},
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "map",
+                "group": "earthquake:networks",
+				"tracking": false,
+				"timeframe": "history"
+              }
+            ]
+          }
+        ]
+      ],
+      "rules": [
+         {
+          "rule_id": "earthquake_world",
+		  "for": [
+			"-10","-9","-8","-7","-6","-5","-4","-3","-2","-1"
+		  ],
+          "display_name": {
+			"en": "A strong earthquake magnitude %magnitude% has taken place %distance% away (%timestamp%)"
+			},
+          "enabled": true,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "magnitude > min_magnitude",
+			"timestamp > last_alert"
+          ],
+          "definitions": {
+            "magnitude": "earthquake:networks:usgs:day:avg,%i%,%i%",
+			"distance": "earthquake:networks:usgs:day:avg,%i%,%i%,distance",
+			"timestamp": "earthquake:networks:usgs:day:avg,%i%,%i%,timestamp",
+			"last_alert": "earthquake:alert:world,-1,-1",
+            "min_magnitude": 7
+          },
+		  "actions": [
+			"set,earthquake:alert:world,%timestamp%"
+		  ]
+        }
+	  ],
+      "sensors": [
+        {
+		  "module_id": "earthquake",
+          "group_id": "networks",
+          "sensor_id": "usgs",
+          "display_name": {
+			"en": "USGS",
+			"it": "USGS"
+			},
+          "plugin": {
+            "plugin_name": "earthquake",
+            "domain": "earthquake.usgs.gov",
+			"query": "minmag=7",
+			"polling_interval": 10
+		  },
+		  "retention": {
+			"realtime_new_only": true,
+			"history_days": 3
+		  },
+          "format": "position"
+        },
+        {
+		  "module_id": "earthquake",
+          "group_id": "alert",
+          "sensor_id": "world",
+		  "retention": {
+			"realtime_count": 1
+		  },
+          "format": "int"
+        }
+      ]
     }
-  ]
+  ],
+  "general": {
+    "latitude": 0,
+    "units": {
+      "imperial": false,
+      "fahrenheit": false
+    },
+    "timeframes": {
+      "realtime_hours": 4,
+      "recent_hours": 24,
+      "history_days": 365,
+      "short_history_days": 30,
+      "forecast_days": 7,
+      "alerter_recent_hours": 24,
+      "alerter_history_days": 7
+    },
+    "language": "en",
+    "longitude": 0
+  },
+  "output": {
+    "audio": {
+      "engine": "google",
+      "enabled": false,
+      "language": "en-US"
+    },
+    "sms": {
+      "username": "",
+      "ssl": false,
+      "password": "",
+      "from": "",
+      "to": [],
+      "rate_limit": 1,
+      "hostname": "www.freevoipdeal.com",
+      "enabled": false,
+      "min_severity": "alert"
+    },
+    "email": {
+      "enabled": false,
+      "hostname": "localhost",
+      "from": "your@email.com",
+      "to": [
+        "your@email.com"
+      ],
+      "alerts_digest": false,
+      "subject": "Notification"
+    },
+    "slack": {
+      "enabled": false,
+      "bot_name": "housebot",
+      "bot_token": "YOUR_SLACK_API_KEY",
+      "channel": "general"
+    }
+  },
+  "input": {
+    "audio": {
+      "engine": "google",
+      "echo_request": false,
+      "recorder": {
+        "max_duration": 60,
+        "end_duration": 3,
+        "start_threshold": 1,
+        "start_duration": 0.1,
+        "end_threshold": 0.1
+      },
+      "enabled": false,
+      "language": "en-US"
+    },
+    "slack": {
+      "enabled": false
+    },
+    "settings": {
+      "score": 50,
+      "algorithm": "token_set_ratio"
+    }
+  },
+  "pws": {
+    "username": "",
+    "data": {
+      "baromin": "outdoor:pressure:external",
+      "tempf": "outdoor:temperature:external",
+      "humidity": "outdoor:humidity:external"
+    },
+    "publishing_interval": 10,
+    "password": "",
+    "enabled": false
+  }
 }

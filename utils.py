@@ -164,7 +164,7 @@ def velocity(in_x,in_y):
 			x.append(in_x[i])
 			y.append(in_y[i])
 	# at least two values needed
-        if len(y) >= 2:
+	if len(y) >= 2:
 		# normalize the x data to be in the range [0,1]
 		min = x[0]
 		max = x[len(x)-1]
