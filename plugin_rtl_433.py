@@ -61,13 +61,13 @@ def run():
 		if output:
 			# output available
 			try:
-	                        # avoid handling the same exact output, skipping
-	                        if prev_output == output: continue
+				# avoid handling the same exact output, skipping
+				if prev_output == output: continue
 				# parse the json output
 				json_output = json.loads(output)
-                        except ValueError, e:
-                                # not a valid json, ignoring
-                                continue
+			except ValueError, e:
+				# not a valid json, ignoring
+				continue
 			# for each registered search string
 			for search_string in nodes:
 				# check if the output matches the search string

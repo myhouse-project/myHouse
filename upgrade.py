@@ -19,17 +19,17 @@ debug = False
 
 # change into a given database number
 def change_db(database):
-        db.db = None
-        conf['db']['database'] = database
+	db.db = None
+	conf['db']['database'] = database
 
 # run a command and return the output
 def run_command(command):
-        if debug: print "Executing "+command
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = ''
-        for line in process.stdout.readlines():
-                output = output+line
-        if debug: print output.rstrip()
+	if debug: print "Executing "+command
+	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	output = ''
+	for line in process.stdout.readlines():
+		output = output+line
+	if debug: print output.rstrip()
 
 # backup the database and the configuration file
 def backup(version):
@@ -37,9 +37,9 @@ def backup(version):
 	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)
 	print "Backing up the database "+db_file+" into "+backup_db_file
 	utils.run_command("cp "+db_file+" "+backup_db_file)
-        backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
-        print "Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file
-        utils.run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
+	backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
+	print "Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file
+	utils.run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
 
 # upgrade from 1.x to 2.0
 def upgrade_2_0():
@@ -67,15 +67,15 @@ def upgrade_2_0():
 		'home:weather:outdoor:temperature:day:min': 'myHouse:outdoor:temperature:external:day:min',
 		'home:weather:outdoor:temperature:day': 'myHouse:outdoor:temperature:external:day:avg',
 	
-	        'home:weather:indoor:temperature:day:max': 'myHouse:indoor:temperature:living_room:day:max',
-	        'home:weather:indoor:temperature:day:min': 'myHouse:indoor:temperature:living_room:day:min',
-	        'home:weather:indoor:temperature:day': 'myHouse:indoor:temperature:living_room:day:avg',
+		'home:weather:indoor:temperature:day:max': 'myHouse:indoor:temperature:living_room:day:max',
+		'home:weather:indoor:temperature:day:min': 'myHouse:indoor:temperature:living_room:day:min',
+		'home:weather:indoor:temperature:day': 'myHouse:indoor:temperature:living_room:day:avg',
 	
 		'home:weather:almanac:record:min': 'myHouse:outdoor:temperature:record:day:min',
 		'home:weather:almanac:record:max': 'myHouse:outdoor:temperature:record:day:max',
 	
-	        'home:weather:almanac:normal:min': 'myHouse:outdoor:temperature:normal:day:min',
-	        'home:weather:almanac:normal:max': 'myHouse:outdoor:temperature:normal:day:max',
+		'home:weather:almanac:normal:min': 'myHouse:outdoor:temperature:normal:day:min',
+		'home:weather:almanac:normal:max': 'myHouse:outdoor:temperature:normal:day:max',
 	
 		'home:weather:outdoor:condition:day': 'myHouse:outdoor:temperature:condition:day:avg',
 	}
@@ -124,18 +124,18 @@ def upgrade_2_0():
 		key_to = recent[key_from]
 		print "\tMigrating "+key_from+" -> "+key_to
 		# retrieve the recent data
-	        change_db(db_from)
-	        data = db.rangebyscore(key_from,utils.now()-2*conf["constants"]["1_day"],utils.now(),withscores=True)
-	        change_db(db_to)
-	        count = 0
-	        # for each entry
-	        for entry in data:
-	                timestamp = utils.timezone(entry[0])
-	                value = utils.normalize(entry[1])
+		change_db(db_from)
+		data = db.rangebyscore(key_from,utils.now()-2*conf["constants"]["1_day"],utils.now(),withscores=True)
+		change_db(db_to)
+		count = 0
+		# for each entry
+		for entry in data:
+			timestamp = utils.timezone(entry[0])
+			value = utils.normalize(entry[1])
 			if debug: print "[RECENT]["+key_to+"] ("+utils.timestamp2date(timestamp)+") "+str(value)
-	                # skip it if the same value is already stored
-	                old = db.rangebyscore(key_to,timestamp,timestamp)
-	                if len(old) > 0: continue
+			# skip it if the same value is already stored
+			old = db.rangebyscore(key_to,timestamp,timestamp)
+			if len(old) > 0: continue
 			# store it into the new database
 			db.set(key_to,value,timestamp)
 			# create the sensor data structure
@@ -143,16 +143,16 @@ def upgrade_2_0():
 			group_id = key_split[-2]
 			sensor_id = key_split[-1]
 			module_id = key_split[-4]
-		        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-		        sensor['module_id'] = module_id
-		        sensor['group_id'] = group_id
-		        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
-		        sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
+			sensor = utils.get_sensor(module_id,group_id,sensor_id)
+			sensor['module_id'] = module_id
+			sensor['group_id'] = group_id
+			sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
+			sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 			sensors.summarize(sensor,'hour',utils.hour_start(timestamp),utils.hour_end(timestamp))
-	                count = count +1
-	        print "\t\tdone, "+str(count)+" values"
+			count = count +1
+		print "\t\tdone, "+str(count)+" values"
 	print "Upgrading database..."
-       	version_key = conf["constants"]["db_schema"]["version"]
+	version_key = conf["constants"]["db_schema"]["version"]
 	db.set_simple(version_key,"2.0")
 
 
@@ -218,13 +218,13 @@ def upgrade_2_1():
 						sensor["format"] = "string"
 						if "single_instance" in sensor: del sensor["single_instance"]
 						migrate_icloud.append(module["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"])
-	        for module in new["modules"]:
-	                if "widgets" in module:
-	                        for i in range(len(module["widgets"])):
-	                                for j in range(len(module["widgets"][i])):
-	                                        widget = module["widgets"][i][j]
-	                                        for k in range(len(widget["layout"])):
-	                                                layout = widget["layout"][k]
+		for module in new["modules"]:
+			if "widgets" in module:
+				for i in range(len(module["widgets"])):
+					for j in range(len(module["widgets"][i])):
+						widget = module["widgets"][i][j]
+						for k in range(len(widget["layout"])):
+							layout = widget["layout"][k]
 							if layout["type"] == "image" and sensor in migrate_icloud:
 								layout["type"] = "map"
 		# save the updated configuration 
@@ -243,16 +243,16 @@ def upgrade_2_1():
 
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
-        # CONFIGURATION
-        upgrade_db = False
-        upgrade_conf = True
+	# CONFIGURATION
+	upgrade_db = False
+	upgrade_conf = True
 	upgrade_modules = False
 	# END
-        conf = config.get_config(validate=False)
-        print "[Migration from v2.1 to v2.2]\n"
-        backup("2.1")
-        if upgrade_conf:
-                print "Upgrading configuration file..."
+	conf = config.get_config(validate=False)
+	print "[Migration from v2.1 to v2.2]\n"
+	backup("2.1")
+	if upgrade_conf:
+		print "Upgrading configuration file..."
 		new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
 		# delete the linux plugin
 		del new["plugins"]["linux"]
@@ -260,8 +260,8 @@ def upgrade_2_2():
 		new["plugins"]["command"] = {}
 		new["plugins"]["command"]["timeout"] = 30
 		# add the system plugin
-                new["plugins"]["system"] = {}
-                new["plugins"]["system"]["timeout"] = 30
+		new["plugins"]["system"] = {}
+		new["plugins"]["system"]["timeout"] = 30
 		# add timeout to image
 		new["plugins"]["image"] = {}
 		new["plugins"]["image"]["timeout"] = 30
@@ -290,8 +290,8 @@ def upgrade_2_2():
 		# move units and timeframe under general
 		new["general"]["units"] = conf["units"]
 		del new["units"]
-                new["general"]["timeframes"] = conf["timeframes"]
-                del new["timeframes"]
+		new["general"]["timeframes"] = conf["timeframes"]
+		del new["timeframes"]
 		# migrate sections
 		new_sections = {}
 		for section in new["gui"]["sections"]: new_sections[section] = section
@@ -301,76 +301,76 @@ def upgrade_2_2():
 		      "module_id": "power",
 		      "section_id": "System",
 		      "display_name": {
-	                "en": "Reboot/Shutdown",
-	                },
+			"en": "Reboot/Shutdown",
+			},
 		      "icon": "fa-power-off",
 		      "enabled": True,
 		      "widgets": [
-		        [
-		          {
-		            "widget_id": "reboot",
-		            "display_name": {
-                                "en": "Reboot the system",
-                             },
-		            "enabled": True,
-		            "size": 4,
+			[
+			  {
+			    "widget_id": "reboot",
+			    "display_name": {
+				"en": "Reboot the system",
+			     },
+			    "enabled": True,
+			    "size": 4,
 			    "offset": 1,
-		            "layout": [
-		              {
-		                "type": "button",
-                                "display_name": {
-                                        "en": "Reboot",
-                                },
-	                        "send": "power/command/reboot/run/save"
-		              }
-		            ]
-          		  },
-          		  {
-		            "widget_id": "shutdown",
-		            "display_name": {
-                                "en": "Shutdown the system",
-                            },
-		            "enabled": True,
-		            "size": 4,
-		            "offset": 2,
-		            "layout": [
-		              {
-		                "type": "button",
-                                "display_name": {
-                                        "en": "Shutdown",
-                                },
-		                "send": "power/command/shutdown/run/save"
-		              }
-		            ]
-		          }
-		        ]
+			    "layout": [
+			      {
+				"type": "button",
+				"display_name": {
+					"en": "Reboot",
+				},
+				"send": "power/command/reboot/run/save"
+			      }
+			    ]
+			  },
+			  {
+			    "widget_id": "shutdown",
+			    "display_name": {
+				"en": "Shutdown the system",
+			    },
+			    "enabled": True,
+			    "size": 4,
+			    "offset": 2,
+			    "layout": [
+			      {
+				"type": "button",
+				"display_name": {
+					"en": "Shutdown",
+				},
+				"send": "power/command/shutdown/run/save"
+			      }
+			    ]
+			  }
+			]
 		      ],
-  	      	 	"sensors": [
-		        {
-	                  "module_id": "power",
-		          "group_id": "command",
-		          "sensor_id": "reboot",
-		          "plugin": {
-		            "plugin_name": "system",
-		            "measure": "reboot"
-		          },
-		          "format": "string",
-	                  "retention": {
-	                        "realtime_count": 1
-	                  }
-		        },
-		        {
-	                  "module_id": "power",
-		          "group_id": "command",
-		          "sensor_id": "shutdown",
-		          "plugin": {
-		            "plugin_name": "system",
-		            "measure": "shutdown"
-		          },
-		          "format": "string",
-	                  "retention": {
-	                        "realtime_count": 1
-	                  }
+			"sensors": [
+			{
+			  "module_id": "power",
+			  "group_id": "command",
+			  "sensor_id": "reboot",
+			  "plugin": {
+			    "plugin_name": "system",
+			    "measure": "reboot"
+			  },
+			  "format": "string",
+			  "retention": {
+				"realtime_count": 1
+			  }
+			},
+			{
+			  "module_id": "power",
+			  "group_id": "command",
+			  "sensor_id": "shutdown",
+			  "plugin": {
+			    "plugin_name": "system",
+			    "measure": "shutdown"
+			  },
+			  "format": "string",
+			  "retention": {
+				"realtime_count": 1
+			  }
 			}
 		      ]
 		}
@@ -400,22 +400,22 @@ def upgrade_2_2():
 		new["output"] = {}
 		# migrate notifications into output
 		new["output"]["email"] = conf["notifications"]["email"]
-                new["output"]["slack"] = conf["notifications"]["slack"]
+		new["output"]["slack"] = conf["notifications"]["slack"]
 		# add email subject
 		new["output"]["email"]["subject"] = "Notification"
-                del new["notifications"]
+		del new["notifications"]
 		# add sms notification
 		sms =  {
 			"enabled": False,
-		        "ssl": False,
-		        "hostname": "www.freevoipdeal.com",
-                        "username": "",
-                        "password": "",
-                        "from": "",
-                        "to": [   ],
-                        "min_severity": "alert",
-                        "rate_limit": 1
-                }
+			"ssl": False,
+			"hostname": "www.freevoipdeal.com",
+			"username": "",
+			"password": "",
+			"from": "",
+			"to": [   ],
+			"min_severity": "alert",
+			"rate_limit": 1
+		}
 		new["output"]["sms"] = sms
 		# add audio notification
 		output_audio = {
@@ -430,11 +430,11 @@ def upgrade_2_2():
 		new["output"]["email"]["enabled"] = new["output"]["email"]["realtime_alerts"]
 		del new["output"]["email"]["realtime_alerts"]
 		print "\tWARNING: 'module_digest' in 'email' has been deprecated, if 'daily_digest' is set to 'true' in the module, the digest will be sent"
-                # add input
-                new["input"] = {}
-                new["input"]["settings"] = {}
-                new["input"]["settings"]["algorithm"] = "token_set_ratio"
-                new["input"]["settings"]["score"] = 50
+		# add input
+		new["input"] = {}
+		new["input"]["settings"] = {}
+		new["input"]["settings"]["algorithm"] = "token_set_ratio"
+		new["input"]["settings"]["score"] = 50
 		# remove options from slack
 		new["output"]["slack"]["enabled"] = new["output"]["slack"]["realtime_alerts"]
 		del new["output"]["slack"]["realtime_alerts"]
@@ -445,29 +445,29 @@ def upgrade_2_2():
 		new["gui"]["skin"] = "blue"
 		# add pws
 		pws =  {
-		        "enabled": False,
-		        "username": "",
-		        "password": "",
-		        "publishing_interval": 10,
-		        "data": {
-		                "tempf": "outdoor:temperature:external",
-		                "humidity": "outdoor:humidity:external",
-		                "baromin": "outdoor:pressure:external"
-		        }
+			"enabled": False,
+			"username": "",
+			"password": "",
+			"publishing_interval": 10,
+			"data": {
+				"tempf": "outdoor:temperature:external",
+				"humidity": "outdoor:humidity:external",
+				"baromin": "outdoor:pressure:external"
+			}
 		  }
 		new["pws"] = pws
 		# add audio input
 		input_audio = {
 			  "enabled": False,
-		          "engine": "google",
-		          "language": "en-US",
-		          "echo_request": False,
-		          "recorder": {
-		                "max_duration": 60,
-		                "start_duration": 0.1,
-		                "start_threshold": 1,
-		                "end_duration": 3,
-		                "end_threshold": 0.1
+			  "engine": "google",
+			  "language": "en-US",
+			  "echo_request": False,
+			  "recorder": {
+				"max_duration": 60,
+				"start_duration": 0.1,
+				"start_threshold": 1,
+				"end_duration": 3,
+				"end_threshold": 0.1
 			   }
 			}
 		new["input"]["audio"] = input_audio
@@ -475,7 +475,7 @@ def upgrade_2_2():
 		# cycle through the modules
 		group_to_delete = []
 		group_summary_exclude = {}
-                for module in new["modules"]:
+		for module in new["modules"]:
 			module_id = module["module_id"]
 			if "display_name" in module:
 				display_name = {"en": module["display_name"]}
@@ -483,48 +483,48 @@ def upgrade_2_2():
 			# add uptime rule
 			if module_id == "system":
 				uptime_rule = {
-			          "rule_id": "system_reboot",
-			          "display_name": "The system has been recently rebooted",
-			          "enabled": True,
-			          "severity": "info",
-			          "run_every": "5 minutes",
-			          "conditions": [
-			            "last_uptime < prev_uptime"
-			          ],
-			          "definitions": {
+				  "rule_id": "system_reboot",
+				  "display_name": "The system has been recently rebooted",
+				  "enabled": True,
+				  "severity": "info",
+				  "run_every": "5 minutes",
+				  "conditions": [
+				    "last_uptime < prev_uptime"
+				  ],
+				  "definitions": {
 					  "last_uptime": "system:runtime:uptime,-1,-1",
-				          "prev_uptime": "system:runtime:uptime,-2,-2"
-			          }
-			        }
+					  "prev_uptime": "system:runtime:uptime,-2,-2"
+				  }
+				}
 				module["rules"].append(uptime_rule)
 				uptime_sensor = {
-		                  "module_id": "system",
-			          "group_id": "runtime",
-			          "sensor_id": "uptime",
-			          "display_name": "uptime",
-			          "plugin": {
-			            "plugin_name": "system",
-			            "measure": "uptime",
-			            "polling_interval": 10
-			          },
-			          "format": "int"
-			        }
+				  "module_id": "system",
+				  "group_id": "runtime",
+				  "sensor_id": "uptime",
+				  "display_name": "uptime",
+				  "plugin": {
+				    "plugin_name": "system",
+				    "measure": "uptime",
+				    "polling_interval": 10
+				  },
+				  "format": "int"
+				}
 				module["sensors"].append(uptime_sensor)
 				print "\tINFO: I've added a rule called 'system_reboot' to notify when the system reboots"
-                        if "widgets" in module:
-                                for i in range(len(module["widgets"])):
-                                        for j in range(len(module["widgets"][i])):
-                                                widget = module["widgets"][i][j]
+			if "widgets" in module:
+				for i in range(len(module["widgets"])):
+					for j in range(len(module["widgets"][i])):
+						widget = module["widgets"][i][j]
 						# update display_name
-			                        if "display_name" in widget:
-                        			        display_name = {"en": widget["display_name"]}
-			                                widget["display_name"] = display_name
-                                                for k in range(len(widget["layout"])):
-                                                        layout = widget["layout"][k]
-        		                               # update display_name
-	                	                        if "display_name" in layout:
-		                                                display_name = {"en": layout["display_name"]}
-                		                                layout["display_name"] = display_name
+						if "display_name" in widget:
+							display_name = {"en": widget["display_name"]}
+							widget["display_name"] = display_name
+						for k in range(len(widget["layout"])):
+							layout = widget["layout"][k]
+						       # update display_name
+							if "display_name" in layout:
+								display_name = {"en": layout["display_name"]}
+								layout["display_name"] = display_name
 							# add tracking to map
 							if "type" in layout and layout["type"] == "map": 
 								layout["tracking"] = True
@@ -534,19 +534,19 @@ def upgrade_2_2():
 				for i in range(len(module["rules"])):
 					rule = module["rules"][i]
 					# update display_name
-	                                if "display_name" in rule:
-                                        	display_name = {"en": rule["display_name"]}
-                                                rule["display_name"] = display_name
+					if "display_name" in rule:
+						display_name = {"en": rule["display_name"]}
+						rule["display_name"] = display_name
 					for a,b in rule["definitions"].iteritems():
 						# rename timestam in elapsed in rule definition
 						if not utils.is_number(b) and ",timestamp" in b: rule["definitions"][a] = b.replace(",timestamp",",elapsed")
-                        if "sensors" in module:
-                                for i in range(len(module["sensors"])):
-                                        sensor = module["sensors"][i]
-                                       # update display_name
-                                        if "display_name" in sensor:
-                                                display_name = {"en": sensor["display_name"]}
-                                                sensor["display_name"] = display_name
+			if "sensors" in module:
+				for i in range(len(module["sensors"])):
+					sensor = module["sensors"][i]
+				       # update display_name
+					if "display_name" in sensor:
+						display_name = {"en": sensor["display_name"]}
+						sensor["display_name"] = display_name
 					# add module_id to each sensor
 					sensor["module_id"] = module_id
 					# remove group_summary_exclude
@@ -554,7 +554,7 @@ def upgrade_2_2():
 						group_summary_exclude[module_id+":"+sensor["group_id"]] = module_id+":"+sensor["group_id"]+":"+sensor["sensor_id"]
 						del sensor["group_summary_exclude"]
 					# convert single_instance
-                                        if "single_instance" in sensor: 
+					if "single_instance" in sensor: 
 						sensor["retention"] = {}
 						sensor["retention"]["realtime_count"] = 1
 						del sensor["single_instance"]
@@ -564,18 +564,18 @@ def upgrade_2_2():
 							if "date_position" in sensor:
 								sensor["plugin"]["date_position"] = sensor["plugin"]["date_index"]
 								del sensor["plugin"]["date_index"]
-                                                       	if "node_id" in sensor:
-                                                                sensor["plugin"]["filter"] = sensor["plugin"]["node_id"]
-                                                                del sensor["plugin"]["node_id"]
-                                                        if "node_id_index" in sensor:
-                                                                sensor["plugin"]["filter_position"] = sensor["plugin"]["node_id_index"]
-                                                                del sensor["plugin"]["node_id_index"]
-                                                        if "measure" in sensor:
-                                                                sensor["plugin"]["prefix"] = sensor["plugin"]["measure"]
-                                                                del sensor["plugin"]["measure"]
-                                                        if "measure_index" in sensor:
-                                                                sensor["plugin"]["value_position"] = sensor["plugin"]["measure_index"]
-                                                                del sensor["plugin"]["measure_index"]
+							if "node_id" in sensor:
+								sensor["plugin"]["filter"] = sensor["plugin"]["node_id"]
+								del sensor["plugin"]["node_id"]
+							if "node_id_index" in sensor:
+								sensor["plugin"]["filter_position"] = sensor["plugin"]["node_id_index"]
+								del sensor["plugin"]["node_id_index"]
+							if "measure" in sensor:
+								sensor["plugin"]["prefix"] = sensor["plugin"]["measure"]
+								del sensor["plugin"]["measure"]
+							if "measure_index" in sensor:
+								sensor["plugin"]["value_position"] = sensor["plugin"]["measure_index"]
+								del sensor["plugin"]["measure_index"]
 						if sensor["plugin"]["plugin_name"] == "icloud":
 							# device name mandatory
 							sensor["plugin"]["device_name"] = ""
@@ -594,14 +594,14 @@ def upgrade_2_2():
 		# add the power module
 		new["modules"].append(power)
 		# second round
-                for module in new["modules"]:
-                        module_id = module["module_id"]
-                        if "widgets" in module:
-                                for i in range(len(module["widgets"])):
-                                        for j in range(len(module["widgets"][i])):
-                                                widget = module["widgets"][i][j]
-                                                for k in range(len(widget["layout"])):
-                                                        layout = widget["layout"][k]
+		for module in new["modules"]:
+			module_id = module["module_id"]
+			if "widgets" in module:
+				for i in range(len(module["widgets"])):
+					for j in range(len(module["widgets"][i])):
+						widget = module["widgets"][i][j]
+						for k in range(len(widget["layout"])):
+							layout = widget["layout"][k]
 							if layout["type"] == "sensor_group_summary" and layout["group"] in group_summary_exclude:
 								# add exclude
 								layout["exclude"] = []
@@ -612,45 +612,45 @@ def upgrade_2_2():
 			for sensor in sensors:
 				print sensor["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"]
 				db.delete(sensor["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"])
-                # save the updated configuration
-                config.save(json.dumps(new, default=lambda o: o.__dict__))
+		# save the updated configuration
+		config.save(json.dumps(new, default=lambda o: o.__dict__))
 
 	if upgrade_modules:
 		print "Installing additional dependencies..."
-	        print "\tInstalling python-paho-mqtt..."
-	        run_command("pip install paho-mqtt")
-	        print "\tInstalling mosquitto..."
-	        run_command("apt-get install -y mosquitto")
-	        print "\tInstalling picotts..."
-	        run_command("apt-get install -y libttspico-utils")
-	        print "\tInstalling python-opencv..."
-	        run_command("apt-get install -y python-opencv")
-	        print "\tInstalling python-gtts..."
-	        run_command("pip install gTTS")
-	        print "\tInstalling mpg123..."
-	        run_command("apt-get install -y mpg123")
-	        print "\tInstalling python-speech-recognition..."
-	        run_command("pip install SpeechRecognition")
-	        print "\tInstalling sox..."
-	        run_command("apt-get install -y sox")
-	        print "\tInstalling flac..."
-	        run_command("apt-get install -y flac")
-	        print "\tInstalling pocketsphinx..."
-	        run_command("apt-get install -y pocketsphinx")
-        	print "\tInstalling python-dht..."
-	        run_command("pip install Adafruit_Python_DHT")
-	        print "\tInstalling python-ads1x15..."
-	        run_command("pip install Adafruit_ADS1x15")
-        if upgrade_db:
-                print "Upgrading database..."
-                version_key = conf["constants"]["db_schema"]["version"]
-                db.set_simple(version_key,"2.2")
+		print "\tInstalling python-paho-mqtt..."
+		run_command("pip install paho-mqtt")
+		print "\tInstalling mosquitto..."
+		run_command("apt-get install -y mosquitto")
+		print "\tInstalling picotts..."
+		run_command("apt-get install -y libttspico-utils")
+		print "\tInstalling python-opencv..."
+		run_command("apt-get install -y python-opencv")
+		print "\tInstalling python-gtts..."
+		run_command("pip install gTTS")
+		print "\tInstalling mpg123..."
+		run_command("apt-get install -y mpg123")
+		print "\tInstalling python-speech-recognition..."
+		run_command("pip install SpeechRecognition")
+		print "\tInstalling sox..."
+		run_command("apt-get install -y sox")
+		print "\tInstalling flac..."
+		run_command("apt-get install -y flac")
+		print "\tInstalling pocketsphinx..."
+		run_command("apt-get install -y pocketsphinx")
+		print "\tInstalling python-dht..."
+		run_command("pip install Adafruit_Python_DHT")
+		print "\tInstalling python-ads1x15..."
+		run_command("pip install Adafruit_ADS1x15")
+	if upgrade_db:
+		print "Upgrading database..."
+		version_key = conf["constants"]["db_schema"]["version"]
+		db.set_simple(version_key,"2.2")
 
 # main 
 def main():
 	# ensure it is run as root
 	if os.geteuid() != 0:
-	        exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+		exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
 	print "Welcome to myHouse Upgrade Utility"
 	print "-----------------------------------------"
 	# retrieve the version from the database
@@ -663,7 +663,7 @@ def main():
 	if version == "1.0": upgrade_2_0()
 	if version == "2.0": upgrade_2_1()
 	if version == "2.1": upgrade_2_2()
-        print "\n\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service"
+	print "\n\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service"
 
 # run main()
 main()

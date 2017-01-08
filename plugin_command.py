@@ -26,6 +26,6 @@ def cache_schema(sensor):
 
 # run a command
 def send(sensor,data):
-        # run the command in the script directory
-        command = "cd '"+conf["constants"]["base_dir"]+"'; "+data
+	# run the command in the script directory
+	command = "cd '"+conf["constants"]["base_dir"]+"'; "+data
 	utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])

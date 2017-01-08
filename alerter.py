@@ -30,14 +30,14 @@ def parse_image(sensor,data):
 			# detect something
 			text = result[0]
 			image = result[1]
-                        # save the image on disk
-                        image_utils.save_tmp_image("objects_detection",image)
+			# save the image on disk
+			image_utils.save_tmp_image("objects_detection",image)
 			# save a new image with the object highlighted into the sensor
-		        measures = []
+			measures = []
 			measure = {}
-		        measure["key"] = sensor["sensor_id"]
-		        measure["value"] = image
-		        measures.append(measure)
+			measure["key"] = sensor["sensor_id"]
+			measure["value"] = image
+			measures.append(measure)
 			sensors.store(sensor,measures)
 			# return the alert text
 			return [text]
@@ -45,8 +45,8 @@ def parse_image(sensor,data):
 	if "motion_detection" in sensor and len(data) >= 2:
 		result = image_utils.detect_movement(sensor,data,is_base64=True)
 		if result is not None:
-	                difference = result[0]
-	                image = result[1]
+			difference = result[0]
+			image = result[1]
 			if difference > 0: log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] motion detected: "+str(difference)+"%")
 			if difference > sensor["motion_detection"]["threshold"]:
 				# save the image on disk
@@ -56,8 +56,8 @@ def parse_image(sensor,data):
 
 # for a location parse the data and return the label
 def parse_position(data):
-        if len(data) != 1: return []
-        data = json.loads(data[0])
+	if len(data) != 1: return []
+	data = json.loads(data[0])
 	return [data["label"]]
 
 # for a calendar parse the data and return the value
@@ -70,10 +70,10 @@ def parse_calendar(data):
 	events = json.loads(data[1])
 	for event in events:
 		# generate the timestamp of start and end date
-                start_date = datetime.datetime.strptime(event["start_date"],"%Y-%m-%dT%H:%M:%S.000Z")
-                start_timestamp = utils.timezone(utils.timezone(int(time.mktime(start_date.timetuple()))))
-                end_date = datetime.datetime.strptime(event["end_date"],"%Y-%m-%dT%H:%M:%S.000Z")
-                end_timestamp = utils.timezone(utils.timezone(int(time.mktime(end_date.timetuple()))))
+		start_date = datetime.datetime.strptime(event["start_date"],"%Y-%m-%dT%H:%M:%S.000Z")
+		start_timestamp = utils.timezone(utils.timezone(int(time.mktime(start_date.timetuple()))))
+		end_date = datetime.datetime.strptime(event["end_date"],"%Y-%m-%dT%H:%M:%S.000Z")
+		end_timestamp = utils.timezone(utils.timezone(int(time.mktime(end_date.timetuple()))))
 		now = utils.now()
 		# check if we are within an event
 		if now > start_timestamp and now < end_timestamp: return [event["text"]]
@@ -106,12 +106,12 @@ def get_data(sensor,request):
 		data = query(key,start=start,end=end,withscores=True)
 		time_diff = (utils.now() - data[0][0])/60
 		return [time_diff]
-        if trasform is not None and trasform == "timestamp":
-                # retrieve the timestamp 
-                data = query(key,start=start,end=end,withscores=True)
-                return [data[0][0]]
-        elif trasform is not None and trasform == "distance":
-                # calculate the distance between the point and our location
+	if trasform is not None and trasform == "timestamp":
+		# retrieve the timestamp 
+		data = query(key,start=start,end=end,withscores=True)
+		return [data[0][0]]
+	elif trasform is not None and trasform == "distance":
+		# calculate the distance between the point and our location
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 		data = json.loads(data[0])
 		distance = utils.distance([data["latitude"],data["longitude"]],[conf["general"]["latitude"],conf["general"]["longitude"]])
@@ -162,7 +162,7 @@ def run(module_id,rule_id,notify=True):
 		for rule_template in module["rules"]:
 			if not rule_template["enabled"]: continue
 			# retrive the rule for the given rule_id
-	        	if rule_template["rule_id"] != rule_id: continue
+			if rule_template["rule_id"] != rule_id: continue
 			# for each variable (if provided) run a different evaluation
 			variables = [""]
 			variable_sensor = None
@@ -173,7 +173,7 @@ def run(module_id,rule_id,notify=True):
 					variable_sensor = utils.get_sensor_string(variable)
 					if variable_sensor is None:
 						log.error("invalid variable sensor "+variable)
-                                                continue
+						continue
 				# restore the template
 				rule = copy.deepcopy(rule_template)
 				# for each definition retrieve the data
@@ -188,13 +188,13 @@ def run(module_id,rule_id,notify=True):
 						key = split[0]
 						start = split[1]
 						end = split[2]
-			                        sensor = utils.get_sensor_string(key)
-			                        if sensor is None:
-			                        	log.error("invalid sensor "+key)
+						sensor = utils.get_sensor_string(key)
+						if sensor is None:
+							log.error("invalid sensor "+key)
 							valid_data = False
-			                                break
-	        				sensors.init_plugins()
-		                                sensor = sensors.init_sensor(sensor)
+							break
+						sensors.init_plugins()
+						sensor = sensors.init_sensor(sensor)
 						# retrieve and store the data
 						definitions[definition] = get_data(sensor,rule["definitions"][definition])
 						if len(definitions[definition]) == 0: 
@@ -232,8 +232,8 @@ def run(module_id,rule_id,notify=True):
 					# add the suffix
 					if is_sensor(rule["definitions"][definition]) and "elapsed" in rule["definitions"][definition]: 
 						value = str(value)+" minutes"
-                                       	if is_sensor(rule["definitions"][definition]) and "timestamp" in rule["definitions"][definition]:
-                                                value = utils.timestamp2date(value)
+					if is_sensor(rule["definitions"][definition]) and "timestamp" in rule["definitions"][definition]:
+						value = utils.timestamp2date(value)
 					if is_sensor(rule["definitions"][definition]) and "distance" in rule["definitions"][definition]:
 						if conf["general"]["units"]["imperial"]: value = str(value)+" miles"
 						else: value = str(value)+" km"
@@ -249,10 +249,10 @@ def run(module_id,rule_id,notify=True):
 							action = action.replace("%"+definition+"%",str(value))
 						# parse the action
 						split = action.split(',')
-					        what = split[0]
-					        key = split[1]
-					        value = split[2]
-					        force = True if len(split) > 3 and split[3] == "force" else False
+						what = split[0]
+						key = split[1]
+						value = split[2]
+						force = True if len(split) > 3 and split[3] == "force" else False
 						ifnotexists = True if len(split) > 3 and split[3] == "ifnotexists" else False
 						# ensure the target sensor exists
 						sensor = utils.get_sensor_string(key)
@@ -269,32 +269,32 @@ def run(module_id,rule_id,notify=True):
 					if rule["severity"] != "debug":
 						db.set(conf["constants"]["db_schema"]["alerts"]+":"+rule["severity"],alert_text,utils.now())
 						output.notify(rule["severity"],alert_text)
-        except Exception,e:
-                log.warning("error while running rule "+module_id+":"+rule_id+": "+utils.get_exception(e))
+	except Exception,e:
+		log.warning("error while running rule "+module_id+":"+rule_id+": "+utils.get_exception(e))
 	return alert_text
 
 
 # purge old data from the database
 def expire():
-        total = 0
-        for stat in [':alert',':warning',':info']:
-                key = conf["constants"]["db_schema"]["alerts"]+stat
-                if db.exists(key):
-                        deleted = db.deletebyscore(key,"-inf",utils.now()-conf["alerter"]["data_expire_days"]*conf["constants"]["1_day"])
-                        log.debug("expiring from "+stat+" "+str(total)+" items")
-                        total = total + deleted
-        log.info("expired "+str(total)+" items")
+	total = 0
+	for stat in [':alert',':warning',':info']:
+		key = conf["constants"]["db_schema"]["alerts"]+stat
+		if db.exists(key):
+			deleted = db.deletebyscore(key,"-inf",utils.now()-conf["alerter"]["data_expire_days"]*conf["constants"]["1_day"])
+			log.debug("expiring from "+stat+" "+str(total)+" items")
+			total = total + deleted
+	log.info("expired "+str(total)+" items")
 		
 # run the given schedule
 def run_schedule(run_every):
 	# for each module
 	log.debug("evaluate all the rules configured to run every "+run_every)
-        for module in conf["modules"]:
-                if not module["enabled"]: continue
-                if "rules" not in module: continue
-                # for each configured rule
-                for rule in module["rules"]:
-                        if not rule["enabled"]: continue
+	for module in conf["modules"]:
+		if not module["enabled"]: continue
+		if "rules" not in module: continue
+		# for each configured rule
+		for rule in module["rules"]:
+			if not rule["enabled"]: continue
 			if rule["run_every"] != run_every: continue
 			# if the rule has the given run_every, run it
 			run(module["module_id"],rule["rule_id"])
@@ -303,7 +303,7 @@ def run_schedule(run_every):
 def schedule_all():
 	log.info("starting alerter module...")
 	# run now startup rules
-        schedule.add_job(run_schedule,'date',run_date=datetime.datetime.now(),args=["startup"])
+	schedule.add_job(run_schedule,'date',run_date=datetime.datetime.now(),args=["startup"])
 	# schedule minute, hourly and daily jobs
 	schedule.add_job(run_schedule,'cron',second="30",args=["minute"])
 	schedule.add_job(run_schedule,'cron',minute="*/5",args=["5 minutes"])
@@ -323,12 +323,12 @@ def data_get_alerts(severity,timeframe):
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
-        if len(sys.argv) != 3:
-                # no arguments provided, schedule all alerts
-                schedule.start()
-                schedule_all()
-                while True:
-                        time.sleep(1)
-        else:
-                # <module_id> <rule_id>
-                run(sys.argv[1],sys.argv[2])
+	if len(sys.argv) != 3:
+		# no arguments provided, schedule all alerts
+		schedule.start()
+		schedule_all()
+		while True:
+			time.sleep(1)
+	else:
+		# <module_id> <rule_id>
+		run(sys.argv[1],sys.argv[2])

@@ -17,12 +17,12 @@ import audio
 # run all the input services
 def run():
 	# schedule module summary report
-        for module in conf["modules"]:
+	for module in conf["modules"]:
 		if not module["enabled"]: continue
 		if "daily_digest" not in module: continue
-                if module["daily_digest"]:
-                        schedule.add_job(smtp.module_digest,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
-                        log.info("["+module['module_id']+"] scheduling daily module digest")
+		if module["daily_digest"]:
+			schedule.add_job(smtp.module_digest,'cron',hour="23",minute="55",second=utils.randint(1,59),args=[module["module_id"]])
+			log.info("["+module['module_id']+"] scheduling daily module digest")
 	# schedule alert summary report
 	if conf["output"]["email"]["alerts_digest"]: 
 		log.info("scheduling daily alert digest")
@@ -35,6 +35,6 @@ def run():
 # main
 if __name__ == '__main__':
 	schedule.start()
-        run()
-       	while True:
-               	time.sleep(1)
+	run()
+	while True:
+		time.sleep(1)

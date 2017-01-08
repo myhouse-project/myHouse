@@ -39,11 +39,11 @@ def parse(sensor,data):
 
 # return the plugin request type
 def get_request_type(request):
-        if request == "alerts": return "forecast"
+	if request == "alerts": return "forecast"
 
 # return the cache schema
 def cache_schema(sensor):
-        location = str(conf["general"]["latitude"])+","+str(conf["general"]["longitude"])
-        if "location" in sensor["plugin"]: location = sensor["plugin"]["location"]
+	location = str(conf["general"]["latitude"])+","+str(conf["general"]["longitude"])
+	if "location" in sensor["plugin"]: location = sensor["plugin"]["location"]
 	location = location.replace(',','/')
 	return location+"_"+get_request_type(sensor['plugin']['measure'])

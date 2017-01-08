@@ -23,7 +23,7 @@ if conf["gui"]["compress"]: Compress(app)
 # render index if no page name is provided
 @app.route('/')
 def root():
-        return render_template(conf["constants"]["web_template"])
+	return render_template(conf["constants"]["web_template"])
 
 # return favicon
 @app.route('/favicon.ico')
@@ -33,7 +33,7 @@ def favicon():
 # static folder (web)
 @app.route('/web/<path:filename>')
 def static_page(filename):
-        return send_from_directory(conf["constants"]["web_dir"], filename)
+	return send_from_directory(conf["constants"]["web_dir"], filename)
 
 # return the json config
 @app.route('/config')
@@ -71,12 +71,12 @@ def sensor_get_current(module_id,group_id,sensor_id):
 @app.route('/<module_id>/<group_id>/<sensor_id>/image')
 def sensor_get_current_image(module_id,group_id,sensor_id):
 	night_day = True if request.args.get('night_day') else False
-        return sensors.data_get_current_image(module_id,group_id,sensor_id,night_day)
+	return sensors.data_get_current_image(module_id,group_id,sensor_id,night_day)
 
 # return the time difference between now and the latest measure
 @app.route('/<module_id>/<group_id>/<sensor_id>/timestamp')
 def sensor_get_current_timestamp(module_id,group_id,sensor_id):
-        return sensors.data_get_current_timestamp(module_id,group_id,sensor_id)
+	return sensors.data_get_current_timestamp(module_id,group_id,sensor_id)
 
 # return the data of a requested sensor based on the timeframe and stat requested
 @app.route('/<module_id>/<group_id>/<sensor_id>/<timeframe>/<stat>')
@@ -87,18 +87,18 @@ def sensor_get_data(module_id,group_id,sensor_id,timeframe,stat):
 @app.route('/<module_id>/<group_id>/<sensor_id>/set/<value>',methods = ['GET', 'POST'])
 def sensor_set(module_id,group_id,sensor_id,value):
 	if request.method == 'POST': value = request.form["value"]
-        return sensors.data_set(module_id,group_id,sensor_id,value)
+	return sensors.data_set(module_id,group_id,sensor_id,value)
 
 # send a message to a sensor
 @app.route('/<module_id>/<group_id>/<sensor_id>/send/<value>')
 def sensor_send(module_id,group_id,sensor_id,value):
 	force = True if request.args.get('force') else False
-        return sensors.data_send(module_id,group_id,sensor_id,value,force=force)
+	return sensors.data_send(module_id,group_id,sensor_id,value,force=force)
 
 # read or save the measure of a given sensor
 @app.route('/<module_id>/<group_id>/<sensor_id>/run/<action>')
 def sensor_run(module_id,group_id,sensor_id,action):
-        return sensors.data_run(module_id,group_id,sensor_id,action)
+	return sensors.data_run(module_id,group_id,sensor_id,action)
 
 # return the alerts
 @app.route('/alerts/<severity>/<timeframe>')
@@ -130,9 +130,9 @@ def run():
 	web_logger.addHandler(logger.get_file_logger(logger_name))
 	# run the application
 	log.info("Starting web server on port "+str(conf["gui"]["port"]))
-        app.run(debug=True, use_reloader=conf["constants"]["web_use_reloader"], host='0.0.0.0',port=conf["gui"]["port"])
+	app.run(debug=True, use_reloader=conf["constants"]["web_use_reloader"], host='0.0.0.0',port=conf["gui"]["port"])
 
 # run the main web app
 if __name__ == '__main__':
-        run()
+	run()
 

@@ -17,8 +17,8 @@ current_index = 1
 # return a cv2 image object from a binary image
 def import_image(data,is_base64=False):
 	if is_base64: data = base64.b64decode(data)
-        image = numpy.asarray(bytearray(data), dtype="uint8")
-        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+	image = numpy.asarray(bytearray(data), dtype="uint8")
+	image = cv2.imdecode(image, cv2.IMREAD_COLOR)
 	return image
 
 # return a binary image from a cv2 object
@@ -32,8 +32,8 @@ def export_image(image,is_base64=False):
 def normalize(image,hist=True,blur=False):
 	if image is None: return image
 	normalized = image
-        normalized = cv2.cvtColor(normalized, cv2.COLOR_BGR2GRAY)
-        if hist: normalized = cv2.equalizeHist(normalized)
+	normalized = cv2.cvtColor(normalized, cv2.COLOR_BGR2GRAY)
+	if hist: normalized = cv2.equalizeHist(normalized)
 	if blur: normalied = cv2.GaussianBlur(normalized, (21, 21), 0)
 	return normalized
 
@@ -73,29 +73,29 @@ def detect_objects(sensor,image,is_base64=False):
 	# normalize the image
 	normalized = normalize(image)
 	# for each detection feature
-        for feature in sensor["object_detection"]:
+	for feature in sensor["object_detection"]:
 		# load the cascade file
-                filename = conf["constants"]["base_dir"]+"/"+feature["filename"]
-                if not utils.file_exists(filename):
-                        log.error("Unable to load the detection object XML at "+filename)
-                        return None
-                cascade = cv2.CascadeClassifier(filename)
-                # perform the detection
-                objects = cascade.detectMultiScale(
-                        normalized,
-                        scaleFactor=feature["scale_factor"],
-                        minNeighbors=feature["min_neighbors"],
-                        minSize=(feature["min_size"],feature["min_size"]),
-                        maxSize=(feature["max_size"],feature["max_size"]),
-                        flags = cv2.cv.CV_HAAR_SCALE_IMAGE
-                )
-                # nothing found, go to the next object
-                if len(objects) == 0: continue
-                # return the number of objects detected
-                else:
+		filename = conf["constants"]["base_dir"]+"/"+feature["filename"]
+		if not utils.file_exists(filename):
+			log.error("Unable to load the detection object XML at "+filename)
+			return None
+		cascade = cv2.CascadeClassifier(filename)
+		# perform the detection
+		objects = cascade.detectMultiScale(
+			normalized,
+			scaleFactor=feature["scale_factor"],
+			minNeighbors=feature["min_neighbors"],
+			minSize=(feature["min_size"],feature["min_size"]),
+			maxSize=(feature["max_size"],feature["max_size"]),
+			flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+		)
+		# nothing found, go to the next object
+		if len(objects) == 0: continue
+		# return the number of objects detected
+		else:
 			# found draw a rectangle around each object
 			for (x, y, w, h) in objects:
-                        	cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+				cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 			# prepare the alert text
 			text = str(len(objects))+" "+utils.lang(feature["display_name"])
 			# prepare the image

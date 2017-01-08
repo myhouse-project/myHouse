@@ -33,14 +33,14 @@ def register(sensor):
 		log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] pin "+str(pin)+" already registered, skipping")
 		return
 	pins[pin] = sensor
-        # set pull up / down resistor
+	# set pull up / down resistor
 	pull_up_down = None
-        if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "up": pull_up_down = GPIO.PUD_UP
-        if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "down": pull_up_down = GPIO.PUD_DOWN
-        # setup the channel
-        GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
-        # add callbacks
-        edge_detect = sensor["plugin"]["edge_detect"]
+	if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "up": pull_up_down = GPIO.PUD_UP
+	if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "down": pull_up_down = GPIO.PUD_DOWN
+	# setup the channel
+	GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
+	# add callbacks
+	edge_detect = sensor["plugin"]["edge_detect"]
 	if edge_detect == "rising": GPIO.add_event_detect(pin, GPIO.RISING, callback=event_callback)
 	elif edge_detect == "falling": GPIO.add_event_detect(pin, GPIO.FALLING, callback=event_callback)
 	elif edge_detect == "both": GPIO.add_event_detect(pin, GPIO.BOTH, callback=event_callback)
@@ -81,11 +81,11 @@ def parse(sensor,data):
 
 # return the cache schema
 def cache_schema(sensor):
-        return str(sensor["plugin"]["pin"])
+	return str(sensor["plugin"]["pin"])
 
 # send a message to the sensor
 def send(sensor,data):
-        if not plugin_conf["enabled"]: return
+	if not plugin_conf["enabled"]: return
 	data = int(data)
 	if data != 0 and data != 1: 
 		log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] cannot send data: "+str(data))

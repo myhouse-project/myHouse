@@ -14,12 +14,12 @@ config = None
 # return all the configuration settings as an object
 def get_config(validate=True):
 	# load the configuration from the file
-        load(validate)
-        return config
+	load(validate)
+	return config
 
 # return all the configuration settings as a json object
 def get_json_config(validate=True):
-        return json.dumps(get_config(validate), default=lambda o: o.__dict__)
+	return json.dumps(get_config(validate), default=lambda o: o.__dict__)
 
 # reload the configuration
 def reload(validate=True): 
@@ -30,31 +30,31 @@ def reload(validate=True):
 def load(validate):
 	# if the config is already loaded return
 	global config
-        if config is not None: return
+	if config is not None: return
 	# load the constants
-        const = constants.get_constants()
-        # define the location of the configuration file
+	const = constants.get_constants()
+	# define the location of the configuration file
 	config_file_location = const['config_file'] if os.path.isfile(const['config_file']) else const['config_file_default']
 	# open the config file and load it
-        with open(config_file_location, 'r') as file:
-                config_file_content = file.read()
+	with open(config_file_location, 'r') as file:
+		config_file_content = file.read()
 	file.close()
 	config = json.loads(config_file_content, object_pairs_hook=OrderedDict)
-        # store the raw configuration into a variable
-        config["config_json"] = config_file_content
+	# store the raw configuration into a variable
+	config["config_json"] = config_file_content
 	# load config schema
-        with open(const['config_file_schema'], 'r') as file:
-                const['config_schema_json'] = file.read()
-        file.close()
-        # adapt the units if needed
+	with open(const['config_file_schema'], 'r') as file:
+		const['config_schema_json'] = file.read()
+	file.close()
+	# adapt the units if needed
 	if "general" in config:
-	        if config["general"]["units"]["imperial"]:
-	                const["formats"]["length"]["suffix"] = "in"
-	                const["formats"]["length"]["formatter"] = "float_2"
-	                const["formats"]["speed"]["suffix"] = "m/h"
-	        if config["general"]["units"]["fahrenheit"]:
-	                const["formats"]["temperature"]["suffix"] = u'\u00B0F'
-	                const["formats"]["temperature"]["formatter"] = "int"
+		if config["general"]["units"]["imperial"]:
+			const["formats"]["length"]["suffix"] = "in"
+			const["formats"]["length"]["formatter"] = "float_2"
+			const["formats"]["speed"]["suffix"] = "m/h"
+		if config["general"]["units"]["fahrenheit"]:
+			const["formats"]["temperature"]["suffix"] = u'\u00B0F'
+			const["formats"]["temperature"]["formatter"] = "int"
 	else: 
 		# probably this is the upgrade process
 		config["general"] = {}
@@ -62,8 +62,8 @@ def load(validate):
 		config["general"]["timeframes"]["realtime_hours"] = 0
 		config["general"]["timeframes"]["recent_hours"] = 0
 		config["general"]["timeframes"]["history_days"] = 0
-        # attach the constants
-        config['constants'] = const
+	# attach the constants
+	config['constants'] = const
 	# validate the configuration against the schema
 	if validate:
 		try:
@@ -76,17 +76,17 @@ def load(validate):
 def save(config_string):
 	const = constants.get_constants()
 	# validay the json file
-        try:
+	try:
 		new_config = json.loads(config_string, object_pairs_hook=OrderedDict)
-        except ValueError, e:
-                print "unable to save configuration, invalid JSON provided: "+config_string
-                return json.dumps("KO")
+	except ValueError, e:
+		print "unable to save configuration, invalid JSON provided: "+config_string
+		return json.dumps("KO")
 	# create a backup first
 	copyfile(const['config_file'],const['config_file_backup'])
 	# save the new config file
-        with open(const['config_file'],'w') as file:
-                file.write(json.dumps(new_config,indent=2))
-        file.close()
+	with open(const['config_file'],'w') as file:
+		file.write(json.dumps(new_config,indent=2))
+	file.close()
 	return json.dumps("OK")
 
 # main
