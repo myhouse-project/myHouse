@@ -15,6 +15,10 @@
 					"type": "number",
 					"description": "The longitude of the current location. Different plugins and services will use this as the default position"
 				},
+				"language": {
+					"type": "string",
+					"description": "The language to use. Each 'display_name' variable maps between this language and the actual text to use"
+				},
 				"timeframes": {
 					"type": "object",
 					"description": "Define common timeframes",
@@ -1028,9 +1032,10 @@
 						"description": "Section of the menu the module belongs to, must be the same as defined in gui/sections"
 					},
 					"display_name": {
-						"type": "string",
-						"description": "Name of the module"
-					},
+						"type": "object",
+						"description": "Name of the module (for each configured language)",
+						"minItems": 1
+					},					
 					"icon": {
 						"type": "string",
 						"description": "Fontawesome icon associated to the module (http://fontawesome.io/icons/)"
@@ -1063,8 +1068,9 @@
 										"description": "The ID of the widget, must be unique across all the modules"
 									},
 									"display_name": {
-										"type": "string",
-										"description": "The title to the widget"
+										"type": "object",
+										"description": "The title of the widget (for each configured language)",
+										"minItems": 1
 									},
 									"keywords": {
 										"type": "string",
@@ -1326,8 +1332,9 @@
 															"value": "button"
 														},
 														"display_name": {
-															"description": "The text to display on the button",
-															"type": "string"
+															"description": "The text to display on the button (for each configured language)",
+															"type": "object",
+															"minItems": 1
 														},
 														"send": {
 															"description": "A URL to call when the button is pressed to e.g. send a message to a sensor",
@@ -1399,8 +1406,9 @@
 															"value": "checkbox"
 														},
 														"display_name": {
-															"description": "An optional text to describe the purpose of the control",
-															"type": "string"
+															"description": "An optional text to describe the purpose of the control (for each configured language)",
+															"type": "object",
+															"minItems": 1
 														},
 														"sensor": {
 															"description": "The sensor to attach to the checkbox, in the format module_id:group_id:sensor_id",
@@ -1445,8 +1453,8 @@
 															"value": "input"
 														},
 														"display_name": {
-															"description": "An optional text to describe the purpose of the control",
-															"type": "string"
+															"description": "An optional text to describe the purpose of the control (for each configured language)",
+															"type": "object"
 														},
 														"sensor": {
 															"description": "The sensor in the format module_id:group_id:sensor_id",
@@ -1605,8 +1613,9 @@
 									}
 								},
 								"display_name": {
-									"type": "string",
-									"description": "The text of alert then the rule triggers"
+									"type": "object",
+									"description": "The text of alert then the rule triggers (for each configured language)",
+									"minItems": 1
 								},
 								"keywords": {
 									"type": "string",
@@ -1709,8 +1718,9 @@
 									"description": "The identifier of a sensor, must be unique within the group"
 								},
 								"display_name": {
-									"type": "string",
-									"description": "Name of the sensor"
+									"type": "object",
+									"description": "Name of the sensor (for each configured language)",
+									"minItems": 1
 								},
 								"plugin": {
 									"type": "object",
@@ -2457,8 +2467,9 @@
 										"title": "Image object detection feature",
 										"properties": {
 											"display_name": {
-												"type": "string",
-												"description": "The name of the object that will be used within the alert text"
+												"type": "object",
+												"description": "The name of the object that will be used within the alert text (for each configured language)",
+												"minItems": 1
 											},
 											"filename": {
 												"type": "string",
@@ -2497,8 +2508,9 @@
 									"description": "Configuration settings for detecting movements within images. Create a rule to detect movements, if the sensor does not return an empty text, motion has been identified. Ensure to have realtime_count set at lest to two to have a minimum of two images for the comparison",
 									"properties": {
 										"display_name": {
-											"type": "string",
-											"description": "The name of the movement that will be used within the alert text"
+											"type": "object",
+											"description": "The name of the movement that will be used within the alert text (for each configured language)",
+											"minItems": 1
 										},
 										"threshold": {
 											"type": "integer",

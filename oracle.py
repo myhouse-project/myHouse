@@ -33,6 +33,7 @@ def load_brain():
 	global not_understood
 	global prefix
 	global wait
+	filename = conf["constants"]["bot_brain_file"]+"_"+conf["general"]["language"]+".dict"
 	with open(conf["constants"]["bot_brain_file"], 'r') as file:
         	for line in file:
 			request,response  = line.rstrip().split("=>")
@@ -56,7 +57,7 @@ def learn_config(include_widgets):
 				# ignore rules with a condition
 				if len(rule["conditions"]) != 0: continue
 				# keywords are the rule display name and additional keywords if any
-				keywords = rule["display_name"]
+				keywords = utils.lang(rule["display_name"])
 				if "keywords" in rule: keywords = keywords+" "+rule["keywords"]
 				# user requesting for an alert
 				kb[cleanup.sub(' ',keywords).lower()] = "rule|"+module["module_id"]+"|"+rule["rule_id"]
@@ -72,7 +73,7 @@ def learn_config(include_widgets):
 						layout = widget["layout"][k]
 						# consider only the layouts we can generate a chart of
 						if layout["type"] == "image" or layout["type"] == "map" or layout["type"].startswith("chart_") or layout["type"].startswith("sensor_"):
-							keywords = widget["display_name"]
+							keywords = utils.lang(widget["display_name"])
 							if "keywords" in rule: keywords = keywords+" "+rule["keywords"]
 							# user requesting for a widget
 							kb[cleanup.sub(' ',keywords).lower()] = "chart|"+module["module_id"]+"|"+widget["widget_id"]

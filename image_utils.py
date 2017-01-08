@@ -96,7 +96,7 @@ def detect_objects(sensor,image,is_base64=False):
 			for (x, y, w, h) in objects:
                         	cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 			# prepare the alert text
-			text = str(len(objects))+" "+feature["display_name"]
+			text = str(len(objects))+" "+utils.lang(feature["display_name"])
 			# prepare the image
 			image = export_image(image,is_base64=is_base64)
 			return [text,image]

@@ -36,7 +36,7 @@ constants = {
 	'web_timeout': 20,
 	'command_timeout': 30,
 	'web_use_reloader': True,
-	'bot_brain_file': base_dir+"/bot.txt",
+	'bot_brain_file': base_dir+"/language",
 	'chart_extension': 'png',
 	'chart_short_height': 230,
 	'image_detection_save_on_disk': True,

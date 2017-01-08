@@ -7,3 +7,4 @@ logs/*
 tmp/*
 config.json
 config.bak
+language_it.dict
