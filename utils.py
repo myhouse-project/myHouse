@@ -318,5 +318,4 @@ def lang(display_name):
 	# return the text corresponding to the configured language
 	if language in display_name: return display_name[language]
 	log.warning("cannot find language "+language+" in "+str(display_name))
-	if len(display_name) == 0: return "N.A."
-	return display_name[list(display_name)[0]]
+	return "N.A."
