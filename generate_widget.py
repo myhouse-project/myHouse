@@ -75,7 +75,7 @@ def add_series(chart,url,sensor,series_index):
 	null_value = None
 	if "null_value" in series: null_value = series["null_value"]
 	# set the name and the id
-	series['name'] = sensor['display_name']+" "+sensor['series'][series_index]['series_id']
+	series['name'] = utils.lang(sensor['display_name'])+" "+sensor['series'][series_index]['series_id']
 	series['id'] = sensor['sensor_id']+":"+sensor['series'][series_index]['series_id']
 	# add the sensor suffix and tooltip
 	apply_format(series,sensor['format'])
@@ -119,14 +119,14 @@ def add_sensor_group_summary_chart(layout,widget):
 				if "type" in sensor["series"][j] and sensor["series"][j]["type"] == "flags": is_flag = True
 			if is_flag: continue
 		# add the sensor to the xAxis
-		chart['xAxis']['categories'].append(sensor["display_name"])
+		chart['xAxis']['categories'].append(utils.lang(sensor["display_name"]))
 		# apply the suffix to the today's series
 		chart["series"][1]["dataLabels"]["format"] = '{y}'+conf['constants']['formats'][sensor["format"]]['suffix']
 		# add the point for yesterday's range
 		add_point(chart,sensor_url+"/yesterday/range",0,i);
 		# add the point for today's range
 		add_point(chart,sensor_url+"/today/range",1,i);
-	chart['title']['text'] = widget["display_name"]
+	chart['title']['text'] = utils.lang(widget["display_name"])
 	generate_chart(chart,widget["widget_id"])
 
 # add a sensor timeline widget
@@ -158,7 +158,7 @@ def add_sensor_group_timeline_chart(layout,widget):
 			timeframe = "short_history" if layout["timeframe"] == "history" else layout["timeframe"]
 			# add the series to the chart
 			add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,j)
-	chart['title']['text'] = widget["display_name"]
+	chart['title']['text'] = utils.lang(widget["display_name"])
         generate_chart(chart,widget["widget_id"])
 
 # add a generic sensor chart widget
@@ -177,7 +177,7 @@ def add_sensor_chart(layout,widget):
                 # reduce the history timeframe for email notifications
 		timeframe = "short_history" if layout["timeframe"] == "history" else layout["timeframe"]
 		add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,i)
-	chart['title']['text'] = widget["display_name"]
+	chart['title']['text'] = utils.lang(widget["display_name"])
         generate_chart(chart,widget["widget_id"])
 
 # add an image widget

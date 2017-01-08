@@ -51,7 +51,7 @@ def parse_image(sensor,data):
 			if difference > sensor["motion_detection"]["threshold"]:
 				# save the image on disk
 				image_utils.save_tmp_image("motion_detection",image)
-				return [sensor["motion_detection"]["display_name"]+" ("+str(motion_detection)+"%)"]
+				return [utils.lang(utils.lang(sensor["motion_detection"]["display_name"]))+" ("+str(motion_detection)+"%)"]
 	return [""]		
 
 # for a location parse the data and return the label
@@ -219,9 +219,9 @@ def run(module_id,rule_id,notify=True):
 				# evaluate the conditions
 				if not evaluation: continue
 				# alert has triggered, prepare the alert text
-				alert_text = rule["display_name"]
+				alert_text = utils.lang(rule["display_name"])
 				# replace the variable if needed
-				if variable_sensor is not None: alert_text = alert_text.replace("%i%",variable_sensor["display_name"])
+				if variable_sensor is not None: alert_text = alert_text.replace("%i%",utils.lang(variable_sensor["display_name"]))
 				# replace the definitions placeholders
 				for definition in rule["definitions"]:
 					value = definitions[definition][0] if isinstance(definitions[definition],list) else definitions[definition]

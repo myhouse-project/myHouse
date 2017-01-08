@@ -327,8 +327,8 @@ th.dt-center, td.dt-center { text-align: center; }
 				var module = conf['modules'][j];
 				if (! module["enabled"]) continue;
 				if (module["section_id"] != section_id) continue;
-				log("info","adding menu item "+module['display_name']);
-				$("#menu").append('<li id="menu_item_'+module["module_id"]+'"><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(module['display_name'])+'</span></a></li>');
+				log("info","adding menu item "+lang(module['display_name']));
+				$("#menu").append('<li id="menu_item_'+module["module_id"]+'"><a href="#'+module['module_id']+'"> <i class="fa '+module['icon']+'"></i> <span>'+capitalizeFirst(lang(module['display_name']))+'</span></a></li>');
 				// close the menu on click on mobile devices
 				$("#menu_item_"+module["module_id"]).click(function(){
 					if ($("body").hasClass('sidebar-open')) $("body").removeClass('sidebar-open').removeClass('sidebar-collapse').trigger('collapsed.pushMenu');
@@ -386,7 +386,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	function load_widgets(module_id) {
 		$("#body").append('<div id="widgets"></div>');
 		var module = get_module(module_id);
-		$("#title").text(module["display_name"]);
+		$("#title").text(lang(module["display_name"]));
 		if (module == null) return;
 		if (! ('widgets' in module)) return;
 		for (var i = 0; i < module["widgets"].length; i++) {
@@ -402,7 +402,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				tag = "#"+widget["widget_id"];
 				var offset = 0;
 				if ("offset" in widget) offset = widget["offset"]
-				$("#"+row).append(get_widget_template(tag,widget["display_name"],widget["size"],offset));
+				$("#"+row).append(get_widget_template(tag,lang(widget["display_name"]),widget["size"],offset));
 				// load the widget
 				load_widget(tag,widget)
 				// configure the refresh button
@@ -418,7 +418,7 @@ th.dt-center, td.dt-center { text-align: center; }
 					return function () {
 						// clear the widget and load it
 						$("#popup_body").html("");
-						$("#popup_title").html(widget["display_name"]);
+						$("#popup_title").html(lang(widget["display_name"]));
 						load_widget("#popup_body",widget)
 						$("#popup").modal()
 					};
@@ -500,7 +500,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				if (is_flag) continue;
 			}
 			// add the sensor to the xAxis
-			chart['xAxis'][0]['categories'].push(sensor["display_name"]);
+			chart['xAxis'][0]['categories'].push(lang(sensor["display_name"]));
 			// apply the suffix to the today's series
 			chart.series[1].update({"dataLabels":{"enabled": true,"format":'{y}'+conf['constants']['formats'][sensor["format"]]['suffix']}});
 			// add the point for yesterday's range
@@ -885,7 +885,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	function add_button(body,tag,layout) {
 		tag = tag.replace("#","")
 		// define the button
-		input_html = '<div class="input-group"><button type="button" class="btn btn-primary btn-lg" id="'+tag+'_input">'+layout["display_name"]+'</button></div>'
+		input_html = '<div class="input-group"><button type="button" class="btn btn-primary btn-lg" id="'+tag+'_input">'+lang(layout["display_name"])+'</button></div>'
 		tag = "#"+tag
 		// add it to the page
 		$(body).append(input_html);
@@ -915,7 +915,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		input_html = '<div class="input-group input-group-lg"><input style="text-align:center;" id="'+tag+'_input" class="form-control input-lg" type="text" value=""></div>'
 		tag = "#"+tag
 		// add the label
-		if ("display_name" in layout) $(body).append('<div class="text-center">'+layout["display_name"]+'</div>');
+		if ("display_name" in layout) $(body).append('<div class="text-center">'+lang(layout["display_name"])+'</div>');
 		// add the HTML of the requested input
 		if (type == "input") {
 			// add the input box
@@ -1195,7 +1195,7 @@ th.dt-center, td.dt-center { text-align: center; }
 					var null_value = null;
 					if ("null_value" in series) null_value = series["null_value"]
 					// set the name and the id
-					series['name'] = sensor['display_name']+" "+sensor['series'][series_index]['series_id'];
+					series['name'] = lang(sensor['display_name'])+" "+sensor['series'][series_index]['series_id'];
 					series['id'] = sensor['sensor_id']+":"+sensor['series'][series_index]['series_id'];
 					// add the sensor suffix and tooltip
 					apply_format(series,sensor['format']);
@@ -1392,6 +1392,17 @@ th.dt-center, td.dt-center { text-align: center; }
 		});
 		// apply the new skin
 		$("body").addClass("skin-"+skin);
+	}
+	
+	// # return the text for the configured language
+	function lang(display_name){
+        language = conf["general"]["language"]
+        // return the text corresponding to the configured language
+        if (language in display_name) return display_name[language]
+		log("warning","cannot find language "+language+" in "+display_name)
+        if (display_name.length == 0) return "N.A."
+		for (var first in display_name) break
+		return first
 	}
 	
 	</script>

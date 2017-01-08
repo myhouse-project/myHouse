@@ -76,7 +76,7 @@ def module_digest(module_id):
 	if module is None: return
 	if run_generate_widget: widgets = generate_widget.run(module_id,generate_widget=run_generate_widget)
 	date = datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(1),'(%B %e, %Y)')
-	title = module['display_name']+" Report "+date
+	title = utils.lang(module['display_name'])+" "+date
 	template = get_email_body(title)
 	if 'widgets' not in module: return
 	# for each widget
