@@ -64,7 +64,7 @@ def init_plugins():
 # start the plugin service
 def start_plugins():
 	for name,plugin in plugins.iteritems():
-                if hasattr(plugin, 'run'):
+                if hasattr(plugin, 'run') and conf["plugins"][name]["enabled"]:
                         log.info("starting plugin service "+name)
                         schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
 

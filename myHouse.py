@@ -30,7 +30,7 @@ def run():
 	# schedule all alerts
 	if conf['alerter']['enabled']: alerter.schedule_all()
         # run all input services
-        input.run()
+	input.run()
 	# start the web server
 	if conf['gui']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())
 	# run the pws service
