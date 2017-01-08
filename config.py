@@ -47,13 +47,21 @@ def load(validate):
                 const['config_schema_json'] = file.read()
         file.close()
         # adapt the units if needed
-        if config["general"]["units"]["imperial"]:
-                const["formats"]["length"]["suffix"] = "in"
-                const["formats"]["length"]["formatter"] = "float_2"
-                const["formats"]["speed"]["suffix"] = "m/h"
-        if config["general"]["units"]["fahrenheit"]:
-                const["formats"]["temperature"]["suffix"] = u'\u00B0F'
-                const["formats"]["temperature"]["formatter"] = "int"
+	if "general" in config:
+	        if config["general"]["units"]["imperial"]:
+	                const["formats"]["length"]["suffix"] = "in"
+	                const["formats"]["length"]["formatter"] = "float_2"
+	                const["formats"]["speed"]["suffix"] = "m/h"
+	        if config["general"]["units"]["fahrenheit"]:
+	                const["formats"]["temperature"]["suffix"] = u'\u00B0F'
+	                const["formats"]["temperature"]["formatter"] = "int"
+	else: 
+		# probably this is the upgrade process
+		config["general"] = {}
+		config["general"]["timeframes"]= {}
+		config["general"]["timeframes"]["realtime_hours"] = 0
+		config["general"]["timeframes"]["recent_hours"] = 0
+		config["general"]["timeframes"]["history_days"] = 0
         # attach the constants
         config['constants'] = const
 	# validate the configuration against the schema

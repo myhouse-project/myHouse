@@ -8,7 +8,7 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 
-plugin_conf = conf['plugins']['mqtt']
+if 'mqtt' in conf['plugins']: plugin_conf = conf['plugins']['mqtt']
 topics = {}
 
 # register a new sensor against this plugin

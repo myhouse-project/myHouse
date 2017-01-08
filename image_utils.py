@@ -62,7 +62,7 @@ def detect_movement(sensor,images,is_base64=False):
 			max = percentage
 			index = i
 	if index is None: return None
-	return [max,images[i]]
+	return [max,images[index]]
 
 # detect objects in a given image
 def detect_objects(sensor,image,is_base64=False):

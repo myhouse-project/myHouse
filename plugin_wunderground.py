@@ -32,6 +32,10 @@ def parse(sensor,data):
 	measure["key"] = sensor["sensor_id"]
 	# parse the json
 	parsed_json = json.loads(data)
+	if "error" in parsed_json:
+		# error returned
+		log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] "+parsed_json["error"]["type"]+": "+parsed_json["error"]["description"])
+		return None
 	if request == "temperature": 
 		measure["value"] = float(parsed_json['current_observation']['temp_c'])
 		measure["timestamp"] = utils.timezone(int(parsed_json['current_observation']['observation_epoch']))
