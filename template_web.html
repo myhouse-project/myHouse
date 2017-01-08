@@ -201,7 +201,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			<div class="pull-right hidden-xs">
 				<b>Version</b> <span id="version"></span>
 			</div>
-			<strong>Copyright &copy; 2016 <a href="http://my-house.sourceforge.net" target="_new">myHouse</a>.
+			<strong>Copyright &copy; 2017 <a href="http://my-house.sourceforge.net" target="_new">myHouse</a>.
 			</strong> All rights reserved.
 		</footer>
 		
@@ -577,7 +577,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		if (sensor == null) return;
 		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// add the image to the layout
-		$(tag).html('<img class="img-responsive" src="'+sensor_url+"/current"+'" />');
+		$(tag).html('<img class="img-responsive" src="'+sensor_url+'/current'+'?timestamp='+Date.now()+'" />');
 	}
 	
 	// add a map widget
@@ -1400,9 +1400,7 @@ th.dt-center, td.dt-center { text-align: center; }
         // return the text corresponding to the configured language
         if (language in display_name) return display_name[language]
 		log("warning","cannot find language "+language+" in "+display_name)
-        if (display_name.length == 0) return "N.A."
-		for (var first in display_name) break
-		return first
+        return "N.A."
 	}
 	
 	</script>

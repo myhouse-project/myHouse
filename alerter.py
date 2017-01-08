@@ -51,7 +51,7 @@ def parse_image(sensor,data):
 			if difference > sensor["motion_detection"]["threshold"]:
 				# save the image on disk
 				image_utils.save_tmp_image("motion_detection",image)
-				return [utils.lang(utils.lang(sensor["motion_detection"]["display_name"]))+" ("+str(motion_detection)+"%)"]
+				return [utils.lang(sensor["motion_detection"]["display_name"])+" ("+str(difference)+"%)"]
 	return [""]		
 
 # for a location parse the data and return the label

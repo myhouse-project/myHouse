@@ -64,7 +64,7 @@ commands = {
                 'command_parse': ''
 	},
         'shutdown': {
-                'command_poll': 'shutdown',
+                'command_poll': 'shutdown -h now',
                 'command_parse': ''
         },
 	'application_logs': {

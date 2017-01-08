@@ -160,8 +160,8 @@ def upgrade_2_0():
 def upgrade_2_1():
 	# CONFIGURATION
 	upgrade_db = True
-	upgrade_conf = False
-	upgrade_service = True
+	upgrade_conf = True
+	upgrade_service = False
 	# END
 	conf = config.get_config(validate=False)
 	print "[Migration from v2.0 to v2.1]\n"
@@ -240,6 +240,7 @@ def upgrade_2_1():
 			file.write(filedata)
 		# delete the old main.py
 		utils.run_command("rm -f "+conf["constants"]["base_dir"]+"/main.py")
+	print "\n\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to ensure there are no errors before restarting the service"
 
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
@@ -250,7 +251,7 @@ def upgrade_2_2():
 	# END
         conf = config.get_config(validate=False)
         print "[Migration from v2.1 to v2.2]\n"
-#        backup("2.1")
+        backup("2.1")
         if upgrade_conf:
                 print "Upgrading configuration file..."
 		new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
@@ -284,6 +285,9 @@ def upgrade_2_2():
 		new["general"]["latitude"] = 0
 		new["general"]["longitude"] = 0
 		print "\tWARNING: different plugins use the new 'latitude' and 'longitude' in 'general', customize them"
+		# add language
+		new["general"]["language"] = "en"
+		print "\tINFO: multiple languages are now supported. Define your language in 'general' and create your aliases for each 'display_name'"
 		# move units and timeframe under general
 		new["general"]["units"] = conf["units"]
 		del new["units"]
@@ -297,42 +301,52 @@ def upgrade_2_2():
 		power =  {
 		      "module_id": "power",
 		      "section_id": "System",
-		      "display_name": "Reboot/Shutdown",
+		      "display_name": {
+	                "en": "Reboot/Shutdown",
+	                },
 		      "icon": "fa-power-off",
 		      "enabled": True,
 		      "widgets": [
-        		[
+		        [
 		          {
 		            "widget_id": "reboot",
-		            "display_name": "Reboot the system",
+		            "display_name": {
+                                "en": "Reboot the system",
+                             },
 		            "enabled": True,
 		            "size": 4,
-		            "offset": 1,
+			    "offset": 1,
 		            "layout": [
 		              {
 		                "type": "button",
-		                "display_name": "Reboot",
-			        "send": "power/command/reboot/run/poll"
+                                "display_name": {
+                                        "en": "Reboot",
+                                },
+	                        "send": "power/command/reboot/run/save"
 		              }
 		            ]
-	                   },
-                           {
+          		  },
+          		  {
 		            "widget_id": "shutdown",
-		            "display_name": "Shutdown the system",
-		            "enabled": True,
+		            "display_name": {
+                                "en": "Shutdown the system",
+                            },
+		            "enabled": true,
 		            "size": 4,
-	                    "offset": 2,
+		            "offset": 2,
 		            "layout": [
 		              {
 		                "type": "button",
-                                "display_name": "Shutdown",
-                		"send": "power/command/shutdown/run/poll"
+                                "display_name": {
+                                        "en": "Shutdown",
+                                },
+		                "send": "power/command/shutdown/run/save"
 		              }
 		            ]
 		          }
 		        ]
 		      ],
-		      "sensors": [
+  	      	 	"sensors": [
 		        {
 	                  "module_id": "power",
 		          "group_id": "command",
@@ -343,7 +357,7 @@ def upgrade_2_2():
 		          },
 		          "format": "string",
 	                  "retention": {
-	                    "realtime_count": 1
+	                        "realtime_count": 1
 	                  }
 		        },
 		        {
@@ -358,9 +372,9 @@ def upgrade_2_2():
 	                  "retention": {
 	                        "realtime_count": 1
 	                  }
-		        }
+			}
 		      ]
-	    	}
+		}
 		new["modules"].append(power)
 		# add retention to sensors
 		new["sensors"]["retention"] = {}
@@ -465,6 +479,9 @@ def upgrade_2_2():
 		group_summary_exclude = {}
                 for module in new["modules"]:
 			module_id = module["module_id"]
+			if "display_name" in module:
+				display_name = {"en": module["display_name"]}
+				module["display_name"] = display_name
 			# add uptime rule
 			if module_id == "system":
 				uptime_rule = {
@@ -500,8 +517,16 @@ def upgrade_2_2():
                                 for i in range(len(module["widgets"])):
                                         for j in range(len(module["widgets"][i])):
                                                 widget = module["widgets"][i][j]
+						# update display_name
+			                        if "display_name" in widget:
+                        			        display_name = {"en": widget["display_name"]}
+			                                widget["display_name"] = display_name
                                                 for k in range(len(widget["layout"])):
                                                         layout = widget["layout"][k]
+        		                               # update display_name
+	                	                        if "display_name" in layout:
+		                                                display_name = {"en": layout["display_name"]}
+                		                                layout["display_name"] = display_name
 							# add tracking to map
 							if "type" in layout and layout["type"] == "map": 
 								layout["tracking"] = True
@@ -510,12 +535,20 @@ def upgrade_2_2():
 			if "rules" in module:
 				for i in range(len(module["rules"])):
 					rule = module["rules"][i]
+					# update display_name
+	                                if "display_name" in rule:
+                                        	display_name = {"en": rule["display_name"]}
+                                                rule["display_name"] = display_name
 					for a,b in rule["definitions"].iteritems():
 						# rename timestam in elapsed in rule definition
 						if not utils.is_number(b) and ",timestamp" in b: rule["definitions"][a] = b.replace(",timestamp",",elapsed")
                         if "sensors" in module:
                                 for i in range(len(module["sensors"])):
                                         sensor = module["sensors"][i]
+                                       # update display_name
+                                        if "display_name" in sensor:
+                                                display_name = {"en": sensor["display_name"]}
+                                                sensor["display_name"] = display_name
 					# add module_id to each sensor
 					sensor["module_id"] = module_id
 					# remove group_summary_exclude

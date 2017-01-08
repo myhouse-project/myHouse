@@ -34,7 +34,7 @@ def load_brain():
 	global prefix
 	global wait
 	filename = conf["constants"]["bot_brain_file"]+"_"+conf["general"]["language"]+".dict"
-	with open(conf["constants"]["bot_brain_file"], 'r') as file:
+	with open(filename, 'r') as file:
         	for line in file:
 			request,response  = line.rstrip().split("=>")
 			request = request.lower()
