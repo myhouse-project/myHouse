@@ -389,6 +389,8 @@ def upgrade_2_2():
 		# migrate notifications into output
 		new["output"]["email"] = conf["notifications"]["email"]
                 new["output"]["slack"] = conf["notifications"]["slack"]
+		# add email subject
+		new["output"]["email"]["subject"] = "Notification"
                 del new["notifications"]
 		# add sms notification
 		sms =  {

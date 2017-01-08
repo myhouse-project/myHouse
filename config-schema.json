@@ -441,6 +441,10 @@
 								"title": "E-mail recipient"
 							}
 						},
+						"subject": {
+							"type": "string",
+							"description": "The subject of the email notifications"
+						},
 						"alerts_digest": {
 							"type": "boolean",
 							"description": "Send a daily digest with yesterda's alerts"

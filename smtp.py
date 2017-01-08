@@ -109,7 +109,7 @@ def alerts_digest():
 # email realtime alert
 def notify(text):
         log.info("emailing alert "+text)
-        title = "Alert!"
+        title = conf["output"]["email"]["subject"]
         template = get_email_body(title)
 	template = template.replace("<!-- widgets -->",get_email_widget("Alert",text))
         # send the email
