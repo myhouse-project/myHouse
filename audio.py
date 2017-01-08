@@ -23,9 +23,9 @@ def notify(text):
 	if output_settings["engine"] == "picotts": 
 		# create the wav file
 		log.debug(utils.run_command(["pico2wave", "-l",output_settings["language"],"-w",output_file, text],shell=False))
-	        # play it
+		# play it
 		play(output_file)
-	        # remove the wav file
+		# remove the wav file
 		utils.run_command("rm -f "+output_file)
 	# use the google API
 	elif output_settings["engine"] == "google": 
@@ -52,9 +52,9 @@ def listen():
 	while True:
 		if listening_message: log.info("Listening for voice commands...")
 		# run sox to record a voice sample trimming silence at the beginning and at the end
-	        device = "-t alsa "+str(input_settings["device"]) if input_settings["device"] != "" else ""
-        	command = "sox "+device+" "+input_file+" trim 0 "+str(input_settings["recorder"]["max_duration"])+" silence 1 "+str(input_settings["recorder"]["start_duration"])+" "+str(input_settings["recorder"]["start_threshold"])+"% 1 "+str(input_settings["recorder"]["end_duration"])+" "+str(input_settings["recorder"]["end_threshold"])+"%"
-	        utils.run_command(command)
+		device = "-t alsa "+str(input_settings["device"]) if input_settings["device"] != "" else ""
+		command = "sox "+device+" "+input_file+" trim 0 "+str(input_settings["recorder"]["max_duration"])+" silence 1 "+str(input_settings["recorder"]["start_duration"])+" "+str(input_settings["recorder"]["start_threshold"])+"% 1 "+str(input_settings["recorder"]["end_duration"])+" "+str(input_settings["recorder"]["end_threshold"])+"%"
+		utils.run_command(command)
 		# ensure the sample contains any sound
 		max_amplitude = utils.run_command("killall sox 2>&1 2>/dev/null; sox "+input_file+" -n stat 2>&1|grep 'Maximum amplitude'|awk '{print $3}'")
 		if not utils.is_number(max_amplitude) or float(max_amplitude) == 0: 

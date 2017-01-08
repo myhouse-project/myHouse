@@ -58,10 +58,10 @@ constants = {
 			'formatter': 'float_1', 
 			'suffix': u'\u00B0C', 
 		},
-                'humidity': {
-                        'formatter': 'int',
-                        'suffix': '%',
-                },
+		'humidity': {
+			'formatter': 'int',
+			'suffix': '%',
+		},
 		'size': { 
 			'formatter': 'int', 
 			'suffix': 'MB', 
@@ -78,26 +78,26 @@ constants = {
 			'formatter': 'float_1',
 			'suffix': 'mm', 
 		},
-                'pressure': {
-                        'formatter': 'int',
-                        'suffix': 'mb',
-                },
-                'speed': {
-                        'formatter': 'float_1',
-                        'suffix': 'km/h',
-                },
+		'pressure': {
+			'formatter': 'int',
+			'suffix': 'mb',
+		},
+		'speed': {
+			'formatter': 'float_1',
+			'suffix': 'km/h',
+		},
 		'image': { 
 			'formatter': "", 
 			'suffix': "",
 		},
-                'calendar': {
-                        'formatter': "",
-                        'suffix': "",
-                },
-                'position': {
-                        'formatter': "",
-                        'suffix': "",
-                },
+		'calendar': {
+			'formatter': "",
+			'suffix': "",
+		},
+		'position': {
+			'formatter': "",
+			'suffix': "",
+		},
 	},
 	'charts': {
 		'master': {
@@ -173,38 +173,38 @@ constants = {
 			},
 			'xAxis': {
 				'type': 'datetime',
-                                'dateTimeLabelFormats': {
-                                        'day': '%A',
-                                },
+				'dateTimeLabelFormats': {
+					'day': '%A',
+				},
 			},
 		},
 		'chart_inverted': {
-                        'template': 'master',
-                        'chart': {
+			'template': 'master',
+			'chart': {
 				'inverted': True,
-                        },
-                        'xAxis': {
-                                'type': 'datetime',
-                                'dateTimeLabelFormats': {
-                                        'day': '%A',
-                                },
-                        },
-                },
+			},
+			'xAxis': {
+				'type': 'datetime',
+				'dateTimeLabelFormats': {
+					'day': '%A',
+				},
+			},
+		},
 		'chart_short_inverted': {
-                        'template': 'master',
-                        'chart': {
-                                'height': 194,
+			'template': 'master',
+			'chart': {
+				'height': 194,
 				'inverted': True,
-                        },
-                        'xAxis': {
-                                'tickInterval': 24* 3600 * 1000,
-                                'tickWidth': 0,
-                                'gridLineWidth': 0,
-                                'type': 'datetime',
-                                'dateTimeLabelFormats': {
-                                        'day': '%A',
-                                },
-                        },
+			},
+			'xAxis': {
+				'tickInterval': 24* 3600 * 1000,
+				'tickWidth': 0,
+				'gridLineWidth': 0,
+				'type': 'datetime',
+				'dateTimeLabelFormats': {
+					'day': '%A',
+				},
+			},
 		},
 		'chart_sensor_group_summary': {
 			'template': 'master',
@@ -229,9 +229,9 @@ constants = {
 					'name': 'Today',
 					'color': '#7cb5ec',
 					'pointWidth': 10,
-                                        'dataLabels': {
-                                                'enabled': True,
-                                        },
+					'dataLabels': {
+						'enabled': True,
+					},
 				},
 			],
 		},
@@ -248,25 +248,25 @@ constants = {
 				'gridLineWidth': 1,
 			},
 		},
-                'chart_sensor_group_timeline_short_history': {
-                        'template': 'master',
-                        'chart': {
-                                'type': 'spline',
-                                'zoomType': 'x',
-                        },
-                        'xAxis': {
-                                'type': 'datetime',
-                                'tickInterval': 1*24*3600*1000,
-                                'tickWidth': 0,
-                                'gridLineWidth': 1,
-                        },
-                },
+		'chart_sensor_group_timeline_short_history': {
+			'template': 'master',
+			'chart': {
+				'type': 'spline',
+				'zoomType': 'x',
+			},
+			'xAxis': {
+				'type': 'datetime',
+				'tickInterval': 1*24*3600*1000,
+				'tickWidth': 0,
+				'gridLineWidth': 1,
+			},
+		},
 		'chart_sensor_group_timeline_recent': {
 			'template': 'master',
-                        'chart': {
-                                'type': 'spline',
-                                'zoomType': 'x',
-                        },
+			'chart': {
+				'type': 'spline',
+				'zoomType': 'x',
+			},
 			'xAxis': {
 				'type': 'datetime',
 				'tickInterval': 1*3600*1000,
@@ -278,20 +278,20 @@ constants = {
 			},
 		},
 		'chart_sensor_group_timeline_realtime': {	
-                        'template': 'master',
-                        'chart': {
-                                'type': 'spline',
-                                'zoomType': 'x',
-                        },
-                        'xAxis': {
-                                'type': 'datetime',
-                                'tickInterval': 1*3600*1000,
-                                'tickWidth': 0,
-                                'gridLineWidth': 1,
-                        },
-                        'rangeSelector': {
-                                'enabled': False,
-                        },
+			'template': 'master',
+			'chart': {
+				'type': 'spline',
+				'zoomType': 'x',
+			},
+			'xAxis': {
+				'type': 'datetime',
+				'tickInterval': 1*3600*1000,
+				'tickWidth': 0,
+				'gridLineWidth': 1,
+			},
+			'rangeSelector': {
+				'enabled': False,
+			},
 		},
 	},
 }

@@ -25,12 +25,12 @@ def poll(sensor):
 	# retrieve the devices
 	devices = icloud.devices
 	locations = {}
-        # for each device
-        for i, device in enumerate(devices):
-                device = devices[i]
-                # retrieve the location
-                location = device.location()
-                if location is None: continue
+	# for each device
+	for i, device in enumerate(devices):
+		device = devices[i]
+		# retrieve the location
+		location = device.location()
+		if location is None: continue
 		# save the raw location
 		locations[device["name"]] = location
 	return json.dumps(locations)

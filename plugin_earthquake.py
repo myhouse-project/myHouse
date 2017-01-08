@@ -22,14 +22,14 @@ def poll(sensor):
 
 # parse the data
 def parse(sensor,data):
-        measures = []
-        measure = {}
+	measures = []
+	measure = {}
 	# load the file
 	data = json.loads(data)
 	# for each line
 	for line in data.split('\n'):
-                #EventID|Time|Latitude|Longitude|Depth/Km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
-                #    0    1      2          3       4       5     6           7            8           9     10         11           12
+		#EventID|Time|Latitude|Longitude|Depth/Km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
+		#    0    1      2          3       4       5     6           7            8           9     10         11           12
 		if line.startswith('#'): continue
 		measure = {}
 		# split the entries
@@ -51,7 +51,7 @@ def parse(sensor,data):
 		measure["value"] = json.dumps(position)
 		# add the event to the measures
 		measures.append(measure)
-        return measures
+	return measures
 
 # return the cache schema
 def cache_schema(sensor):

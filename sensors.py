@@ -37,17 +37,17 @@ plugins = {}
 
 # initialize the configured plugins
 def init_plugins():
-        # for each plugin
-        for name in conf["plugins"]:
-                # get the plugin and store it
-	        plugin = None
-	        if name == "wunderground": plugin = plugin_wunderground
-	        elif name == "weatherchannel": plugin = plugin_weatherchannel
-	        elif name == "command": plugin = plugin_command
-	        elif name == "image": plugin = plugin_image
+	# for each plugin
+	for name in conf["plugins"]:
+		# get the plugin and store it
+		plugin = None
+		if name == "wunderground": plugin = plugin_wunderground
+		elif name == "weatherchannel": plugin = plugin_weatherchannel
+		elif name == "command": plugin = plugin_command
+		elif name == "image": plugin = plugin_image
 		elif name == "icloud": plugin = plugin_icloud
-	        elif name == "csv": plugin = plugin_csv
-	        elif name == "messagebridge": plugin = plugin_messagebridge
+		elif name == "csv": plugin = plugin_csv
+		elif name == "messagebridge": plugin = plugin_messagebridge
 		elif name == "rtl_433": plugin = plugin_rtl_433
 		elif name == "gpio": plugin = plugin_gpio
 		elif name == "earthquake": plugin = plugin_earthquake
@@ -56,30 +56,30 @@ def init_plugins():
 		elif name == "dht": plugin = plugin_dht
 		elif name == "ds18b20": plugin = plugin_ds18b20
 		elif name == "ads1x15": plugin = plugin_ads1x15
-                if plugin is None:
-                        log.error("plugin "+name+" not supported")
-                        continue
-                plugins[name] = plugin
+		if plugin is None:
+			log.error("plugin "+name+" not supported")
+			continue
+		plugins[name] = plugin
 
 # start the plugin service
 def start_plugins():
 	for name,plugin in plugins.iteritems():
-                if hasattr(plugin, 'run') and conf["plugins"][name]["enabled"]:
-                        log.info("starting plugin service "+name)
-                        schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
+		if hasattr(plugin, 'run') and conf["plugins"][name]["enabled"]:
+			log.info("starting plugin service "+name)
+			schedule.add_job(plugin.run,'date',run_date=datetime.datetime.now())
 
 # read data out of a sensor and store the output in the cache
 def poll(sensor):
 	# poll the data
 	data = None
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] polling sensor")
-        try: 
+	try: 
 		# retrieve the raw data 
 		data = plugins[sensor['plugin']['plugin_name']].poll(sensor)
-                # delete from the cache the previous value
-                db.delete(sensor['db_cache'])
-	        # store it in the cache
-	        db.set(sensor["db_cache"],data,utils.now())
+		# delete from the cache the previous value
+		db.delete(sensor['db_cache'])
+		# store it in the cache
+		db.set(sensor["db_cache"],data,utils.now())
 	except Exception,e: 
 		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to poll: "+utils.get_exception(e))
 	return data
@@ -93,7 +93,7 @@ def parse(sensor):
 		return None
 	data = data[0]
 	measures = None
-        try:
+	try:
 		# parse the cached data
 		measures = plugins[sensor['plugin']['plugin_name']].parse(sensor,data)
 		if not isinstance(measures,list): 
@@ -141,8 +141,8 @@ def store(sensor,measures,ifnotexists=False):
 	if measures is None: return
 	# for each returned measure
 	for measure in measures:
-	        # set the timestamp to now if not already set
-	        if "timestamp" not in measure: measure["timestamp"] = utils.now()
+		# set the timestamp to now if not already set
+		if "timestamp" not in measure: measure["timestamp"] = utils.now()
 		# define the key to store the value
 		key = sensor["db_group"]+":"+measure["key"]
 		# if ifnotexists is set, check if the key exists
@@ -180,7 +180,7 @@ def store(sensor,measures,ifnotexists=False):
 		# re-calculate the derived measures for the hour/day
 		if "summarize" in sensor:
 			summarize(sensor,'hour',utils.hour_start(measure["timestamp"]),utils.hour_end(measure["timestamp"]))
-	                summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
+			summarize(sensor,'day',utils.day_start(measure["timestamp"]),utils.day_end(measure["timestamp"]))
 
 # calculate min, max and avg value
 def summarize(sensor,timeframe,start,end):
@@ -189,8 +189,8 @@ def summarize(sensor,timeframe,start,end):
 		key_to_read = sensor["db_sensor"]
 		key_to_write = sensor["db_sensor"]+":hour"
 	elif timeframe == "day":
-                key_to_read = sensor["db_sensor"]+":hour:avg"
-                key_to_write = sensor["db_sensor"]+":day"
+		key_to_read = sensor["db_sensor"]+":hour:avg"
+		key_to_write = sensor["db_sensor"]+":day"
 	# retrieve from the database the data based on the given timeframe
 	data = db.rangebyscore(key_to_read,start,end,withscores=True)
 	# split between values and timestamps
@@ -206,16 +206,16 @@ def summarize(sensor,timeframe,start,end):
 		# calculate avg
 		avg = utils.avg(values)
 		db.deletebyscore(key_to_write+":avg",start,end)
-       		db.set(key_to_write+":avg",avg,timestamp)
+		db.set(key_to_write+":avg",avg,timestamp)
 	if "min_max" in sensor["summarize"] and sensor["summarize"]["min_max"]:
 		# calculate min
 		min = utils.min(values)
 		db.deletebyscore(key_to_write+":min",start,end)
-                db.set(key_to_write+":min",min,timestamp)
+		db.set(key_to_write+":min",min,timestamp)
 		# calculate max
 		max = utils.max(values)
 		db.deletebyscore(key_to_write+":max",start,end)
-                db.set(key_to_write+":max",max,timestamp)
+		db.set(key_to_write+":max",max,timestamp)
 	if "rate" in sensor["summarize"] and sensor["summarize"]["rate"]:
 		# calculate the rate of change
 		rate = utils.velocity(timestamps,values)
@@ -254,20 +254,20 @@ def expire(sensor):
 def init_sensor(sensor):
 	# initialize a new data structure
 	sensor = copy.deepcopy(sensor)
-        # define the database schema
-        sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
-        sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
+	# define the database schema
+	sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
+	sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
 	if "plugin" in sensor:
 		# ensure the sensor is using a valid plugin
-	        if sensor["plugin"]["plugin_name"] not in plugins:
-	                log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] plugin "+sensor["plugin"]["plugin_name"]+" not supported")
-	                return None
-	        # define the cache location if cache is in use by the plugin
+		if sensor["plugin"]["plugin_name"] not in plugins:
+			log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] plugin "+sensor["plugin"]["plugin_name"]+" not supported")
+			return None
+		# define the cache location if cache is in use by the plugin
 		if hasattr(plugins[sensor["plugin"]["plugin_name"]], 'cache_schema'):
-	                if plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor) is None:
-	                        log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] invalid measure")
-	                        return None
-	                sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["plugin_name"]+":"+plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor)
+			if plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor) is None:
+				log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] invalid measure")
+				return None
+			sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["plugin_name"]+":"+plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor)
 	return sensor
 
 # read or save the measure of a given sensor
@@ -289,15 +289,15 @@ def run(module_id,group_id,sensor_id,action):
 	elif action == "save":
 		# save the parsed output into the database
 		save(sensor)
-        elif action == "force_save":
-                # save the parsed output into the database forcing polling the measure
-                save(sensor,force=True)
+	elif action == "force_save":
+		# save the parsed output into the database forcing polling the measure
+		save(sensor,force=True)
 	elif action == "summarize_hour": 
 		# every hour calculate and save min,max,avg of the previous hour
 		summarize(sensor,'hour',utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
-        elif action == "summarize_day":
+	elif action == "summarize_day":
 		# every day calculate and save min,max,avg of the previous day (using hourly averages)
-                summarize(sensor,'day',utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
+		summarize(sensor,'day',utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
 	elif action == "expire":
 		# purge old data from the database
 		expire(sensor)
@@ -308,8 +308,8 @@ def schedule_all():
 	# init plugins
 	init_plugins()
 	log.info("setting up all the configured sensors")
-        # for each module
-        for module in conf["modules"]:
+	# for each module
+	for module in conf["modules"]:
 		if not module["enabled"]: continue
 		# skip group without sensors
 		if "sensors" not in module: continue
@@ -330,15 +330,15 @@ def schedule_all():
 				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling polling every "+str(sensor["plugin"]["polling_interval"])+" minutes")
 				# run it now first
 				if conf["sensors"]["poll_at_startup"]: schedule.add_job(run,'date',run_date=datetime.datetime.now()+datetime.timedelta(seconds=utils.randint(1,59)),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
-                                # then schedule it for each refresh interval
-       	                        schedule.add_job(run,'cron',minute="*/"+str(sensor["plugin"]["polling_interval"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
-                        # schedule an expire job every day
-                        schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
+				# then schedule it for each refresh interval
+				schedule.add_job(run,'cron',minute="*/"+str(sensor["plugin"]["polling_interval"]),second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'save'])
+			# schedule an expire job every day
+			schedule.add_job(run,'cron',hour="1",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'expire'])
 			# schedule a summarize job every hour and every day if needed
-                        if "summarize" in sensor:
-              	        	log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
-                     	        schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
-                             	schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
+			if "summarize" in sensor:
+				log.debug("["+sensor['module_id']+"]["+sensor['group_id']+"]["+sensor['sensor_id']+"] scheduling summary every hour and day")
+				schedule.add_job(run,'cron',minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_hour'])
+				schedule.add_job(run,'cron',hour="0",minute="0",second=utils.randint(1,59),args=[sensor['module_id'],sensor['group_id'],sensor['sensor_id'],'summarize_day'])
 	# start all the plugin services
 	start_plugins()
 
@@ -352,36 +352,36 @@ def data_get_current(module_id,group_id,sensor_id):
 	if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"]:
 		# the sensor needs to be polled on demand
 		run(module_id,group_id,sensor_id,"save")
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
-        # return the latest measure
-        data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+	key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
+	# return the latest measure
+	data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 	# if an image, decode it and return it
 	if sensor["format"] == "image": return base64.b64decode(data[0])
 	else: return json.dumps(data)
 
 # return the latest image of a sensor for a web request
 def data_get_current_image(module_id,group_id,sensor_id,night_day):
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        if sensor is None:
-                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
-                return json.dumps("")
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None:
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+		return json.dumps("")
 	data = json.loads(data_get_current(module_id,group_id,sensor_id))
 	if len(data) == 0: return ""
 	filename = str(data[0])
 	if night_day and utils.is_night(): filename = "nt_"+filename
 	with open(conf["constants"]["web_dir"]+"/images/"+sensor_id+"_"+str(filename)+".png",'r') as file:
-                data = file.read()
-        file.close()
+		data = file.read()
+	file.close()
 	return data
 
 # return the time difference between now and the latest measure
 def data_get_current_timestamp(module_id,group_id,sensor_id):
 	data = []
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        if sensor is None: 
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None: 
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
 		return json.dumps(data)
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
+	key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
 	data = db.range(key,withscores=True,milliseconds=True)
 	if len(data) > 0: return json.dumps([utils.timestamp_difference(utils.now(),data[0][0]/1000)])
 	else: return json.dumps(data)
@@ -393,79 +393,79 @@ def data_get_data(module_id,group_id,sensor_id,timeframe,stat):
 	if sensor is None: 
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
 		return json.dumps(data)
-        if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"] and timeframe == "realtime":
-                # the sensor needs to be polled on demand
-                run(module_id,group_id,sensor_id,"save")
-        # get the parameters for the requested timeframe
-        if timeframe == "realtime":
-                # recent hourly measures up to now
-                range = ""
-                start = utils.realtime()
-                end = utils.now()
-                withscores = True
-        elif timeframe == "recent":
-                # recent hourly measures up to now
-                range = ":hour"
-                start = utils.recent()
-                end = utils.now()
-                withscores = True
-        elif timeframe == "history":
-                # historical daily measures up to new
-                range = ":day"
-                start = utils.history()
-                end = utils.now()
-                withscores = True
-        elif timeframe == "short_history":
-                # historical daily measures up to new
-                range = ":day"
-                start = utils.history(conf["general"]["timeframes"]["short_history_days"])
-                end = utils.now()
-                withscores = True
-        elif timeframe == "today":
-                # today's measure
-                range = ":day"
-                start = utils.day_start(utils.now())
-                end = utils.day_end(utils.now())
-                withscores = False
-        elif timeframe == "yesterday":
-                # yesterday's measure
-                range = ":day"
-                start = utils.day_start(utils.yesterday())
-                end = utils.day_end(utils.yesterday())
-                withscores = False
+	if "plugin" in sensor and "poll_on_demand" in sensor["plugin"] and sensor["plugin"]["poll_on_demand"] and timeframe == "realtime":
+		# the sensor needs to be polled on demand
+		run(module_id,group_id,sensor_id,"save")
+	# get the parameters for the requested timeframe
+	if timeframe == "realtime":
+		# recent hourly measures up to now
+		range = ""
+		start = utils.realtime()
+		end = utils.now()
+		withscores = True
+	elif timeframe == "recent":
+		# recent hourly measures up to now
+		range = ":hour"
+		start = utils.recent()
+		end = utils.now()
+		withscores = True
+	elif timeframe == "history":
+		# historical daily measures up to new
+		range = ":day"
+		start = utils.history()
+		end = utils.now()
+		withscores = True
+	elif timeframe == "short_history":
+		# historical daily measures up to new
+		range = ":day"
+		start = utils.history(conf["general"]["timeframes"]["short_history_days"])
+		end = utils.now()
+		withscores = True
+	elif timeframe == "today":
+		# today's measure
+		range = ":day"
+		start = utils.day_start(utils.now())
+		end = utils.day_end(utils.now())
+		withscores = False
+	elif timeframe == "yesterday":
+		# yesterday's measure
+		range = ":day"
+		start = utils.day_start(utils.yesterday())
+		end = utils.day_end(utils.yesterday())
+		withscores = False
 	elif timeframe == "forecast":
 		# next days measures
-                range = ":day"
-                start = utils.day_start(utils.now())
-                end = utils.day_start(utils.now()+(conf["general"]["timeframes"]["forecast_days"]-1)*conf["constants"]["1_day"])
-                withscores = True
-        else: return data
-        # define the key to request
-        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id+range
-        requested_stat = ":"+stat
-        # if a range is requested, start asking for the min
-        if stat == "range": requested_stat = ":min"
+		range = ":day"
+		start = utils.day_start(utils.now())
+		end = utils.day_start(utils.now()+(conf["general"]["timeframes"]["forecast_days"]-1)*conf["constants"]["1_day"])
+		withscores = True
+	else: return data
+	# define the key to request
+	key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id+range
+	requested_stat = ":"+stat
+	# if a range is requested, start asking for the min
+	if stat == "range": requested_stat = ":min"
 	if timeframe == "realtime": requested_stat = ""
-        # request the data
-        data = db.rangebyscore(key+requested_stat,start,end,withscores=withscores,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
-        if stat == "range" and len(data) > 0:
-                # if a range is requested, ask for the max and combine the results
-                data_max = db.rangebyscore(key+":max",start,end,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
-                for i, item in enumerate(data):
-                        # ensure data_max has a correspondent value
-                        if i < len(data_max):
-                                if (isinstance(item,list)): data[i].append(data_max[i])
-                                else: data.append(data_max[i])
-        return json.dumps(data)
+	# request the data
+	data = db.rangebyscore(key+requested_stat,start,end,withscores=withscores,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+	if stat == "range" and len(data) > 0:
+		# if a range is requested, ask for the max and combine the results
+		data_max = db.rangebyscore(key+":max",start,end,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+		for i, item in enumerate(data):
+			# ensure data_max has a correspondent value
+			if i < len(data_max):
+				if (isinstance(item,list)): data[i].append(data_max[i])
+				else: data.append(data_max[i])
+	return json.dumps(data)
 
 # set a sensor value
 def data_set(module_id,group_id,sensor_id,value,ifnotexists=False):
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        if sensor is None: 
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None: 
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
 		return json.dumps("KO")
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] value to store: "+str(value))
-        sensor = init_sensor(sensor)
+	sensor = init_sensor(sensor)
 	# prepare the measure
 	measures = []
 	measure = {}
@@ -474,14 +474,14 @@ def data_set(module_id,group_id,sensor_id,value,ifnotexists=False):
 	measures.append(measure)
 	# store it
 	store(sensor,measures,ifnotexists=ifnotexists)
-        return json.dumps("OK")
+	return json.dumps("OK")
 
 # send a message to a sensor
 def data_send(module_id,group_id,sensor_id,value,force=False):
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        if sensor is None:
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None:
 		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
-                return json.dumps("KO")
+		return json.dumps("KO")
 	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] sending message: "+str(value))
 	sensor = init_sensor(sensor)
 	if not hasattr(plugins[sensor["plugin"]["plugin_name"]], 'send'):
@@ -492,14 +492,14 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 
 # manually run a command for a sensor
 def data_run(module_id,group_id,sensor_id,action):
-        sensor = utils.get_sensor(module_id,group_id,sensor_id)
-        if sensor is None:
-                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
-                return json.dumps("KO")
-        log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] executing: "+str(action))
+	sensor = utils.get_sensor(module_id,group_id,sensor_id)
+	if sensor is None:
+		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+		return json.dumps("KO")
+	log.debug("["+module_id+"]["+group_id+"]["+sensor_id+"] executing: "+str(action))
 	init_plugins()
 	run(module_id,group_id,sensor_id,action)
-        return json.dumps("OK")
+	return json.dumps("OK")
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
@@ -507,8 +507,8 @@ if __name__ == '__main__':
 		# no arguments provided, schedule all sensors
 		schedule.start()
 		schedule_all()
-	        while True:
-	                time.sleep(1)
+		while True:
+			time.sleep(1)
 	else: 
 		# run the command for the given sensor
 		# <module_id> <group_id> <sensor_id> <action>

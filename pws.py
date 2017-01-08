@@ -28,7 +28,7 @@ def run():
 	for field,sensor_key in conf["pws"]["data"].iteritems():
 		# for each mapping, retrieve the sensor
 		sensor = utils.get_sensor_string(sensor_key)
-	        if sensor is None:
+		if sensor is None:
 			log.warning("invalid sensor "+sensor_key+" associated to field "+field)
 			continue
 		# retrieve the data
@@ -54,10 +54,10 @@ def run():
 		log.debug("Prepare uploading to pws "+str(measures))
 		# prepare the common parameter
 		params = {}
-	 	params["action"] = "updateraw"
-	        params["ID"] = conf["pws"]["username"]
-        	params["PASSWORD"] = conf["pws"]["password"]
-	        params["dateutc"] = "now"
+		params["action"] = "updateraw"
+		params["ID"] = conf["pws"]["username"]
+		params["PASSWORD"] = conf["pws"]["password"]
+		params["dateutc"] = "now"
 		params.update(measures)
 		response = utils.web_get(url,params=params)
 		if "success" in response: log.info("Updated the PWS "+conf["pws"]["username"]+" with: "+str(measures))

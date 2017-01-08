@@ -27,8 +27,8 @@ def poll(sensor):
 
 # parse the data
 def parse(sensor,data):
-        measures = []
-        measure = {}
+	measures = []
+	measure = {}
 	# load the file
 	data = json.loads(data)
 	# for each line
@@ -53,7 +53,7 @@ def parse(sensor,data):
 		# set the value
 		measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
 		measures.append(measure)
-        return measures
+	return measures
 
 # return the cache schema
 def cache_schema(sensor):

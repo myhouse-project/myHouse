@@ -13,7 +13,7 @@ conf = config.get_config()
 # return an image not available picture
 def get_image_unavailable():
 	with open(conf["constants"]["image_unavailable"],'r') as file:
-        	data = base64.b64encode(file.read())
+		data = base64.b64encode(file.read())
 	file.close()
 	return data
 
@@ -27,8 +27,8 @@ def poll(sensor):
 		# visit the page
 		try:
 			data = utils.web_get(sensor['plugin']['url'],username,password,binary=True,timeout=conf["plugins"]["image"]["timeout"])
-	        except Exception,e:
-	                log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to visit "+sensor['plugin']['url']+": "+utils.get_exception(e))
+		except Exception,e:
+			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to visit "+sensor['plugin']['url']+": "+utils.get_exception(e))
 			return ""
 	# run a command to retrieve the image
 	elif "command" in sensor["plugin"]:

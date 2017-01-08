@@ -29,7 +29,7 @@ def run():
 	if conf['sensors']['enabled']: sensors.schedule_all()
 	# schedule all alerts
 	if conf['alerter']['enabled']: alerter.schedule_all()
-        # run all input services
+	# run all input services
 	input.run()
 	# start the web server
 	if conf['gui']['enabled']: schedule.add_job(webserver.run,'date',run_date=datetime.datetime.now())

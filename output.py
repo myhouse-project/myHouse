@@ -47,8 +47,8 @@ def notify(severity,text):
 		# check if the notification is severe enough to override the mute setting
 		if "mute_min_severity" in conf["output"][channel]:
 			mute_min_severity = conf["output"][channel]["mute_min_severity"]
-        	        if mute_min_severity == "warning" and severity in ["warning","alert"]: mute_override = True
-	                elif mute_min_severity == "alert" and severity in ["alert"]: mute_override = True
+			if mute_min_severity == "warning" and severity in ["warning","alert"]: mute_override = True
+			elif mute_min_severity == "alert" and severity in ["alert"]: mute_override = True
 		# ensure the channel is not mute now
 		if "mute" in conf["output"][channel] and "-" in conf["output"][channel]["mute"] and not mute_override:
 			timeframe = conf["output"][channel]["mute"].split("-")
@@ -61,9 +61,9 @@ def notify(severity,text):
 			if timeframe[0] > timeframe[1] and (hour >= timeframe[0] or hour < timeframe[1]): continue
 		# check if rate limit is configured and we have not exceed the numner of notifications during this hour
 		if "rate_limit" in conf["output"][channel] and conf["output"][channel]["rate_limit"] != 0 and counters[channel] >= conf["output"][channel]["rate_limit"]: continue
-                # increase the counter
-                counters[channel] = counters[channel] + 1
-                log.debug(channel+" notifications: "+str(counters[channel])+" for "+str(current_hour)+":00")
+		# increase the counter
+		counters[channel] = counters[channel] + 1
+		log.debug(channel+" notifications: "+str(counters[channel])+" for "+str(current_hour)+":00")
 		# send the notification to the channel
 		try: 
 			# catch exceptions in order to notify even if a channel will fail
@@ -73,7 +73,7 @@ def notify(severity,text):
 
 # main
 if __name__ == '__main__':
-        if len(sys.argv) == 1:
-                print "Usage: "+__file__+" <severity> <message>"
-        else:
-                notify(sys.argv[1],sys.argv[2])
+	if len(sys.argv) == 1:
+		print "Usage: "+__file__+" <severity> <message>"
+	else:
+		notify(sys.argv[1],sys.argv[2])

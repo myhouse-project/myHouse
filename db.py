@@ -64,13 +64,13 @@ def set(key,value,timestamp):
 
 # set a single value into the db
 def set_simple(key,value):
-        db = connect()
-        log.debug("set "+str(key))
-        db.set(key,str(value))
+	db = connect()
+	log.debug("set "+str(key))
+	db.set(key,str(value))
 
 # get a single value from the db
 def get(key):
-        db = connect()
+	db = connect()
 	log.debug("get "+key)
 	return db.get(key)
 
@@ -82,21 +82,21 @@ def rangebyscore(key,start=utils.recent(),end=utils.now(),withscores=True,millis
 	
 # get a range of values from the db
 def range(key,start=-1,end=-1,withscores=True,milliseconds=False,format_date=False,formatter=None):
-        db = connect()
-        log.debug("zrange "+key+" "+str(start)+" "+str(end))
-        return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds,format_date,formatter)
+	db = connect()
+	log.debug("zrange "+key+" "+str(start)+" "+str(end))
+	return normalize_dataset(db.zrange(key,start,end,withscores=True),withscores,milliseconds,format_date,formatter)
 
 # delete a key
 def delete(key):
 	db = connect()
-        log.debug("del "+key)
-        return db.delete(key)
+	log.debug("del "+key)
+	return db.delete(key)
 
 # rename a key
 def rename(key,new_key):
-        db = connect()
-        log.debug("rename "+key+" "+new_key)
-        return db.rename(key,new_key)
+	db = connect()
+	log.debug("rename "+key+" "+new_key)
+	return db.rename(key,new_key)
 
 # delete all elements between a given score
 def deletebyscore(key,start,end):
@@ -106,21 +106,21 @@ def deletebyscore(key,start,end):
 
 # delete all elements between a given rank
 def deletebyrank(key,start,end):
-        db = connect()
-        log.debug("zremrangebyrank "+key+" "+str(start)+" "+str(end))
-        return db.zremrangebyrank(key,start,end)
+	db = connect()
+	log.debug("zremrangebyrank "+key+" "+str(start)+" "+str(end))
+	return db.zremrangebyrank(key,start,end)
 
 # check if a key exists
 def exists(key):
-        db = connect()
-        log.debug("exists "+key)
-        return db.exists(key)
+	db = connect()
+	log.debug("exists "+key)
+	return db.exists(key)
 
 # empty the database
 def flushdb():
-        db = connect()
-        log.debug("flushdb")
-        return db.flushdb()
+	db = connect()
+	log.debug("flushdb")
+	return db.flushdb()
 
 # initialize an empty database
 def init():
@@ -153,7 +153,7 @@ if __name__ == '__main__':
 			if db.type(key) != "zset": continue
 			data = range(key,1,1,format_date=True)
 			start = data[0][0] if len(data) > 0 else "N.A"
-	               	data = range(key,-1,-1,format_date=True)
+			data = range(key,-1,-1,format_date=True)
 			end = data[0][0] if len(data) > 0 else "N.A"
 			print "\t- "+key+": "+str(db.zcard(key))+" ("+start+" / "+end+")"
 	
@@ -167,8 +167,8 @@ if __name__ == '__main__':
 			delete(key+":hour:max")
 			delete(key+":hour:rate")
 			delete(key+":day:min")
-                        delete(key+":day:avg")
-                        delete(key+":day:max")
+			delete(key+":day:avg")
+			delete(key+":day:max")
 			delete(key+":day:rate")
 		elif sys.argv[1] == "rename":
 			key = conf["constants"]["db_schema"]["root"]+":"+sys.argv[2]
@@ -176,11 +176,11 @@ if __name__ == '__main__':
 			print "Renameing sensor "+key+" into "+new_key
 			rename(key,new_key)
 			rename(key+":hour:min",new_key+":hour:min")
-                        rename(key+":hour:avg",new_key+":hour:avg")
-                        rename(key+":hour:max",new_key+":hour:max")
+			rename(key+":hour:avg",new_key+":hour:avg")
+			rename(key+":hour:max",new_key+":hour:max")
 			rename(key+":hour:rate",new_key+":hour:rate")
-                        reanme(key+":day:min",new_key+":day:min")
-                        rename(key+":day:avg",new_key+":day:avg")
-                        rename(key+":day:max",new_key+":day:max")
+			reanme(key+":day:min",new_key+":day:min")
+			rename(key+":day:avg",new_key+":day:avg")
+			rename(key+":day:max",new_key+":day:max")
 			rename(key+":day:rate",new_key+":day:rate")
 		else: print "Usage: "+__file__+" <delete|rename> <module_id:group_id:sensor_id> [module_id:group_id:new_sensor_id]"

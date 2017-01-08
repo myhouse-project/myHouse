@@ -36,7 +36,7 @@ def get_user_id(username):
 	if not users.get('ok'): return None
 	users = users.get('members')
 	for user in users:
-        	if 'name' in user and user.get('name') == username: return user.get('id')
+		if 'name' in user and user.get('name') == username: return user.get('id')
 	return None
 
 # return the ID corresponding to the channel name
@@ -51,8 +51,8 @@ def get_channel_id(channelname):
 # initialize the integration
 def init():
 	global slack
-        global bot_id
-        global channel_id
+	global bot_id
+	global channel_id
 	global initialized
 	if initialized: return
 	log.info("Initializing slack...")
@@ -65,28 +65,28 @@ def init():
 		if not auth["ok"]:
 			log.error("authentication failed: "+auth["error"])
 			return 
-	        # retrieve the bot id
-	        global bot_id
-	        bot_id = get_user_id(bot_name)
-	        if bot_id is None:
-	                log.error("unable to find your bot "+bot_name+". Ensure it is configured correctly")
-	                return
-	        # retrieve the channel id
-	        global channel_id
-	        channel_id = get_channel_id(channel_name)
-	        if channel_id is None:
-	                log.error("unable to find the channel "+channel_name)
-	                return 
+		# retrieve the bot id
+		global bot_id
+		bot_id = get_user_id(bot_name)
+		if bot_id is None:
+			log.error("unable to find your bot "+bot_name+". Ensure it is configured correctly")
+			return
+		# retrieve the channel id
+		global channel_id
+		channel_id = get_channel_id(channel_name)
+		if channel_id is None:
+			log.error("unable to find the channel "+channel_name)
+			return 
 		initialized = True
-        except Exception,e:
-                log.warning("unable to initialize slack: "+utils.get_exception(e))
+	except Exception,e:
+		log.warning("unable to initialize slack: "+utils.get_exception(e))
 
 # connect to the RTM API
 def connect():
 	global connected
 	if connected: return
-        if slack.rtm_connect():
-                log.info("slack bot online ("+bot_name+")")
+	if slack.rtm_connect():
+		log.info("slack bot online ("+bot_name+")")
 		connected = True
 		return
 	log.error("unable to connect to slack")
@@ -96,30 +96,30 @@ def slack_message(channel,message):
 	try:
 		slack.api_call("chat.postMessage",channel=channel,text=message,as_user=True)	
 	except Exception,e:
-        	log.warning("unable to post message to slack: "+utils.get_exception(e))
+		log.warning("unable to post message to slack: "+utils.get_exception(e))
 
 # send a file to slack
 def slack_upload(channel,filename):
 	try:
 		slack.api_call("files.upload",channels=channel,filename=filename,file=open(filename,'rb'))
-        except Exception,e:
-                log.warning("unable to upload file to slack: "+utils.get_exception(e))
+	except Exception,e:
+		log.warning("unable to upload file to slack: "+utils.get_exception(e))
 
 # attach the bot to the channel
 def run():
 	global initialized, connected
 	while True:
 		# init slack
-	        init()
-        	if not initialized: time.sleep(sleep_on_error)
+		init()
+		if not initialized: time.sleep(sleep_on_error)
 		# connect to slack
 		connect()
 		if not connected: time.sleep(sleep_on_error)
 		# read a rtm stream
 		try: 
 			output_list = slack.rtm_read()
-        	except Exception,e:
-	                log.warning("unable to read from slack: "+utils.get_exception(e))
+		except Exception,e:
+			log.warning("unable to read from slack: "+utils.get_exception(e))
 			initialized = False
 			connected = False
 			time.sleep(sleep_on_error)

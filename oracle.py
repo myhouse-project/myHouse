@@ -35,7 +35,7 @@ def load_brain():
 	global wait
 	filename = conf["constants"]["bot_brain_file"]+"_"+conf["general"]["language"]+".dict"
 	with open(filename, 'r') as file:
-        	for line in file:
+		for line in file:
 			request,response  = line.rstrip().split("=>")
 			request = request.lower()
 			response = response.lower()
@@ -50,7 +50,7 @@ def load_brain():
 def learn_config(include_widgets):
 	r = {}
 	widgets = []
-        for module in conf["modules"]:
+	for module in conf["modules"]:
 		if "rules" in module:
 			for rule in module["rules"]:
 				if not rule["enabled"]: continue
@@ -81,7 +81,7 @@ def learn_config(include_widgets):
 					
 # initialize the oracle		
 def init(include_widgets=True):
-        if initialized: return kb
+	if initialized: return kb
 	# load basic knowledge
 	load_brain()
 	# learn from the configuration
@@ -135,7 +135,7 @@ def ask(request,custom_kb=None):
 
 # main
 if __name__ == '__main__':
-        if len(sys.argv) != 2:
+	if len(sys.argv) != 2:
 		print 'Usage: '+__file__+' "sentence for the oracle"'
 	else:
 		ask(sys.argv[1])

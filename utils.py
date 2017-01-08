@@ -21,7 +21,7 @@ conf = config.get_config()
 
 # remove all occurences of value from array
 def remove_all(array,value_array):
-        return [x for x in array if x not in value_array]
+	return [x for x in array if x not in value_array]
 
 # return the current offset from utc time
 def get_utc_offset():
@@ -61,18 +61,18 @@ def day_start(timestamp):
 
 # return day end timestamp
 def day_end(timestamp):
-        date = datetime.datetime.fromtimestamp(utc(timestamp))
-        return get_timestamp(date.year,date.month,date.day,23,59,59)
+	date = datetime.datetime.fromtimestamp(utc(timestamp))
+	return get_timestamp(date.year,date.month,date.day,23,59,59)
 
 # return hour start timestamp
 def hour_start(timestamp):
-        date = datetime.datetime.fromtimestamp(utc(timestamp))
-        return get_timestamp(date.year,date.month,date.day,date.hour,0,0)
+	date = datetime.datetime.fromtimestamp(utc(timestamp))
+	return get_timestamp(date.year,date.month,date.day,date.hour,0,0)
 
 # return hour end timestamp
 def hour_end(timestamp):
-        date = datetime.datetime.fromtimestamp(utc(timestamp))
-        return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
+	date = datetime.datetime.fromtimestamp(utc(timestamp))
+	return get_timestamp(date.year,date.month,date.day,date.hour,59,59)
 
 # return the realtime timestamp
 def realtime(hours=conf["general"]["timeframes"]["realtime_hours"]):
@@ -88,22 +88,22 @@ def history(days=conf["general"]["timeframes"]["history_days"]):
 
 # return a timestamp as a human readable format
 def timestamp2date(timestamp):
-        return datetime.datetime.fromtimestamp(utc(int(timestamp))).strftime('%Y-%m-%d %H:%M:%S')
+	return datetime.datetime.fromtimestamp(utc(int(timestamp))).strftime('%Y-%m-%d %H:%M:%S')
 
 # return the difference between two timestamps in a human readable format
 def timestamp_difference(date1,date2):
-        seconds = math.floor(math.fabs(date1-date2))
-        interval = math.floor(seconds / 31536000)
-        if interval > 1: return str(int(interval)) + " years ago"
-        interval = math.floor(seconds / 2592000)
-        if interval > 1: return str(int(interval)) + " months ago"
-        interval = math.floor(seconds / 86400)
-        if interval > 1: return str(int(interval)) + " days ago"
-        interval = math.floor(seconds / 3600)
-        if interval > 1: return str(int(interval)) + " hours ago"
-        interval = math.floor(seconds / 60)
-        if interval > 1: return str(int(interval)) + " minutes ago"
-        return str(int(math.floor(seconds))) + " seconds ago"
+	seconds = math.floor(math.fabs(date1-date2))
+	interval = math.floor(seconds / 31536000)
+	if interval > 1: return str(int(interval)) + " years ago"
+	interval = math.floor(seconds / 2592000)
+	if interval > 1: return str(int(interval)) + " months ago"
+	interval = math.floor(seconds / 86400)
+	if interval > 1: return str(int(interval)) + " days ago"
+	interval = math.floor(seconds / 3600)
+	if interval > 1: return str(int(interval)) + " hours ago"
+	interval = math.floor(seconds / 60)
+	if interval > 1: return str(int(interval)) + " minutes ago"
+	return str(int(math.floor(seconds))) + " seconds ago"
 
 # convert a string into a timestamp
 def string2timestamp(string):
@@ -114,11 +114,11 @@ def string2timestamp(string):
 
 # return true if the input is a number
 def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
+	try:
+		float(s)
+		return True
+	except ValueError:
+		return False
 
 # normalize the value. If the input is a number, keep a single digit, otherwise return a string
 def normalize(value,formatter=None):
@@ -173,7 +173,7 @@ def velocity(in_x,in_y):
 		z = numpy.polyfit(x,y,1)
 		# return the coefficient
 		return  normalize(z[0],"float_2")
-        else: return None
+	else: return None
 
 # calculate the avg of a given array of data
 def avg(data):
@@ -214,9 +214,9 @@ def get_module(module_id):
 # return the sensors belonging to the same group
 def get_group(module_id,group_id):
 	sensors = []
-        for i in range(len(conf["modules"])):
-                module = conf["modules"][i]
-                if not module["enabled"]: continue
+	for i in range(len(conf["modules"])):
+		module = conf["modules"][i]
+		if not module["enabled"]: continue
 		if "sensors" not in module: continue
 		for j in range(len(module["sensors"])):
 			sensor = module["sensors"][j]
@@ -226,9 +226,9 @@ def get_group(module_id,group_id):
 
 # return the sensors belonging to the same group
 def get_group_string(group_string):
-        split = group_string.split(":",2)
-        if len(split) < 2: return None
-        return get_group(split[0],split[1])
+	split = group_string.split(":",2)
+	if len(split) < 2: return None
+	return get_group(split[0],split[1])
 
 # fetch a sensor
 def get_sensor(module_id,group_id,sensor_id):
@@ -247,9 +247,9 @@ def get_sensor_string(sensor_string):
 
 # run a command and return the output
 def run_command(command,timeout=conf["constants"]["command_timeout"],shell=True):
-        log.debug("Executing "+str(command))
-        process = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = ''
+	log.debug("Executing "+str(command))
+	process = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	output = ''
 	for t in xrange(timeout):
 		time.sleep(1)
 		if process.poll() is not None:
@@ -261,9 +261,9 @@ def run_command(command,timeout=conf["constants"]["command_timeout"],shell=True)
 
 # determine if it is night
 def is_night():
-        is_night = False
-        hour = int(time.strftime("%H"))
-        if hour >= 20 or hour <= 6: is_night = True;
+	is_night = False
+	hour = int(time.strftime("%H"))
+	if hour >= 20 or hour <= 6: is_night = True;
 	return is_night
 
 # convert the temperature if needed
@@ -273,13 +273,13 @@ def temperature_unit(temperature,force=False):
 
 # convert a length if neeeded
 def length_unit(length,force=False):
-        if conf["general"]["units"]["imperial"] or force: return "{0:.1f}".format(float(length*0.039370))
-        else: return length
+	if conf["general"]["units"]["imperial"] or force: return "{0:.1f}".format(float(length*0.039370))
+	else: return length
 
 # convert a pressure if neeeded
 def pressure_unit(pressure,force=False):
-        if conf["general"]["units"]["imperial"] or force: return "{0:.2f}".format(float((29.92 * pressure) / 1013.25))
-        else: return pressure
+	if conf["general"]["units"]["imperial"] or force: return "{0:.2f}".format(float((29.92 * pressure) / 1013.25))
+	else: return pressure
 
 # convert a speed if needed
 def speed_unit(speed,force=False):

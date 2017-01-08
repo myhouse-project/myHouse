@@ -8,13 +8,13 @@ conf = config.get_config()
 # poll the sensor
 def poll(sensor):
 	# set the device type
-        if sensor["plugin"]["type"] == "dht11":
-                sensor = Adafruit_DHT.DHT11
-        elif sensor["plugin"]["type"] == "dht22":
-                sensor = Adafruit_DHT.DHT22
-        # read the measures
-        humidity, temperature = Adafruit_DHT.read_retry(sensor,pin)
-        if humidity is not None and temperature is not None and humidity <= 100:
+	if sensor["plugin"]["type"] == "dht11":
+		sensor = Adafruit_DHT.DHT11
+	elif sensor["plugin"]["type"] == "dht22":
+		sensor = Adafruit_DHT.DHT22
+	# read the measures
+	humidity, temperature = Adafruit_DHT.read_retry(sensor,pin)
+	if humidity is not None and temperature is not None and humidity <= 100:
 		# if this is a valid measure, return both the measures
 		return str(temperature)+"|"+str(humidity)
 

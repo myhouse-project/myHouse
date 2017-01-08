@@ -40,14 +40,14 @@ def on_message(client, userdata, msg):
 		log.warning("received a message from an invalid MQTT topic: "+topic)
 		return
 	sensor = topics[topic]
-        log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] received "+str(value)+" for topic "+str(topic))
+	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] received "+str(value)+" for topic "+str(topic))
 	# store the value
-        measures = []
-        measure = {}
-        measure["key"] = sensor["sensor_id"]
-        measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
-        measures.append(measure)
-        sensors.store(sensor,measures)
+	measures = []
+	measure = {}
+	measure["key"] = sensor["sensor_id"]
+	measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
+	measures.append(measure)
+	sensors.store(sensor,measures)
 
 # run the plugin service
 def run():
@@ -67,7 +67,7 @@ def run():
 
 # send a message to the sensor
 def send(sensor,data):
-        if not plugin_conf["enabled"]: return
+	if not plugin_conf["enabled"]: return
 	# connect to the gateway
 	client = mqtt.Client()
 	client.connect(plugin_conf["hostname"],plugin_conf["hostname"],60)

@@ -31,24 +31,24 @@ def capitalizeFirst(string):
 
 # return an image not available picture
 def get_image_unavailable():
-        with open(conf["constants"]["image_unavailable"],'r') as file:
-                data = base64.b64encode(file.read())
-        file.close()
-        return data
+	with open(conf["constants"]["image_unavailable"],'r') as file:
+		data = base64.b64encode(file.read())
+	file.close()
+	return data
 
 # save the image to disk
 def save_to_file(r,filename):
 	with open(utils.get_widget_chart(filename),'wb') as file:
-        	for chunk in r.iter_content(1000):
-                	file.write(chunk)
+		for chunk in r.iter_content(1000):
+			file.write(chunk)
 	file.close()
 
 # generate the chart
 def generate_chart(options,filename,is_stock_chart=False):
 	data = copy.deepcopy(export_data)
-        data["options"] = json.dumps(options)
+	data["options"] = json.dumps(options)
 	if is_stock_chart: data["constr"] = "StockChart"
-        r = requests.post(export_url, data=data)
+	r = requests.post(export_url, data=data)
 	save_to_file(r,filename)
 
 # apply the format to the value
@@ -131,17 +131,17 @@ def add_sensor_group_summary_chart(layout,widget):
 
 # add a sensor timeline widget
 def add_sensor_group_timeline_chart(layout,widget):
-        if "group" in layout:
-                sensors = utils.get_group_string(layout["group"])
-                if sensors is None: return
-        elif "sensors" in layout:
-                sensors = []
-                for i in range(len(layout["sensors"])):
-                        sensor_string = layout["sensors"][i]
-                        sensor = get_sensor_string(sensor_string)
-                        if sensor is not None: sensors.append(sensor)
-                if len(sensors) == 0: return
-        else: return
+	if "group" in layout:
+		sensors = utils.get_group_string(layout["group"])
+		if sensors is None: return
+	elif "sensors" in layout:
+		sensors = []
+		for i in range(len(layout["sensors"])):
+			sensor_string = layout["sensors"][i]
+			sensor = get_sensor_string(sensor_string)
+			if sensor is not None: sensors.append(sensor)
+		if len(sensors) == 0: return
+	else: return
 	chart = copy.deepcopy(conf["constants"]["charts"]["chart_"+layout["type"]+"_"+layout["timeframe"]])
 	# for each sensor
 	for i in range(len(sensors)):
@@ -159,13 +159,13 @@ def add_sensor_group_timeline_chart(layout,widget):
 			# add the series to the chart
 			add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,j)
 	chart['title']['text'] = utils.lang(widget["display_name"])
-        generate_chart(chart,widget["widget_id"])
+	generate_chart(chart,widget["widget_id"])
 
 # add a generic sensor chart widget
 def add_sensor_chart(layout,widget):
-        if "sensor" not in layout: return
-        sensor = utils.get_sensor_string(layout["sensor"])
-        if sensor is None: return
+	if "sensor" not in layout: return
+	sensor = utils.get_sensor_string(layout["sensor"])
+	if sensor is None: return
 	sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 	chart = copy.deepcopy(conf["constants"]["charts"][layout["type"]])
 	if sensor["format"] == "percentage": chart["yAxis"]["max"] = 100
@@ -174,42 +174,42 @@ def add_sensor_chart(layout,widget):
 	for i in range(len(sensor["series"])):
 		series = sensor["series"][i]
 		if "exclude" in layout and (sensor_url.replace("/",":") in layout["exclude"] or sensor_url.replace("/",":")+","+series["series_id"] in layout["exclude"]): continue
-                # reduce the history timeframe for email notifications
+		# reduce the history timeframe for email notifications
 		timeframe = "short_history" if layout["timeframe"] == "history" else layout["timeframe"]
 		add_series(chart,sensor_url+"/"+timeframe+"/"+series["series_id"],sensor,i)
 	chart['title']['text'] = utils.lang(widget["display_name"])
-        generate_chart(chart,widget["widget_id"])
+	generate_chart(chart,widget["widget_id"])
 
 # add an image widget
 def add_sensor_image(layout,widget):
-        if "sensor" not in layout: return
-        sensor = utils.get_sensor_string(layout["sensor"])
-        if sensor is None: return
-        sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+	if "sensor" not in layout: return
+	sensor = utils.get_sensor_string(layout["sensor"])
+	if sensor is None: return
+	sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
 	r = requests.get(hostname+sensor_url+"/current")
 	save_to_file(r,widget["widget_id"])
 
 # add a map widget
 def add_sensor_map(layout,widget):
-        if "group" not in layout: return
-        sensors = utils.get_group_string(layout["group"])
-        if sensors is None: return
-        # setup the map
-        map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
-        for i in range(len(sensors)):
+	if "group" not in layout: return
+	sensors = utils.get_group_string(layout["group"])
+	if sensors is None: return
+	# setup the map
+	map = DecoratedMap(maptype=conf["gui"]["maps"]["type"],size_x=conf["gui"]["maps"]["size_x"],size_y=conf["gui"]["maps"]["size_y"])
+	for i in range(len(sensors)):
 		# for each sensor of the group
-                sensor = sensors[i];
-                sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
-	        # retrieve the data
-        	markers = json.loads(utils.web_get(hostname+sensor_url+"/"+layout["timeframe"]+"/avg"))
+		sensor = sensors[i];
+		sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"]
+		# retrieve the data
+		markers = json.loads(utils.web_get(hostname+sensor_url+"/"+layout["timeframe"]+"/avg"))
 		if len(markers) == 0: continue
 		marker = json.loads(markers[len(markers)-1][1])
 		# add the marker to the map
 		map.add_marker(LatLonMarker(marker["latitude"],marker["longitude"], label=marker["label"][0].upper()))
 	# download the map
 	url = map.generate_url()
-        r = requests.get(url,verify=False)
-        save_to_file(r,widget["widget_id"])
+	r = requests.get(url,verify=False)
+	save_to_file(r,widget["widget_id"])
 
 # load all the widgets of the given module
 def run(module_id,requested_widget=None,generate_widget=True):
@@ -222,7 +222,7 @@ def run(module_id,requested_widget=None,generate_widget=True):
 			# for each widget
 			widget = module["widgets"][i][j]
 			if requested_widget is not None and widget["widget_id"] != requested_widget: continue
-		        if not widget["enabled"]: continue
+			if not widget["enabled"]: continue
 			# generate the widget
 			if "layout" not in widget: continue
 			for k in range(len(widget["layout"])):
@@ -240,9 +240,9 @@ def run(module_id,requested_widget=None,generate_widget=True):
 				elif layout["type"] == "chart_short" or layout["type"] == "chart_short_inverted": 
 					if generate_widget: add_sensor_chart(layout,widget)
 					break
-                                elif layout["type"] == "map":
-                                        if generate_widget: add_sensor_map(layout,widget)
-                                        break
+				elif layout["type"] == "map":
+					if generate_widget: add_sensor_map(layout,widget)
+					break
 				else: 
 					chart_generated = False
 					continue
