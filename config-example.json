@@ -3,7 +3,7 @@
     "enabled": true,
     "hostname": "localhost",
     "port": 6379,
-    "database": 2
+    "database": 1
   },
   "units": {
     "imperial": false,
@@ -100,9 +100,7 @@
     "csv": {
       "csv_file": "/opt/MessageBridge/CSVLogs/CSV_MessageBridge.csv"
     },
-    "linux": {
-      "timeout": 30
-	},
+    "linux": null,
     "image": null,
     "icloud": null,
     "messagebridge": {
@@ -793,22 +791,21 @@
         },
         {
           "rule_id": "temperature_yesterday",
-          "display_name": "Yesterday average temperature outside was %temperature_avg_yesterday% with a %condition_avg_yesterday% weather, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
-          "enabled": true,
+          "display_name": "Yesterday average temperature outside was %temperature_avg_yesterday%, the maximum %temperature_max_yesterday%, minimum %temperature_min_yesterday%",
+          "enabled": false,
           "severity": "info",
           "run_every": "day",
           "conditions": [],
           "definitions": {
             "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
             "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
-            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2",
-			"condition_avg_yesterday": "outdoor:temperature:condition:day:avg,-2,-2"
+            "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2"
           }
         },
         {
           "rule_id": "temperature_today",
-          "display_name": "So far, today's average temperature outside has been %temperature_avg% with a %condition_avg% weather, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
-          "enabled": true,
+          "display_name": "So far, today's average temperature outside has been %temperature_avg%, the maximum %temperature_max%, minimum %temperature_min%. The current temperature is now %temperature_now%",
+          "enabled": false,
           "severity": "info",
           "run_every": "never",
           "conditions": [],
@@ -816,8 +813,7 @@
             "temperature_now": "outdoor:temperature:external,-1,-1",
             "temperature_max": "outdoor:temperature:external:day:max,-1,-1",
             "temperature_min": "outdoor:temperature:external:day:min,-1,-1",
-            "temperature_avg": "outdoor:temperature:external:day:avg,-1,-1",
-			"condition_avg": "outdoor:temperature:condition:day:avg,-1,-1"
+            "temperature_avg": "outdoor:temperature:external:day:avg,-1,-1"
           }
         },
         {
@@ -3328,6 +3324,21 @@
             ]
           },
           {
+            "widget_id": "alarm_sensors_realtime",
+            "display_name": "Sensors: Realtime",
+            "enabled": true,
+            "size": 9,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "alarm:sensors",
+                "timeframe": "realtime"
+              }
+            ]
+          }
+		],
+        [
+          {
             "widget_id": "pir_first_floor",
             "display_name": "Indoor first floor sensor",
             "enabled": false,
@@ -3454,30 +3465,6 @@
           },
           "actions": [
             "set,%i%,0"
-          ]
-		},
-        {
-          "rule_id": "alarm_on",
-          "display_name": "The alarm has been armed",
-          "enabled": true,
-          "severity": "info",
-          "run_every": "never",
-          "conditions": [],
-          "definitions": {},
-          "actions": [
-            "set,alarm:main:alarm_status,1"
-          ]
-		},
-        {
-          "rule_id": "alarm_off",
-          "display_name": "The alarm has been disarmed",
-          "enabled": true,
-          "severity": "info",
-          "run_every": "never",
-          "conditions": [],
-          "definitions": {},
-          "actions": [
-            "set,alarm:main:alarm_status,0"
           ]
 		}
 	  ],
@@ -3695,69 +3682,6 @@
             "command_poll": "logwatch --range yesterday --output stdout --format text",
             "command_parse": "cat",
             "polling_interval": 1440
-          },
-          "format": "string",
-          "single_instance": true
-        }
-      ]
-    },
-	{
-      "module_id": "power",
-      "section_id": "System",
-      "display_name": "Reboot/Shutdown",
-      "icon": "fa-power-off",
-      "enabled": true,
-      "widgets": [
-        [
-          {
-            "widget_id": "reboot",
-            "display_name": "Reboot the system",
-            "enabled": true,
-            "size": 4,
-			"offset": 1,
-            "layout": [
-              {
-                "type": "button",
-				"display_name": "Reboot",
-                "send": "power/command/reboot/run/poll"
-              }
-            ]
-          },
-          {
-            "widget_id": "shutdown",
-            "display_name": "Shutdown the system",
-            "enabled": true,
-            "size": 4,
-			"offset": 2,
-            "layout": [
-              {
-                "type": "button",
-				"display_name": "Shutdown",
-                "send": "power/command/shutdown/run/poll"
-              }
-            ]
-          }
-        ]
-      ],
-      "sensors": [
-        {
-          "group_id": "command",
-          "sensor_id": "reboot",
-          "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
-            "command_poll": "reboot"
-          },
-          "format": "string",
-          "single_instance": true
-        },
-        {
-          "group_id": "command",
-          "sensor_id": "shutdown",
-          "plugin": {
-            "plugin_name": "linux",
-            "measure": "custom",
-            "command_poll": "shutdown"
           },
           "format": "string",
           "single_instance": true

@@ -168,12 +168,8 @@
 					"description": "Enable GUI debug in the browser console"
 				},
 				"sections": {
-					"type": "array",
-					"description": "Web GUI menu sections, referred by each module",
-					"items": {
-						"type": "string",
-						"title": "Menu section"
-					}
+					"type": "object",
+					"description": "Web GUI menu sections, mapping the section_id referred by each module to the label of the interface"
 				},
 				"maps": {
 					"type": "object",
@@ -2571,6 +2567,7 @@
 		"input",
 		"logging",
 		"plugins",
-		"modules"
+		"modules",
+		"pws"
 	]
 }

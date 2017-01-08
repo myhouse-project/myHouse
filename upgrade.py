@@ -34,10 +34,10 @@ def run_command(command):
 # backup the database and the configuration file
 def backup(version):
 	if not utils.file_exists(db_file): exit("unable to find the database at "+db_file)
-	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)+"_"+utils.now()
+	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)
 	print "Backing up the database "+db_file+" into "+backup_db_file
 	utils.run_command("cp "+db_file+" "+backup_db_file)
-        backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)+"_"+utils.now()
+        backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
         print "Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file
         utils.run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
 
@@ -245,12 +245,12 @@ def upgrade_2_1():
 def upgrade_2_2():
         # CONFIGURATION
         upgrade_db = False
-        upgrade_conf = False
+        upgrade_conf = True
 	upgrade_modules = False
 	# END
         conf = config.get_config(validate=False)
         print "[Migration from v2.1 to v2.2]\n"
-        backup("2.1")
+#        backup("2.1")
         if upgrade_conf:
                 print "Upgrading configuration file..."
 		new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
@@ -280,6 +280,7 @@ def upgrade_2_2():
 		new["plugins"]["ads1x15"] = None
 		print "\tINFO: please be aware the following new plugins are now available: earthquake, mqtt, ds18b20, dht, ads1x15"
 		# add general
+		new["general"] = {}
 		new["general"]["latitude"] = 0
 		new["general"]["longitude"] = 0
 		print "\tWARNING: different plugins use the new 'latitude' and 'longitude' in 'general', customize them"
@@ -288,6 +289,10 @@ def upgrade_2_2():
 		del new["units"]
                 new["general"]["timeframes"] = conf["timeframes"]
                 del new["timeframes"]
+		# migrate sections
+		new_sections = {}
+		for section in new["gui"]["sections"]: new_sections[section] = section
+		new["gui"]["sections"] = new_sections
 		# add the power module
 		power =  {
 		      "module_id": "power",
@@ -372,10 +377,11 @@ def upgrade_2_2():
 		print "\tWARNING: 'location' in 'plugins/wunderground' and 'plugins/weatherchannel' has been precated, use e 'latitude' and 'longitude' in 'general' instead"
 		# delete csv_file from the csv plugin
 		if "csv_file" in new["plugins"]["csv"]:
-			del new["plugins"]["csv"]["csv_file"]
-			print "WARNING: 'csv_file' in 'plugins/csv' has been deprecated, specify the filename in each sensor"
+			print "\tWARNING: 'csv_file' in 'plugins/csv' has been deprecated, specify the filename in each sensor"
+		new["plugins"]["csv"] = None
 		# warn about data_expire_days
 		print "\tWARNING: data_expire_days in 'sensors' has been deprecated, use 'retention' instead"
+		del new["sensors"]["data_expire_days"]
 		# warn about icloud widget
 		print "\tWARNING: if you have any widget displaying the position of an icloud-based sensor, please manually edit it. Set 'type' to 'map', 'group' to the group of sensors, 'tracking' to 'true' and 'timeframe' to 'realtime'"
 		# add output
@@ -423,6 +429,19 @@ def upgrade_2_2():
 		del new["output"]["slack"]["interactive_bot"]
 		# add skin
 		new["gui"]["skin"] = "blue"
+		# add pws
+		pws =  {
+		        "enabled": False,
+		        "username": "",
+		        "password": "",
+		        "publishing_interval": 10,
+		        "data": {
+		                "tempf": "outdoor:temperature:external",
+		                "humidity": "outdoor:humidity:external",
+		                "baromin": "outdoor:pressure:external"
+		        }
+		  }
+		new["pws"] = pws
 		# add audio input
 		input_audio = {
 			  "enabled": False,
@@ -489,9 +508,9 @@ def upgrade_2_2():
 			if "rules" in module:
 				for i in range(len(module["rules"])):
 					rule = module["rules"][i]
-					for a,b in module["rules"]["definitions"].iteritems():
+					for a,b in rule["definitions"].iteritems():
 						# rename timestam in elapsed in rule definition
-						if ",timestamp" in b: module["rules"]["definitions"][a] = b.replace(",timestamp",",elapsed")
+						if not utils.is_number(b) and ",timestamp" in b: rule["definitions"][a] = b.replace(",timestamp",",elapsed")
                         if "sensors" in module:
                                 for i in range(len(module["sensors"])):
                                         sensor = module["sensors"][i]
@@ -505,6 +524,7 @@ def upgrade_2_2():
                                         if "single_instance" in sensor: 
 						sensor["retention"] = {}
 						sensor["retention"]["realtime_count"] = 1
+						del sensor["single_instance"]
 					if "plugin" in sensor:
 						# rename csv plugin settings
 						if sensor["plugin"]["plugin_name"] == "csv":
@@ -525,6 +545,7 @@ def upgrade_2_2():
                                                                 del sensor["plugin"]["measure_index"]
 						if sensor["plugin"]["plugin_name"] == "icloud":
 							# device name mandatory
+							sensor["plugin"]["device_name"] = ""
 							print "\tWARNING: the 'icloud' plugin requires a single 'device_name' to be set, please review all your sensors using this plugin"
 							if "devices" in sensor["plugin"]:
 								sensor["plugin"]["device"] = sensor["plugin"]["devices"][0]
@@ -546,15 +567,18 @@ def upgrade_2_2():
                                                 widget = module["widgets"][i][j]
                                                 for k in range(len(widget["layout"])):
                                                         layout = widget["layout"][k]
-							if layout["type"] == "sensor_group_summary" and layout["type"]["group"] in group_summary_exclude:
+							if layout["type"] == "sensor_group_summary" and layout["group"] in group_summary_exclude:
 								# add exclude
 								layout["exclude"] = []
-								layout["exclude"].append(group_summary_exclude[layout["type"]["group"]])
+								layout["exclude"].append(group_summary_exclude[layout["group"]])
 		# delete from the db the sensors in group_to_delete
 		for group in group_to_delete:
 			sensors = utils.get_group(group)
 			for sensor in sensors:
+				print sensor["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"]
 				db.delete(sensor["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"])
+                # save the updated configuration
+                config.save(json.dumps(new, default=lambda o: o.__dict__))
 
 	if upgrade_modules:
 		print "Installing additional dependencies..."
@@ -592,7 +616,7 @@ def main():
 	# ensure it is run as root
 	if os.geteuid() != 0:
 	        exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
-	print "Welcome to myHouse v"+conf["constants"]["version_string"]+" Upgrade Utility"
+	print "Welcome to myHouse Upgrade Utility"
 	print "-----------------------------------------"
 	# retrieve the version from the database
 	version_key = conf["constants"]["db_schema"]["version"]

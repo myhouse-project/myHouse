@@ -320,9 +320,9 @@ th.dt-center, td.dt-center { text-align: center; }
 		log("info","loading menu");
 		// empty the menu
 		$("#menu").empty()
-		for (var i = 0; i < conf["gui"]["sections"].length; i++) {
-			var section_id = conf["gui"]["sections"][i]
-			$("#menu").append('<li class="header">'+section_id.toUpperCase()+'</li>');
+		for (section_id in conf["gui"]["sections"]) {
+			var label = conf["gui"]["sections"][section_id]
+			$("#menu").append('<li class="header">'+label.toUpperCase()+'</li>');
 			for (var j = 0; j < conf["modules"].length; j++) {
 				var module = conf['modules'][j];
 				if (! module["enabled"]) continue;
