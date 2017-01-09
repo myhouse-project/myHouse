@@ -12,6 +12,7 @@ settings = conf["output"]["sms"]
 
 # send a sms with the given text
 def notify(text):
+	text = "["+conf["general"]["house_name"]+"] "+text
 	for to in settings["to"]:
 		protocol = "https://" if settings["ssl"] else "http://"
 		url = protocol+settings["hostname"]+"/myaccount/sendsms.php?username="+settings["username"]+"&password="+settings["password"]+"&from="+str(settings["from"])+"&to="+str(to)+"&text="+text

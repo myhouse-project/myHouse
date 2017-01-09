@@ -58,7 +58,7 @@ def learn_config(include_widgets):
 				if len(rule["conditions"]) != 0: continue
 				# keywords are the rule display name and additional keywords if any
 				keywords = utils.lang(rule["display_name"])
-				if "keywords" in rule: keywords = keywords+" "+rule["keywords"]
+				if "keywords" in rule: keywords = keywords+" "+utils.lang(rule["keywords"])
 				# user requesting for an alert
 				kb[cleanup.sub(' ',keywords).lower()] = "rule|"+module["module_id"]+"|"+rule["rule_id"]
 		if "widgets" in module and include_widgets:
@@ -74,7 +74,7 @@ def learn_config(include_widgets):
 						# consider only the layouts we can generate a chart of
 						if layout["type"] == "image" or layout["type"] == "map" or layout["type"].startswith("chart_") or layout["type"].startswith("sensor_"):
 							keywords = utils.lang(widget["display_name"])
-							if "keywords" in rule: keywords = keywords+" "+rule["keywords"]
+							if "keywords" in rule: keywords = keywords+" "+utils.lang(rule["keywords"])
 							# user requesting for a widget
 							kb[cleanup.sub(' ',keywords).lower()] = "chart|"+module["module_id"]+"|"+widget["widget_id"]
 							break

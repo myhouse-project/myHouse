@@ -7,6 +7,10 @@
 			"type": "object",
 			"description": "Define general settings",
 			"properties": {
+				"house_name": {
+					"type": "string",
+					"description": "The name of this house"
+				},
 				"latitude": {
 					"type": "number",
 					"description": "The latitude of the current location. Different plugins and services will use this as the default position"
@@ -89,7 +93,8 @@
 				"longitude",
 				"timeframes",
 				"units",
-				"language"
+				"language",
+				"house_name"
 			]
 		},
 		"db": {
@@ -982,6 +987,10 @@
 				"ads1x15": {
 					"type": "null",
 					"description": "DHT11 and DHT22 plugin configuration"
+				},
+				"rss": {
+					"type": "null",
+					"description": "RSS Feed plugin configuration"
 				}
 			},
 			"additionalProperties": false,
@@ -1000,7 +1009,8 @@
 				"mqtt",
 				"ds18b20",
 				"dht",
-				"ads1x15"
+				"ads1x15",
+				"rss"
 			]
 		},
 		"pws": {
@@ -1094,8 +1104,9 @@
 										"minItems": 1
 									},
 									"keywords": {
-										"type": "string",
-										"description": "Additional keywords that will be used for better matching a user request with this rule"
+										"type": "object",
+										"description": "Additional keywords that will be used for better matching a user request with this widget (for each configured language)",
+										"minItems": 1
 									},
 									"enabled": {
 										"type": "boolean",
@@ -1639,8 +1650,9 @@
 									"minItems": 1
 								},
 								"keywords": {
-									"type": "string",
-									"description": "Additional keywords that will be used for better matching a user request with this rule"
+									"type": "object",
+									"description": "Additional keywords that will be used for better matching a user request with this rule (for each configured language)",
+									"minItems": 1
 								},
 								"enabled": {
 									"type": "boolean",
@@ -1738,6 +1750,10 @@
 									"type": "string",
 									"description": "The identifier of a sensor, must be unique within the group"
 								},
+								"enabled": {
+									"type": "boolean",
+									"description": "Enable this sensor"
+								},
 								"display_name": {
 									"type": "object",
 									"description": "Name of the sensor (for each configured language)",
@@ -1799,6 +1815,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -1922,6 +1942,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -1956,6 +1980,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2006,6 +2034,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2060,6 +2092,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2098,6 +2134,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2193,6 +2233,10 @@
 														"high"
 													],
 													"value": "low"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2229,6 +2273,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2296,6 +2344,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2343,6 +2395,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2411,6 +2467,10 @@
 													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
 													"value": false,
 													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
@@ -2421,6 +2481,41 @@
 												"gain",
 												"channel",
 												"output"
+											]
+										},
+										{
+											"title": "rss",
+											"description": "Retrieve headlines from a RSS feed",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"rss"
+													],
+													"value": "rss"
+												},
+												"url": {
+													"type": "string",
+													"description": "The url of the RSS feed"
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"url"
 											]
 										}
 									]
@@ -2576,7 +2671,9 @@
 							"required": [
 								"group_id",
 								"sensor_id",
-								"format"
+								"format",
+								"enabled",
+								"module_id"
 							]
 						}
 					}

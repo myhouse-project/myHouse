@@ -37,7 +37,7 @@ def send(subject,body,images=[]):
 	# prepare the message
 	msg['From'] = conf["output"]["email"]["from"]
 	msg['To'] = ", ".join(conf["output"]["email"]["to"])
-	msg['Subject'] = "[myHouse] "+subject
+	msg['Subject'] = "["+conf["general"]["house_name"]+"] "+subject
 	msg.attach(MIMEText(body, 'html'))
 	smtp = smtplib.SMTP(conf["output"]["email"]["hostname"])
 	# send it

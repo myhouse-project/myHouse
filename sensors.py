@@ -31,6 +31,7 @@ import plugin_system
 import plugin_dht
 import plugin_ds18b20
 import plugin_ads1x15
+import plugin_rss
 
 # variables
 plugins = {}
@@ -56,6 +57,7 @@ def init_plugins():
 		elif name == "dht": plugin = plugin_dht
 		elif name == "ds18b20": plugin = plugin_ds18b20
 		elif name == "ads1x15": plugin = plugin_ads1x15
+		elif name == "rss": plugin = plugin_rss
 		if plugin is None:
 			log.error("plugin "+name+" not supported")
 			continue
@@ -267,7 +269,7 @@ def init_sensor(sensor):
 			if plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor) is None:
 				log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] invalid measure")
 				return None
-			sensor['db_cache'] = conf["constants"]["db_schema"]["root"]+":"+conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["plugin_name"]+":"+plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor)
+			sensor['db_cache'] = conf["constants"]["db_schema"]["tmp"]+":plugin_"+sensor["plugin"]["plugin_name"]+":"+plugins[sensor["plugin"]["plugin_name"]].cache_schema(sensor)
 	return sensor
 
 # read or save the measure of a given sensor
@@ -314,6 +316,8 @@ def schedule_all():
 		# skip group without sensors
 		if "sensors" not in module: continue
 		for sensor in module["sensors"]:
+			# check if the sensor is enabled
+			if not sensor["enabled"]: continue
 			# initialize the sensor data structure
 			sensor = init_sensor(sensor)
 			if sensor is None: continue

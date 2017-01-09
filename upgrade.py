@@ -267,6 +267,8 @@ def upgrade_2_2():
 		new["plugins"]["image"]["timeout"] = 30
 		# add the earthquake plugin
 		new["plugins"]["earthquake"] = None
+		# add the rss plugin
+		new["plugins"]["rss"] = None
 		# add the mqtt plugin
 		new["plugins"]["mqtt"] = {}
 		new["plugins"]["mqtt"]["enabled"] = False
@@ -283,6 +285,7 @@ def upgrade_2_2():
 		new["general"] = {}
 		new["general"]["latitude"] = 0
 		new["general"]["longitude"] = 0
+		new["general"]["house_name"] = run_command("hostname")
 		print "\tWARNING: different plugins use the new 'latitude' and 'longitude' in 'general', customize them"
 		# add language
 		new["general"]["language"] = "en"
@@ -300,7 +303,53 @@ def upgrade_2_2():
 			section_item["display_name"] = {}
 			section_item["display_name"]["en"] = section
 		new["gui"]["sections"] = new_sections
-		# add the power module
+		# define the news module
+		news = {
+		      "module_id": "news",
+		      "section_id": "Main",
+		      "display_name": {
+		                "en": "News"
+	                },
+		      "icon": "fa-newspaper-o",
+		      "enabled": True,
+		      "widgets": [
+		        [
+		          {
+		            "widget_id": "news_recent",
+		            "display_name": {
+	                                "en": "Recent News"
+                                },
+		            "enabled": True,
+		            "size": 12,
+		            "layout": [
+		              {
+		                "type": "table",
+		                "sensor": "news:rss:all_news",
+		                "columns": ""
+		              }
+		            ]
+		          }
+		        ]
+		      ],
+		      "sensors": [
+		        {
+                	  "module_id": "news",
+		          "group_id": "rss",
+		          "sensor_id": "all_news",
+	                  "enabled": True,
+		          "plugin": {
+		            "plugin_name": "rss",
+		            "url": "http://rss.cnn.com/rss/edition.rss",
+	                    "polling_interval": 20
+		          },
+		          "format": "string",
+	                  "retention": {
+	                        "realtime_count": 1
+	                  }
+		        }
+		      ]
+		}
+		# define the power module
 		power =  {
 		      "module_id": "power",
 		      "section_id": "System",
@@ -354,6 +403,7 @@ def upgrade_2_2():
 			  "module_id": "power",
 			  "group_id": "command",
 			  "sensor_id": "reboot",
+			  "enabled": True,
 			  "plugin": {
 			    "plugin_name": "system",
 			    "measure": "reboot"
@@ -367,6 +417,7 @@ def upgrade_2_2():
 			  "module_id": "power",
 			  "group_id": "command",
 			  "sensor_id": "shutdown",
+   	                  "enabled": True,
 			  "plugin": {
 			    "plugin_name": "system",
 			    "measure": "shutdown"
@@ -505,6 +556,7 @@ def upgrade_2_2():
 				  "module_id": "system",
 				  "group_id": "runtime",
 				  "sensor_id": "uptime",
+				  "enabled": True,
 				  "display_name": "uptime",
 				  "plugin": {
 				    "plugin_name": "system",
@@ -547,7 +599,9 @@ def upgrade_2_2():
 			if "sensors" in module:
 				for i in range(len(module["sensors"])):
 					sensor = module["sensors"][i]
-				       # update display_name
+					# add enabled
+					sensor["enabled"] = True
+				        # update display_name
 					if "display_name" in sensor:
 						display_name = {"en": sensor["display_name"]}
 						sensor["display_name"] = display_name
@@ -597,6 +651,8 @@ def upgrade_2_2():
 								sensor["plugin"]["plugin_name"] = "system"
 		# add the power module
 		new["modules"].append(power)
+		# add the news module
+		new["modules"].append(news)
 		# second round
 		for module in new["modules"]:
 			module_id = module["module_id"]
@@ -645,6 +701,8 @@ def upgrade_2_2():
 		run_command("pip install Adafruit_Python_DHT")
 		print "\tInstalling python-ads1x15..."
 		run_command("pip install Adafruit_ADS1x15")
+        	print "Installing python-feedparser..."
+	        run_command("pip install python-feedparser")
 	if upgrade_db:
 		print "Upgrading database..."
 		version_key = conf["constants"]["db_schema"]["version"]

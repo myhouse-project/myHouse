@@ -220,7 +220,7 @@ def get_group(module_id,group_id):
 		if "sensors" not in module: continue
 		for j in range(len(module["sensors"])):
 			sensor = module["sensors"][j]
-			if sensor["module_id"] == module_id and sensor["group_id"] == group_id: sensors.append(sensor)
+			if sensor["enabled"] and sensor["module_id"] == module_id and sensor["group_id"] == group_id: sensors.append(sensor)
 	if len(sensors) == 0: return None
 	return sensors
 
@@ -236,7 +236,7 @@ def get_sensor(module_id,group_id,sensor_id):
 	if sensors is None: return None
 	for j in range (len(sensors)):
 		sensor = sensors[j]
-		if sensor["sensor_id"] == sensor_id: return sensor
+		if sensor["enabled"] and sensor["sensor_id"] == sensor_id: return sensor
 	return None
 
 # fetch a sensor
