@@ -75,6 +75,8 @@ def install_deps():
 	run_command("pip install Adafruit_Python_DHT")
 	print "Installing python-ads1x15..."
 	run_command("pip install Adafruit_ADS1x15")
+        print "Installing python-feedparser..."
+        run_command("pip install python-feedparser")
 
 # installation routine
 def install():

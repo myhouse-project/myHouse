@@ -125,7 +125,8 @@
     },
     "ds18b20": null,
     "dht": null,
-    "ads1x15": null
+    "ads1x15": null,
+	"rss": null
   },
   "modules": [
     {
@@ -974,6 +975,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "temperature",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature"
           },
@@ -994,6 +996,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "condition",
+		  "enabled": true,
           "display_name": {
             "en": "Condition"
           },
@@ -1017,6 +1020,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "pop",
+		  "enabled": true,
           "display_name": {
             "en": "Chance of rain"
           },
@@ -1037,6 +1041,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "rain",
+		  "enabled": true,
           "display_name": {
             "en": "Rain"
           },
@@ -1057,6 +1062,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "snow",
+		  "enabled": true,
           "display_name": {
             "en": "Snow"
           },
@@ -1077,6 +1083,7 @@
         {
           "group_id": "alerts",
           "sensor_id": "weather_alerts",
+		  "enabled": true,
           "display_name": {
             "en": "Weather Alert"
           },
@@ -1091,6 +1098,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "external",
+		  "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -1120,6 +1128,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "record",
+		  "enabled": true,
           "display_name": {
             "en": "Record"
           },
@@ -1156,6 +1165,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "normal",
+		  "enabled": true,
           "display_name": {
             "en": "Normal"
           },
@@ -1170,6 +1180,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "condition",
+		  "enabled": true,
           "display_name": {
             "en": "Condition"
           },
@@ -1197,6 +1208,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "record_year",
+		  "enabled": true,
           "display_name": {
             "en": "Record Year"
           },
@@ -1211,6 +1223,7 @@
         {
           "group_id": "precipitation",
           "sensor_id": "rain",
+		  "enabled": true,
           "display_name": {
             "en": "Rain"
           },
@@ -1231,6 +1244,7 @@
         {
           "group_id": "precipitation",
           "sensor_id": "snow",
+		  "enabled": true,
           "display_name": {
             "en": "Snow"
           },
@@ -1251,6 +1265,7 @@
         {
           "group_id": "wind",
           "sensor_id": "speed",
+		  "enabled": true,
           "display_name": {
             "en": "Wind"
           },
@@ -1280,6 +1295,7 @@
         {
           "group_id": "wind",
           "sensor_id": "gust",
+		  "enabled": true,
           "display_name": {
             "en": "Wind Gust"
           },
@@ -1305,6 +1321,7 @@
         {
           "group_id": "wind",
           "sensor_id": "wind_direction",
+		  "enabled": true,
           "display_name": {
             "en": "Wind Direction"
           },
@@ -1332,6 +1349,7 @@
         {
           "group_id": "humidity",
           "sensor_id": "external",
+		  "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -1360,6 +1378,7 @@
         {
           "group_id": "light",
           "sensor_id": "external",
+		  "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -1388,6 +1407,7 @@
         {
           "group_id": "pressure",
           "sensor_id": "external",
+		  "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -1853,6 +1873,7 @@
         {
           "group_id": "alerts",
           "sensor_id": "flood",
+		  "enabled": true,
           "display_name": {
             "en": "Flood Alert"
           },
@@ -1867,12 +1888,14 @@
         {
           "group_id": "alerts",
           "sensor_id": "flood_alert_status",
+		  "enabled": true,
           "format": "int",
           "module_id": "indoor"
         },
         {
           "group_id": "temperature",
           "sensor_id": "living_room",
+		  "enabled": true,
           "display_name": {
             "en": "Living Room"
           },
@@ -1901,6 +1924,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "ground_floor",
+		  "enabled": true,
           "display_name": {
             "en": "Ground Floor"
           },
@@ -1925,6 +1949,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "bedroom",
+		  "enabled": true,
           "display_name": {
             "en": "Bedroom"
           },
@@ -1949,6 +1974,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "study_room",
+		  "enabled": true,
           "display_name": {
             "en": "Study Room"
           },
@@ -1975,6 +2001,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "boiler_status",
+		  "enabled": true,
           "display_name": {
             "en": "Boiler Status"
           },
@@ -2002,12 +2029,14 @@
         {
           "group_id": "temperature",
           "sensor_id": "boiler_status_prev",
+		  "enabled": true,
           "format": "int",
           "module_id": "indoor"
         },
         {
           "group_id": "humidity",
           "sensor_id": "first_floor",
+		  "enabled": true,
           "display_name": {
             "en": "First Floor"
           },
@@ -2036,6 +2065,7 @@
         {
           "group_id": "humidity",
           "sensor_id": "ground_floor",
+		  "enabled": true,
           "display_name": {
             "en": "Ground Floor"
           },
@@ -2060,6 +2090,7 @@
         {
           "group_id": "fridge",
           "sensor_id": "refrigerator",
+		  "enabled": true,
           "display_name": {
             "en": "Refrigerator"
           },
@@ -2088,6 +2119,7 @@
         {
           "group_id": "fridge",
           "sensor_id": "freezer",
+		  "enabled": true,
           "display_name": {
             "en": "Freezer"
           },
@@ -2116,6 +2148,7 @@
         {
           "group_id": "battery",
           "sensor_id": "temperature_refrigerator",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature Refrigerator"
           },
@@ -2149,6 +2182,7 @@
         {
           "group_id": "battery",
           "sensor_id": "temperature_freezer",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature Freezer"
           },
@@ -2174,6 +2208,7 @@
         {
           "group_id": "battery",
           "sensor_id": "temperature_bedroom",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature Bedroom"
           },
@@ -2199,6 +2234,7 @@
         {
           "group_id": "battery",
           "sensor_id": "humidity_ground_floor",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature/Humidity Ground Floor"
           },
@@ -2224,6 +2260,7 @@
         {
           "group_id": "battery",
           "sensor_id": "humidity_first_floor",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature/Humidity First Floor"
           },
@@ -2249,6 +2286,7 @@
         {
           "group_id": "battery",
           "sensor_id": "light",
+		  "enabled": true,
           "display_name": {
             "en": "Ambient Light"
           },
@@ -2274,6 +2312,7 @@
         {
           "group_id": "battery",
           "sensor_id": "pressure",
+		  "enabled": true,
           "display_name": {
             "en": "Pressure/Temperature External"
           },
@@ -2299,6 +2338,7 @@
         {
           "group_id": "battery",
           "sensor_id": "flood",
+		  "enabled": true,
           "display_name": {
             "en": "Flood"
           },
@@ -2324,6 +2364,7 @@
         {
           "group_id": "battery",
           "sensor_id": "switch",
+		  "enabled": true,
           "display_name": {
             "en": "Tilt Switch"
           },
@@ -2349,6 +2390,7 @@
         {
           "group_id": "battery",
           "sensor_id": "boiler",
+		  "enabled": true,
           "display_name": {
             "en": "Boiler Switch"
           },
@@ -2504,6 +2546,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "1",
+		  "enabled": true,
           "display_name": {
             "en": "Webcam 1"
           },
@@ -2521,6 +2564,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "2",
+		  "enabled": true,
           "display_name": {
             "en": "Webcam 2"
           },
@@ -2538,6 +2582,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "3",
+		  "enabled": true,
           "display_name": {
             "en": "Webcam 3"
           },
@@ -2555,6 +2600,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "4",
+		  "enabled": true,
           "display_name": {
             "en": "Webcam 4"
           },
@@ -2572,6 +2618,7 @@
         {
           "group_id": "inside",
           "sensor_id": "first_floor",
+		  "enabled": true,
           "display_name": {
             "en": "First Floor"
           },
@@ -2580,7 +2627,8 @@
             "url": "http://webcam/snapshot.cgi",
             "username": "guest",
             "password": "",
-            "polling_interval": 20
+            "polling_interval": 20,
+			"cache_expire_min": 0
           },
           "format": "image",
           "module_id": "webcams",
@@ -2610,6 +2658,7 @@
 		  "module_id": "webcams",
           "group_id": "inside",
           "sensor_id": "first_floor_alarm",
+		  "enabled": true,
           "format": "int",
 		  "retention": {
             "realtime_count": 1
@@ -2649,6 +2698,7 @@
         {
           "group_id": "location",
           "sensor_id": "icloud",
+		  "enabled": true,
           "display_name": {
             "en": "Location"
           },
@@ -3070,6 +3120,7 @@
         {
           "group_id": "cpu",
           "sensor_id": "cpu_user",
+		  "enabled": true,
           "display_name": {
             "en": "CPU User"
           },
@@ -3094,6 +3145,7 @@
         {
           "group_id": "cpu",
           "sensor_id": "cpu_system",
+		  "enabled": true,
           "display_name": {
             "en": "CPU System"
           },
@@ -3118,6 +3170,7 @@
         {
           "group_id": "memory",
           "sensor_id": "ram",
+		  "enabled": true,
           "display_name": {
             "en": "RAM"
           },
@@ -3142,6 +3195,7 @@
         {
           "group_id": "load",
           "sensor_id": "load_1",
+		  "enabled": true,
           "display_name": {
             "en": "Load 1 min"
           },
@@ -3166,6 +3220,7 @@
         {
           "group_id": "network",
           "sensor_id": "services",
+		  "enabled": true,
           "display_name": {
             "en": "Services"
           },
@@ -3190,6 +3245,7 @@
         {
           "group_id": "network",
           "sensor_id": "connections",
+		  "enabled": true,
           "display_name": {
             "en": "Connections"
           },
@@ -3214,6 +3270,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "temperature",
+		  "enabled": true,
           "display_name": {
             "en": "Temperature"
           },
@@ -3242,6 +3299,7 @@
         {
           "group_id": "myhouse_database",
           "sensor_id": "database",
+		  "enabled": true,
           "display_name": {
             "en": "Database Size"
           },
@@ -3267,6 +3325,7 @@
         },
         {
           "sensor_id": "uptime",
+		  "enabled": true,
           "display_name": {
             "en": "uptime"
           },
@@ -3755,6 +3814,7 @@
         {
           "group_id": "main",
           "sensor_id": "switch",
+		  "enabled": true,
           "display_name": {
             "en": "Boiler main Switch"
           },
@@ -3773,6 +3833,7 @@
         {
           "group_id": "main",
           "sensor_id": "heartbeat",
+		  "enabled": true,
           "display_name": {
             "en": "Boiler Heartbeat"
           },
@@ -3787,21 +3848,30 @@
         {
           "group_id": "main",
           "sensor_id": "heartbeat_alert_status",
+		  "enabled": true,
           "format": "int",
-          "module_id": "boiler"
+          "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "main",
           "sensor_id": "max_temperature",
+		  "enabled": true,
           "display_name": {
             "en": "Target Temperature"
           },
           "format": "temperature",
-          "module_id": "boiler"
+          "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1
+          }
         },
         {
           "group_id": "scheduler",
           "sensor_id": "calendar",
+		  "enabled": true,
           "display_name": {
             "en": "Boiler Scheduler"
           },
@@ -3814,6 +3884,7 @@
         {
           "group_id": "scheduler",
           "sensor_id": "switch",
+		  "enabled": true,
           "display_name": {
             "en": "Scheduler Switch"
           },
@@ -3827,6 +3898,7 @@
         {
           "group_id": "keyfob",
           "sensor_id": "keyfob_a",
+		  "enabled": true,
           "display_name": {
             "en": "Keyfob A"
           },
@@ -3845,6 +3917,7 @@
         {
           "group_id": "keyfob",
           "sensor_id": "keyfob_b",
+		  "enabled": true,
           "display_name": {
             "en": "Keyfob B"
           },
@@ -3863,6 +3936,7 @@
         {
           "group_id": "keyfob",
           "sensor_id": "keyfob_b",
+		  "enabled": true,
           "display_name": {
             "en": "Keyfob B"
           },
@@ -4074,6 +4148,7 @@
         {
           "group_id": "sensors",
           "sensor_id": "pir_ground_floor",
+		  "enabled": true,
           "display_name": {
             "en": "PIR ground floor"
           },
@@ -4100,6 +4175,7 @@
         {
           "group_id": "sensors",
           "sensor_id": "pir_study_room",
+		  "enabled": true,
           "display_name": {
             "en": "PIR study room"
           },
@@ -4126,6 +4202,7 @@
         {
           "group_id": "sensors",
           "sensor_id": "pir_ground_floor_armed",
+		  "enabled": true,
           "format": "int",
           "module_id": "alarm",
 		  "retention": {
@@ -4135,6 +4212,7 @@
         {
           "group_id": "sensors",
           "sensor_id": "pir_study_room_armed",
+		  "enabled": true,
           "format": "int",
           "module_id": "alarm",
 		  "retention": {
@@ -4144,6 +4222,7 @@
         {
           "group_id": "main",
           "sensor_id": "alarm_set_on",
+		  "enabled": true,
           "display_name": {
             "en": "Alarm On"
           },
@@ -4163,6 +4242,7 @@
         {
           "group_id": "main",
           "sensor_id": "alarm_set_off",
+		  "enabled": true,
           "display_name": {
             "en": "Alarm Off"
           },
@@ -4182,6 +4262,7 @@
         {
           "group_id": "main",
           "sensor_id": "alarm_status",
+		  "enabled": true,
           "display_name": {
             "en": "Alarm Status"
           },
@@ -4256,6 +4337,7 @@
         {
           "group_id": "dnsmasq",
           "sensor_id": "lease",
+		  "enabled": true,
           "display_name": {
             "en": "DHCP Lease"
           },
@@ -4274,6 +4356,7 @@
         {
           "group_id": "dnsmasq",
           "sensor_id": "dhcp",
+		  "enabled": true,
           "display_name": {
             "en": "DHCP Mapping"
           },
@@ -4292,6 +4375,7 @@
         {
           "group_id": "dnsmasq",
           "sensor_id": "dns",
+		  "enabled": true,
           "display_name": {
             "en": "DNS Mapping"
           },
@@ -4339,6 +4423,7 @@
         {
           "group_id": "logs",
           "sensor_id": "yesterday",
+		  "enabled": true,
           "display_name": {
             "en": "LogWatch"
           },
@@ -4404,6 +4489,7 @@
         {
           "group_id": "myhouse",
           "sensor_id": "main",
+		  "enabled": true,
           "display_name": {
             "en": "myHouse"
           },
@@ -4419,6 +4505,7 @@
         {
           "group_id": "system",
           "sensor_id": "messages",
+		  "enabled": true,
           "display_name": {
             "en": "Messages"
           },
@@ -4510,6 +4597,7 @@
       "sensors": [
         {
           "sensor_id": "reboot",
+		  "enabled": true,
           "format": "string",
           "plugin": {
             "plugin_name": "system",
@@ -4523,6 +4611,7 @@
         },
         {
           "sensor_id": "shutdown",
+		  "enabled": true,
           "format": "string",
           "plugin": {
             "plugin_name": "system",
@@ -4598,6 +4687,7 @@
 		  "module_id": "earthquake",
           "group_id": "networks",
           "sensor_id": "usgs",
+		  "enabled": true,
           "display_name": {
 			"en": "USGS",
 			"it": "USGS"
@@ -4618,16 +4708,63 @@
 		  "module_id": "earthquake",
           "group_id": "alert",
           "sensor_id": "world",
+		  "enabled": true,
 		  "retention": {
 			"realtime_count": 1
 		  },
           "format": "int"
         }
       ]
+    },
+	{
+      "module_id": "news",
+      "section_id": "Main",
+      "display_name": {
+		"en": "News"
+		},
+      "icon": "fa-newspaper-o",
+      "enabled": true,
+      "widgets": [
+        [
+          {
+            "widget_id": "news_recent",
+            "display_name": {
+				"en": "Recent News"
+				},
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "table",
+                "sensor": "news:rss:all_news",
+                "columns": ""
+              }
+            ]
+          }
+        ]
+      ],
+      "sensors": [
+        {
+		  "module_id": "news",
+          "group_id": "rss",
+          "sensor_id": "all_news",
+		  "enabled": true,
+          "plugin": {
+            "plugin_name": "rss",
+            "url": "http://rss.cnn.com/rss/edition.rss",
+			"polling_interval": 20
+          },
+          "format": "string",
+		  "retention": {
+			"realtime_count": 1
+		  }
+        }
+      ]
     }
   ],
   "general": {
-    "latitude": 0,
+    "house_name": "myHouse",
+    "latitude": 40.71,
     "units": {
       "imperial": false,
       "fahrenheit": false
@@ -4642,7 +4779,7 @@
       "alerter_history_days": 7
     },
     "language": "en",
-    "longitude": 0
+    "longitude": -74.00
   },
   "output": {
     "audio": {

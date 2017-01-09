@@ -22,25 +22,8 @@ import image_utils
 
 # for an image apply the configured object detection techniques
 def parse_image(sensor,data):
-	if len(data) == 0: return [""]
-	# detect objects in the last image
-	if "object_detection" in sensor: 
-		result = image_utils.detect_objects(sensor,data[(len(data)-1)],is_base64=True)
-		if result is not None:
-			# detect something
-			text = result[0]
-			image = result[1]
-			# save the image on disk
-			image_utils.save_tmp_image("objects_detection",image)
-			# save a new image with the object highlighted into the sensor
-			measures = []
-			measure = {}
-			measure["key"] = sensor["sensor_id"]
-			measure["value"] = image
-			measures.append(measure)
-			sensors.store(sensor,measures)
-			# return the alert text
-			return [text]
+	alert_text = ""
+	if len(data) == 0: return [alert_text]
 	# detect movements if there are at least two images
 	if "motion_detection" in sensor and len(data) >= 2:
 		result = image_utils.detect_movement(sensor,data,is_base64=True)
@@ -51,8 +34,27 @@ def parse_image(sensor,data):
 			if difference > sensor["motion_detection"]["threshold"]:
 				# save the image on disk
 				image_utils.save_tmp_image("motion_detection",image)
-				return [utils.lang(sensor["motion_detection"]["display_name"])+" ("+str(difference)+"%)"]
-	return [""]		
+				alert_text = utils.lang(sensor["motion_detection"]["display_name"])+" ("+str(difference)+"%)"
+        # detect objects in the last image
+        if "object_detection" in sensor:
+                result = image_utils.detect_objects(sensor,data[(len(data)-1)],is_base64=True)
+                if result is not None:
+                        # detect something
+                        text = result[0]
+                        image = result[1]
+                        # save the image on disk
+                        image_utils.save_tmp_image("objects_detection",image)
+                        # save a new image with the object highlighted into the sensor
+                        measures = []
+                        measure = {}
+                        measure["key"] = sensor["sensor_id"]
+                        measure["value"] = image
+                        measures.append(measure)
+                        sensors.store(sensor,measures)
+                        # return the alert text
+			log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] object detected: "+text)
+                        alert_text = text
+	return [alert_text]
 
 # for a location parse the data and return the label
 def parse_position(data):

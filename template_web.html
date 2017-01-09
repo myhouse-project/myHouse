@@ -710,7 +710,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			"paging": true,
 			"lengthChange": false,
 			"searching": true,
-			"ordering": true,
+			"ordering": false,
 			"info": true,
 			"autoWidth": true,
 		};
@@ -1294,7 +1294,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			if (!("sensors" in module)) continue
 			for (var j = 0; j < module["sensors"].length; j++) {
 				var sensor = module["sensors"][j];
-				if (sensor["module_id"] == module_id && sensor["group_id"] == group_id) sensors.push(sensor);
+				if (sensor["enabled"] && sensor["module_id"] == module_id && sensor["group_id"] == group_id) sensors.push(sensor);
 			}
 		}
 		if (sensors.length == 0) return null
@@ -1315,7 +1315,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		if (sensors == null) return null;
 		for (var j = 0; j < sensors.length; j++) {
 			var sensor = sensors[j];
-			if (sensor["sensor_id"] == sensor_id) return sensor;
+			if (sensor["enabled"] && sensor["sensor_id"] == sensor_id) return sensor;
 		}
 		return null
 	}

@@ -68,11 +68,11 @@ commands = {
 		'command_parse': ''
 	},
 	'application_logs': {
-		'command_poll': 'tail -500 logs/myHouse.log',
+		'command_poll': 'tail -100 logs/myHouse.log',
 		'command_parse': 'perl -ne \'/^\\[([^\\]]+)\\] \\[([^\\]]+)\\] (\\w+): (.+)$/;print \"$1|_|$2|_|$3|_|$4\\n\"\''
 	},
 	'system_logs': {
-		'command_poll': 'tail -500 /var/log/messages',
+		'command_poll': 'tail -100 /var/log/messages',
 		'command_parse': 'perl -ne \'/^(\\S+ \\S+ \\S+) \\S+ (\\S+): (.+)$/;print \"$1|_|$2|_|$3\\n\"\''
 	}
 }
@@ -85,7 +85,8 @@ def poll(sensor):
 	# run the poll command
 	command_poll = commands[sensor['plugin']['measure']]["command_poll"]
 	command = "cd '"+conf["constants"]["base_dir"]+"'; "+command_poll
-	return utils.run_command(command,timeout=conf["plugins"]["system"]["timeout"])
+	data = utils.run_command(command,timeout=conf["plugins"]["system"]["timeout"])
+	return data
 
 # parse the data
 def parse(sensor,data):
