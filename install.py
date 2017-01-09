@@ -22,6 +22,8 @@ def run_command(command):
 # install all the dependencies
 def install_deps():
 	print "Preparing dependencies..."
+	print "Refreshing apt cache..."
+	run_command("apt-get update")
 	print "Installing redis..."
 	run_command("apt-get install -y redis-server")
 	print "Installing flask..."
@@ -76,7 +78,7 @@ def install_deps():
 	print "Installing python-ads1x15..."
 	run_command("pip install Adafruit_ADS1x15")
         print "Installing python-feedparser..."
-        run_command("pip install python-feedparser")
+        run_command("apt-get install -y python-feedparser")
 
 # installation routine
 def install():

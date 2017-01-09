@@ -12,7 +12,6 @@ import config
 conf = config.get_config(validate=False)
 import utils
 import db
-import sensors
 
 db_file = "/var/lib/redis/dump.rdb"
 debug = False
@@ -148,6 +147,7 @@ def upgrade_2_0():
 			sensor['group_id'] = group_id
 			sensor['db_group'] = conf["constants"]["db_schema"]["root"]+":"+sensor["module_id"]+":"+sensor["group_id"]
 			sensor['db_sensor'] = sensor['db_group']+":"+sensor["sensor_id"]
+			import sensors
 			sensors.summarize(sensor,'hour',utils.hour_start(timestamp),utils.hour_end(timestamp))
 			count = count +1
 		print "\t\tdone, "+str(count)+" values"
@@ -244,13 +244,44 @@ def upgrade_2_1():
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
 	# CONFIGURATION
+	upgrade_modules = True
+	upgrade_conf = True
 	upgrade_db = True
-	upgrade_conf = False
-	upgrade_modules = False
 	# END
 	conf = config.get_config(validate=False)
 	print "[Migration from v2.1 to v2.2]\n"
 	backup("2.1")
+	if upgrade_modules:
+		print "Installing additional dependencies..."
+		print "\tRefreshing apt cache..."
+		run_command("apt-get update")
+		print "\tInstalling python-paho-mqtt..."
+		run_command("pip install paho-mqtt")
+		print "\tInstalling mosquitto..."
+		run_command("apt-get install -y mosquitto")
+		print "\tInstalling picotts..."
+		run_command("apt-get install -y libttspico-utils")
+		print "\tInstalling python-opencv..."
+		run_command("apt-get install -y python-opencv")
+		print "\tInstalling python-gtts..."
+		run_command("pip install gTTS")
+		print "\tInstalling mpg123..."
+		run_command("apt-get install -y mpg123")
+		print "\tInstalling python-speech-recognition..."
+		run_command("pip install SpeechRecognition")
+		print "\tInstalling sox..."
+		run_command("apt-get install -y sox")
+		print "\tInstalling flac..."
+		run_command("apt-get install -y flac")
+		print "\tInstalling pocketsphinx..."
+		run_command("apt-get install -y pocketsphinx")
+		print "\tInstalling python-dht..."
+		run_command("pip install Adafruit_Python_DHT")
+		print "\tInstalling python-ads1x15..."
+		run_command("pip install Adafruit_ADS1x15")
+		print "\tInstalling python-feedparser..."
+		run_command("apt-get install -y python-feedparser")
+		
 	if upgrade_conf:
 		print "Upgrading configuration file..."
 		new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
@@ -280,16 +311,16 @@ def upgrade_2_2():
 		new["plugins"]["dht"] = None
 		# add the ads1x15 plugin
 		new["plugins"]["ads1x15"] = None
-		print "\tINFO: please be aware the following new plugins are now available: earthquake, mqtt, ds18b20, dht, ads1x15"
+		print "\tINFO: please be aware the following new plugins are now available: earthquake, mqtt, ds18b20, dht, ads1x15, rss. Review the documentation for details"
 		# add general
 		new["general"] = {}
 		new["general"]["latitude"] = 0
 		new["general"]["longitude"] = 0
-		new["general"]["house_name"] = run_command("hostname")
-		print "\tWARNING: different plugins use the new 'latitude' and 'longitude' in 'general', customize them"
+		new["general"]["house_name"] = "myHouse"
+		print "\tWARNING: different plugins use now the new 'latitude' and 'longitude' settings in 'general', ensure they are correct"
 		# add language
 		new["general"]["language"] = "en"
-		print "\tINFO: multiple languages are now supported. Define your language in 'general' and create your aliases for each 'display_name'"
+		print "\tINFO: multiple languages are now supported. Define your language in 'general' and create your aliases for each 'display_name' variable"
 		# move units and timeframe under general
 		new["general"]["units"] = conf["units"]
 		del new["units"]
@@ -302,6 +333,7 @@ def upgrade_2_2():
 			section_item["section_id"] = section
 			section_item["display_name"] = {}
 			section_item["display_name"]["en"] = section
+			new_sections.append(section_item)
 		new["gui"]["sections"] = new_sections
 		# define the news module
 		news = {
@@ -441,7 +473,7 @@ def upgrade_2_2():
 		# delete location from weatherchannel and wunderground
 		del new["plugins"]["weatherchannel"]["location"]
 		del new["plugins"]["wunderground"]["location"]
-		print "\tWARNING: 'location' in 'plugins/wunderground' and 'plugins/weatherchannel' has been precated, use e 'latitude' and 'longitude' in 'general' instead"
+		print "\tWARNING: 'location' in 'plugins/wunderground' and 'plugins/weatherchannel' has been precated, use the new 'latitude' and 'longitude' in 'general' instead"
 		# delete csv_file from the csv plugin
 		if "csv_file" in new["plugins"]["csv"]:
 			print "\tWARNING: 'csv_file' in 'plugins/csv' has been deprecated, specify the filename in each sensor"
@@ -526,7 +558,7 @@ def upgrade_2_2():
 			   }
 			}
 		new["input"]["audio"] = input_audio
-		print "\tINFO: added audio input. Enabled it if interested"
+		print "\tINFO: added audio input. Enable it if interested"
 		# cycle through the modules
 		group_to_delete = []
 		group_summary_exclude = {}
@@ -566,7 +598,7 @@ def upgrade_2_2():
 				  "format": "int"
 				}
 				module["sensors"].append(uptime_sensor)
-				print "\tINFO: I've added a rule called 'system_reboot' to notify when the system reboots"
+				print "\tINFO: a rule called 'system_reboot' to notify when the system reboots has been added for your convenience"
 			if "widgets" in module:
 				for i in range(len(module["widgets"])):
 					for j in range(len(module["widgets"][i])):
@@ -585,7 +617,7 @@ def upgrade_2_2():
 							if "type" in layout and layout["type"] == "map": 
 								layout["tracking"] = True
 								# delete the data from the map sensors since format has changed
-								group_to_delete.append(layout["group"])
+								if "group" in layout: group_to_delete.append(layout["group"])
 			if "rules" in module:
 				for i in range(len(module["rules"])):
 					rule = module["rules"][i]
@@ -637,7 +669,7 @@ def upgrade_2_2():
 						if sensor["plugin"]["plugin_name"] == "icloud":
 							# device name mandatory
 							sensor["plugin"]["device_name"] = ""
-							print "\tWARNING: the 'icloud' plugin requires a single 'device_name' to be set, please review all your sensors using this plugin"
+							print "\tWARNING: the 'icloud' plugin requires now a single 'device_name' to be set, please review all your sensors using this plugin"
 							if "devices" in sensor["plugin"]:
 								sensor["plugin"]["device"] = sensor["plugin"]["devices"][0]
 						if sensor["plugin"]["plugin_name"] == "linux":
@@ -651,8 +683,10 @@ def upgrade_2_2():
 								sensor["plugin"]["plugin_name"] = "system"
 		# add the power module
 		new["modules"].append(power)
+		print "\tINFO: a new module called 'power' has been added for rebooting/shutting down the system"
 		# add the news module
 		new["modules"].append(news)
+		print "\tINFO: a new module called 'news' has been added for presenting the latest headlines"
 		# second round
 		for module in new["modules"]:
 			module_id = module["module_id"]
@@ -675,34 +709,7 @@ def upgrade_2_2():
 		# save the updated configuration
 		config.save(json.dumps(new, default=lambda o: o.__dict__))
 
-	if upgrade_modules:
-		print "Installing additional dependencies..."
-		print "\tInstalling python-paho-mqtt..."
-		run_command("pip install paho-mqtt")
-		print "\tInstalling mosquitto..."
-		run_command("apt-get install -y mosquitto")
-		print "\tInstalling picotts..."
-		run_command("apt-get install -y libttspico-utils")
-		print "\tInstalling python-opencv..."
-		run_command("apt-get install -y python-opencv")
-		print "\tInstalling python-gtts..."
-		run_command("pip install gTTS")
-		print "\tInstalling mpg123..."
-		run_command("apt-get install -y mpg123")
-		print "\tInstalling python-speech-recognition..."
-		run_command("pip install SpeechRecognition")
-		print "\tInstalling sox..."
-		run_command("apt-get install -y sox")
-		print "\tInstalling flac..."
-		run_command("apt-get install -y flac")
-		print "\tInstalling pocketsphinx..."
-		run_command("apt-get install -y pocketsphinx")
-		print "\tInstalling python-dht..."
-		run_command("pip install Adafruit_Python_DHT")
-		print "\tInstalling python-ads1x15..."
-		run_command("pip install Adafruit_ADS1x15")
-        	print "Installing python-feedparser..."
-	        run_command("pip install python-feedparser")
+
 	if upgrade_db:
 		print "Upgrading database..."
 		version_key = conf["constants"]["db_schema"]["version"]
