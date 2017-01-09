@@ -320,8 +320,10 @@ th.dt-center, td.dt-center { text-align: center; }
 		log("info","loading menu");
 		// empty the menu
 		$("#menu").empty()
-		for (section_id in conf["gui"]["sections"]) {
-			var label = conf["gui"]["sections"][section_id]
+		for (var i = 0; i < conf["gui"]["sections"].length; i++) {
+			var section = conf["gui"]["sections"][i];
+			var section_id = section["section_id"]
+			var label = lang(section["display_name"])
 			$("#menu").append('<li class="header">'+label.toUpperCase()+'</li>');
 			for (var j = 0; j < conf["modules"].length; j++) {
 				var module = conf['modules'][j];
