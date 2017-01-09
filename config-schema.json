@@ -173,8 +173,28 @@
 					"description": "Enable GUI debug in the browser console"
 				},
 				"sections": {
-					"type": "object",
-					"description": "Web GUI menu sections, mapping the section_id referred by each module to the label of the interface"
+					"type": "array",
+					"description": "Web GUI menu sections, mapping the section_id referred by each module to the label of the interface",
+					"items": {
+						"type": "object",
+						"title": "Section",
+						"properties": {
+							"section_id": {
+								"type": "string",
+								"description": "The section_id referred by each module"
+							},
+							"display_name": {
+								"type": "object",
+								"description": "Name of the section (for each configured language)",
+								"minItems": 1
+							}
+						},
+						"additionalProperties": false,
+						"required": [
+							"section_id",
+							"display_name"
+						]
+					}
 				},
 				"maps": {
 					"type": "object",

@@ -244,8 +244,8 @@ def upgrade_2_1():
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
 	# CONFIGURATION
-	upgrade_db = False
-	upgrade_conf = True
+	upgrade_db = True
+	upgrade_conf = False
 	upgrade_modules = False
 	# END
 	conf = config.get_config(validate=False)
@@ -293,8 +293,12 @@ def upgrade_2_2():
 		new["general"]["timeframes"] = conf["timeframes"]
 		del new["timeframes"]
 		# migrate sections
-		new_sections = {}
-		for section in new["gui"]["sections"]: new_sections[section] = section
+		new_sections = []
+		for section in new["gui"]["sections"]: 
+			section_item = {}
+			section_item["section_id"] = section
+			section_item["display_name"] = {}
+			section_item["display_name"]["en"] = section
 		new["gui"]["sections"] = new_sections
 		# add the power module
 		power =  {
@@ -663,7 +667,7 @@ def main():
 	if version == "1.0": upgrade_2_0()
 	if version == "2.0": upgrade_2_1()
 	if version == "2.1": upgrade_2_2()
-	print "\n\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service"
+	print "\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service"
 
 # run main()
 main()

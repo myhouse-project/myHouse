@@ -13,13 +13,38 @@
     "default_module": "system",
     "auto_refresh_min": 5,
     "debug_console": false,
-    "sections": {
-      "Actuators": "Actuators",
-      "Sensors": "Sensors",
-      "Main": "Main",
-      "System": "System",
-      "myHouse": "myHouse"
-    },
+    "sections": [
+		{
+			"section_id": "Main",
+			"display_name": {
+				"en": "Main"
+			}
+		},
+		{
+			"section_id": "Sensors",
+			"display_name": {
+				"en": "Sensors"
+			}
+		},
+		{
+			"section_id": "Actuators",
+			"display_name": {
+				"en": "Actuators"
+			}
+		},
+		{
+			"section_id": "System",
+			"display_name": {
+				"en": "System"
+			}
+		},
+		{
+			"section_id": "myHouse",
+			"display_name": {
+				"en": "myHouse"
+			}
+		}
+    ],
     "maps": {
       "size_x": 640,
       "api_key": "YOUR_API_KEY",
