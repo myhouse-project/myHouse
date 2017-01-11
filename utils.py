@@ -13,6 +13,8 @@ import numpy
 import random
 import __builtin__
 from math import radians, cos, sin, asin, sqrt
+import Queue
+import threading
 
 import logger
 import config
@@ -245,19 +247,42 @@ def get_sensor_string(sensor_string):
 	if len(split) < 3: return None
 	return get_sensor(split[0],split[1],split[2])
 
+# helper class for running a command in a separate thread with a timeout
+class Command(object):
+	def __init__(self,cmd,shell):
+		self.cmd = cmd
+		self.process = None
+		self.shell = shell
+	def run(self, timeout):
+		def target(queue):
+			# start the thread
+			self.process = subprocess.Popen(self.cmd, shell=self.shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+			# wait for the program to finish and collect the output
+			out,err = self.process.communicate()
+			# return the output in the queue
+			queue.put(str(out).rstrip())
+		# a queue will be used to collect the output
+		queue = Queue.Queue()
+		# setup the thread
+		thread = threading.Thread(target=target,args=[queue])
+		# start the thread
+		thread.start()
+		# wait for it for timeout 
+		thread.join(timeout)
+		if thread.is_alive():
+			# if the process is still alive, terminate it
+			self.process.terminate()
+			thread.join()
+		# return the output
+		try:
+			return queue.get_nowait()
+		except Exception,e: return ""
+
 # run a command and return the output
 def run_command(command,timeout=conf["constants"]["command_timeout"],shell=True):
 	log.debug("Executing "+str(command))
-	process = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	output = ''
-	for t in xrange(timeout):
-		time.sleep(1)
-		if process.poll() is not None:
-			for line in process.stdout.readlines():
-				output = output+line
-			return output.rstrip()
-	process.kill()
-	return ""
+	command = Command(command,shell)
+	return command.run(timeout)
 
 # determine if it is night
 def is_night():
