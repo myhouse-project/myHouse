@@ -116,6 +116,30 @@
 				"database": {
 					"type": "integer",
 					"description": "Instance number"
+				},
+				"database_file": {
+					"type": "string",
+					"description": "Full path of the redis database file",
+					"value": "/var/lib/redis/dump.rdb"
+				},
+				"backup": {
+					"type": "object",
+					"description": "Redis backup configuration",
+					"properties": {
+						"daily": {
+							"type": "boolean",
+							"description": "Make a daily backup of the redis database into the tmp folder"
+						},
+						"weekly": {
+							"type": "boolean",
+							"description": "Make a weekly backup of the redis database into the tmp folder"
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"daily",
+						"weekly"
+					]
 				}
 			},
 			"additionalProperties": false,
@@ -123,7 +147,9 @@
 				"enabled",
 				"hostname",
 				"port",
-				"database"
+				"database",
+				"database_file",
+				"backup"
 			]
 		},
 		"gui": {

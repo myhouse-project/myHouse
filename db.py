@@ -8,6 +8,8 @@ import logger
 import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
+import scheduler
+schedule = scheduler.get_scheduler()
 
 # initialize the connection
 db = None
@@ -20,6 +22,24 @@ def connect():
 		log.debug("connected to DB: "+str(db))
 	if not conf['db']['enabled']: log.warning("Database writing disabled")
 	return db
+
+# backup the database into the target filename
+def backup_db(filename):
+	if not utils.file_exists(conf["db"]["database_file"]): 
+		log.error("the database file "+conf["db"]["database_file"]+" does not exist")
+		return 
+	utils.run_command("cp -f "+conf["db"]["database_file"]+" "+filename)
+
+# schedule backup process
+def schedule_all():
+	if conf["db"]["backup"]["daily"]: 
+		filename = conf["constants"]["tmp_dir"]+"/"+conf["constants"]["db_backup_daily_filename"]
+		log.debug("Scheduling daily database backup into "+filename)
+		schedule.add_job(backup_db,'cron',hour="0",minute="30",second=utils.randint(1,59),args=[filename])
+	if conf["db"]["backup"]["weekly"]:
+		filename = conf["constants"]["tmp_dir"]+"/"+conf["constants"]["db_backup_weekly_filename"]
+		schedule.add_job(backup_db,'cron',day_of_week='sun',hour="0",minute="30",second=utils.randint(1,59),args=[filename])
+		log.debug("Scheduling weekly database backup into "+filename)
 
 # normalize the output
 def normalize_dataset(data,withscores,milliseconds,format_date,formatter):
