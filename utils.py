@@ -241,6 +241,18 @@ def get_sensor(module_id,group_id,sensor_id):
 		if sensor["enabled"] and sensor["sensor_id"] == sensor_id: return sensor
 	return None
 
+# return a widget
+def get_widget(module_id,widget_id):
+	module = get_module(module_id)
+	if module is None: return None
+	if 'widgets' not in module: return None
+	for i in range(len(module["widgets"])):
+		for j in range(len(module["widgets"][i])):
+			widget = module["widgets"][i][j]
+			if not widget["enabled"]: continue
+			if widget["widget_id"] == widget_id: return widget
+	return None
+
 # fetch a sensor
 def get_sensor_string(sensor_string):
 	split = sensor_string.split(":",3)
