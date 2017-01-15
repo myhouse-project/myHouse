@@ -57,10 +57,10 @@ def parse_image(sensor,data):
 	return [alert_text]
 
 # for a location parse the data and return the label
-def parse_position(data):
+def parse_position(data,key):
 	if len(data) != 1: return []
 	data = json.loads(data[0])
-	return [data["label"]]
+	return [data[key]]
 
 # for a calendar parse the data and return the value
 def parse_calendar(data):
@@ -122,7 +122,11 @@ def get_data(sensor,request):
 		# just retrieve the data
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 		if sensor["format"] == "calendar": data = parse_calendar(data)
-		if sensor["format"] == "position": data = parse_position(data)
+		if sensor["format"] == "position": 
+			# define the key to return
+			key = "label"
+			if trasform is not None and trasform == "text": key = "text"
+			data = parse_position(data,key)
 		if sensor["format"] == "image": data = parse_image(sensor,data)
 	return data
 

@@ -1675,6 +1675,60 @@
             ]
           }
         ],
+		[
+          {
+            "widget_id": "indoor_air_summary",
+            "display_name": {
+				"en": "Air: Summary",
+				"it": "Aria: Sommario"
+				},
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "indoor:air:air_quality",
+                "icon": "web/images/gas.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "indoor:air"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_air_recent",
+            "display_name": {
+				"en": "Air: Recent",
+				"it": "Aria: Recente"
+				},
+            "enabled": false,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:air",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "indoor_air_history",
+            "display_name": {
+				"en": "Air: History",
+				"it": "Aria: Storico"
+				},
+            "enabled": false,
+            "size": 6,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "indoor:air",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
         [
           {
             "widget_id": "indoor_battery_history",
@@ -1867,6 +1921,23 @@
           "actions": [
             "set,indoor:alerts:flood_alert_status,0"
           ]
+        },
+        {
+          "rule_id": "low_air_quality",
+          "display_name": {
+			"en": "The concentration of gas (%gas%) indoor is making the air quality very low. You'd be better to open the window for a while",
+			"it": "La concentrazione di gas (%gas%) dentro rende la qualità dell'aria molto bassa. Faresti bene ad aprire la finestra per un po'"
+			},
+          "enabled": false,
+          "severity": "info",
+          "run_every": "hour",
+          "conditions": [
+			"gas > threshold"
+		  ],
+          "definitions": {
+		    "gas": "indoor:air:air_quality:hour:max,-1,-1",
+            "threshold": 28
+          }
         }
       ],
       "sensors": [
@@ -2412,6 +2483,40 @@
             "min_max": true
           },
           "module_id": "indoor"
+        },
+        {
+		  "module_id": "indoor",
+          "group_id": "air",
+          "sensor_id": "air_quality",
+		  "enabled": false,
+          "display_name": {
+			"en": "Air Quality",
+			"it": "Qualità dell'aria"
+			},
+          "plugin": {
+            "plugin_name": "ads1x15",
+			"type": "ads1115",
+            "address": "0x48",
+			"gain": "1",
+			"channel": 0,
+			"output": "percentage",
+			"polling_interval": 10
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
         }
       ]
     },

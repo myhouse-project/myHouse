@@ -250,7 +250,7 @@ def expire(sensor):
 				deleted = db.deletebyscore(key,"-inf",utils.now()-retention*conf["constants"]["1_day"])
 				log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expiring from "+key+" "+str(deleted)+" items")
 				total = total + deleted
-	log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
+	if total > 0: log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] expired "+str(total)+" items")
 
 # initialize a sensor data structure
 def init_sensor(sensor):
@@ -274,36 +274,40 @@ def init_sensor(sensor):
 
 # read or save the measure of a given sensor
 def run(module_id,group_id,sensor_id,action):
-	# ensure the group and sensor exist
-	sensor = utils.get_sensor(module_id,group_id,sensor_id)
-	sensor = init_sensor(sensor)
-	if sensor is None: 
-		log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found, skipping it")
-		return
-	# execute the action
-	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
-	if action == "poll":
-		# read the measure (will be stored into the cache)
-		poll(sensor)
-	elif action == "parse":
-		# just parse the output
-		log.info(parse(sensor))
-	elif action == "save":
-		# save the parsed output into the database
-		save(sensor)
-	elif action == "force_save":
-		# save the parsed output into the database forcing polling the measure
-		save(sensor,force=True)
-	elif action == "summarize_hour": 
-		# every hour calculate and save min,max,avg of the previous hour
-		summarize(sensor,'hour',utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
-	elif action == "summarize_day":
-		# every day calculate and save min,max,avg of the previous day (using hourly averages)
-		summarize(sensor,'day',utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
-	elif action == "expire":
-		# purge old data from the database
-		expire(sensor)
-	else: log.error("Unknown action "+action)
+	try:
+		# ensure the group and sensor exist
+		sensor = utils.get_sensor(module_id,group_id,sensor_id)
+		sensor = init_sensor(sensor)
+		if sensor is None: 
+			log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] not found, skipping it")
+			return
+		# execute the action
+		log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] requested "+action)
+		if action == "poll":
+			# read the measure (will be stored into the cache)
+			poll(sensor)
+		elif action == "parse":
+			# just parse the output
+			log.info(parse(sensor))
+		elif action == "save":
+			# save the parsed output into the database
+			save(sensor)
+		elif action == "force_save":
+			# save the parsed output into the database forcing polling the measure
+			save(sensor,force=True)
+		elif action == "summarize_hour": 
+			# every hour calculate and save min,max,avg of the previous hour
+			summarize(sensor,'hour',utils.hour_start(utils.last_hour()),utils.hour_end(utils.last_hour()))
+		elif action == "summarize_day":
+			# every day calculate and save min,max,avg of the previous day (using hourly averages)
+			summarize(sensor,'day',utils.day_start(utils.yesterday()),utils.day_end(utils.yesterday()))
+		elif action == "expire":
+			# purge old data from the database
+			expire(sensor)
+		else: log.error("Unknown action "+action)
+        except Exception,e:
+                log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to run "+action+": "+utils.get_exception(e))
+	
 
 # schedule all the sensors
 def schedule_all():

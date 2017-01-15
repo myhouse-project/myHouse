@@ -45,7 +45,8 @@ def parse(sensor,data):
 		position["longitude"] = float(entry[3])
 		position["label"] = str(entry[10])
 		date_string = utils.timestamp2date(int(measure["timestamp"]))
-		position["text"] = str("<p><b>"+entry[12]+":</b></p><p>Magnitude: "+entry[10]+"</p><p>Date: "+date_string+"</p><p>Depth: "+entry[4]+" km</p>")
+#		position["text"] = str("<p><b>"+entry[12]+":</b></p><p>Magnitude: "+entry[10]+"</p><p>Date: "+date_string+"</p><p>Depth: "+entry[4]+" km</p>")
+		position["text"] = str(entry[12])
 		# prepare the measure
 		measure["key"] = sensor["sensor_id"]+":day:avg"
 		measure["value"] = json.dumps(position)
