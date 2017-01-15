@@ -3,7 +3,12 @@
     "enabled": true,
     "hostname": "localhost",
     "port": 6379,
-    "database": 2
+    "database": 2,
+	"database_file": "/var/lib/redis/dump.rdb",
+	"backup": {
+		"daily": true,
+		"weekly": true
+	}
   },
   "gui": {
     "enabled": true,
@@ -4766,7 +4771,7 @@
 			"-10","-9","-8","-7","-6","-5","-4","-3","-2","-1"
 		  ],
           "display_name": {
-			"en": "A strong earthquake magnitude %magnitude% has taken place %distance% away (%timestamp%)"
+			"en": "A strong earthquake magnitude %magnitude% has taken place %distance% away at %timestamp% in %text"
 			},
           "enabled": true,
           "severity": "info",
@@ -4779,6 +4784,7 @@
             "magnitude": "earthquake:networks:usgs:day:avg,%i%,%i%",
 			"distance": "earthquake:networks:usgs:day:avg,%i%,%i%,distance",
 			"timestamp": "earthquake:networks:usgs:day:avg,%i%,%i%,timestamp",
+			"text": "earthquake:networks:usgs:day:avg,%i%,%i%,text",
 			"last_alert": "earthquake:alert:world,-1,-1",
             "min_magnitude": 7
           },

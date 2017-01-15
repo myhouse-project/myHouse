@@ -309,6 +309,11 @@ def upgrade_2_2():
 		new["plugins"]["ds18b20"] = None
 		# add the dht plugin
 		new["plugins"]["dht"] = None
+		# add additional options in db
+		new["db"]["database_file"] = "/var/lib/redis/dump.rdb"
+		new["db"]["backup"] = {}
+		new["db"]["backup"]["daily"] = True
+		new["db"]["backup"]["weekly"] = True
 		# add the ads1x15 plugin
 		new["plugins"]["ads1x15"] = None
 		print "\tINFO: please be aware the following new plugins are now available: earthquake, mqtt, ds18b20, dht, ads1x15, rss. Review the documentation for details"
