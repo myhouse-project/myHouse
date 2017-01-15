@@ -99,9 +99,9 @@ def slack_message(channel,message):
 		log.warning("unable to post message to slack: "+utils.get_exception(e))
 
 # send a file to slack
-def slack_upload(channel,filename):
+def slack_upload(channel,filename,title):
 	try:
-		slack.api_call("files.upload",channels=channel,filename=filename,file=open(filename,'rb'))
+		slack.api_call("files.upload",channels=channel,filename=filename,file=open(filename,'rb'),title=title)
 	except Exception,e:
 		log.warning("unable to upload file to slack: "+utils.get_exception(e))
 
@@ -145,16 +145,17 @@ def run():
 						slack_message(channel,oracle.get_wait_message())
 						# generate the image
 						module_id,widget_id = response["content"].split(",")
+						widget = utils.get_widget(module_id,widget_id)
 						try: 
-							widgets = generate_widget.run(module_id,widget_id)
+							files = generate_widget.run(module_id,widget_id)
 						except Exception,e:
 							log.warning("unable to generate the widget for "+module_id+":"+widget_id+": "+utils.get_exception(e))
 							continue
 						# upload the chart to the channel
-						if len(widgets) > 0:
-							filename = utils.get_widget_chart(widgets[0])
+						if len(files) > 0:
+							filename = utils.get_widget_chart(files[0])
 							log.debug("uploading "+filename)
-							slack_upload(channel,filename)
+							slack_upload(channel,filename,utils.lang(widget["display_name"]))
 						else: slack_message(channel,"unable to find the chart "+filename)
 		time.sleep(1)
 

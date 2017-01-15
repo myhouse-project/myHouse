@@ -102,7 +102,7 @@ def add_sensor_group_summary_chart(layout,widget):
 		sensors = []
 		for i in range(len(layout["sensors"])):
 			sensor_string = layout["sensors"][i]
-			sensor = get_sensor_string(sensor_string)
+			sensor = utils.get_sensor_string(sensor_string)
 			if sensor is not None: sensors.append(sensor)
 		if len(sensors) == 0: return
 	else: return
@@ -138,7 +138,7 @@ def add_sensor_group_timeline_chart(layout,widget):
 		sensors = []
 		for i in range(len(layout["sensors"])):
 			sensor_string = layout["sensors"][i]
-			sensor = get_sensor_string(sensor_string)
+			sensor = utils.get_sensor_string(sensor_string)
 			if sensor is not None: sensors.append(sensor)
 		if len(sensors) == 0: return
 	else: return
