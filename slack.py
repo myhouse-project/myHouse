@@ -111,10 +111,14 @@ def run():
 	while True:
 		# init slack
 		init()
-		if not initialized: time.sleep(sleep_on_error)
+		if not initialized: 
+			time.sleep(sleep_on_error)
+			continue
 		# connect to slack
 		connect()
-		if not connected: time.sleep(sleep_on_error)
+		if not connected: 
+			time.sleep(sleep_on_error)
+			continue			
 		# read a rtm stream
 		try: 
 			output_list = slack.rtm_read()
@@ -123,6 +127,7 @@ def run():
 			initialized = False
 			connected = False
 			time.sleep(sleep_on_error)
+			continue
 		if output_list and len(output_list) > 0:
 			for output in output_list:
 				if not output or 'text' not in output: continue
