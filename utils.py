@@ -193,6 +193,7 @@ def get_exception(e):
 
 # return a random int between min and max
 def randint(min,max):
+	random.seed()
 	return random.randint(min,max)
 
 # truncate a long string 
