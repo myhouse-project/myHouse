@@ -32,6 +32,7 @@ import plugin_dht
 import plugin_ds18b20
 import plugin_ads1x15
 import plugin_rss
+import plugin_mysensors
 
 # variables
 plugins = {}
@@ -58,6 +59,7 @@ def init_plugins():
 		elif name == "ds18b20": plugin = plugin_ds18b20
 		elif name == "ads1x15": plugin = plugin_ads1x15
 		elif name == "rss": plugin = plugin_rss
+		elif name == "mysensors": plugin = plugin_mysensors
 		if plugin is None:
 			log.error("plugin "+name+" not supported")
 			continue

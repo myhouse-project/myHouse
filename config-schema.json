@@ -1026,6 +1026,15 @@
 							"type": "boolean",
 							"description": "Enable the service"
 						},
+						"gateway_type": {
+							"type": "string",
+							"description": "the gateway to connect to",
+							"enum": [
+								"mqtt",
+								"ethernet",
+								"serial"
+							]
+						},
 						"gateways": {
 							"type": "object",
 							"description": "Configuration settings of each gateway",
@@ -1059,17 +1068,61 @@
 										"publish_topic_prefix",
 										"subscribe_topic_prefix"
 									]
+								},
+								"ethernet": {
+									"type": "object",
+									"description": "Ethernet gateway configuration",
+									"properties": {
+										"hostname": {
+											"type": "string",
+											"description": "The hostname where the ethernet gateway is running"
+										},
+										"port": {
+											"type": "integer",
+											"description": "The port the gateway listening to",
+											"value": 5003
+										}
+									},
+									"additionalProperties": false,
+									"required": [
+										"hostname",
+										"port"
+									]
+								},
+								"serial": {
+									"type": "object",
+									"description": "Serial gateway configuration",
+									"properties": {
+										"port": {
+											"type": "string",
+											"description": "the serial port the gateway is attached to",
+											"value": "/dev/ttyAMA0"
+										},
+										"baud": {
+											"type": "integer",
+											"description": "The baud rate of the serial port",
+											"value": 57600
+										}
+									},
+									"additionalProperties": false,
+									"required": [
+										"baud",
+										"port"
+									]
 								}
 							},
 							"additionalProperties": false,
 							"required": [
-								"mqtt"
-							]							
+								"mqtt",
+								"ethernet",
+								"serial"
+							]			
 						}
 					},
 					"additionalProperties": false,
 					"required": [
 						"enabled",
+						"gateway_type",
 						"gateways"
 					]
 				}
@@ -2598,6 +2651,142 @@
 											"required": [
 												"plugin_name",
 												"url"
+											]
+										},
+										{
+											"title": "mysensors",
+											"description": "Record or send a measure from/to the mysensors network",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"mysensors"
+													],
+													"value": "mysensors"
+												},
+												"node_id": {
+													"type": "integer",
+													"description": "The unique id of the node that sends or should receive the message (address)"
+												},
+												"child_id": {
+													"type": "integer",
+													"description": "Each node can have several sensors attached. This is the child-sensor-id that uniquely identifies one attached sensor"
+												},
+												"command": {
+													"type": "string",
+													"description": "Command",
+													"enum": [
+														"PRESENTATION",
+														"SET",
+														"REQ",
+														"INTERNAL",
+														"STREAM"
+													]
+												},
+												"type": {
+													"type": "string",
+													"description": "Type",
+													"enum": [
+														"V_TEMP",
+														"V_HUM",
+														"V_STATUS",
+														"V_PERCENTAGE",
+														"V_PRESSURE",
+														"V_FORECAST",
+														"V_RAIN",
+														"V_RAINRATE",
+														"V_WIND",
+														"V_GUST",
+														"V_DIRECTION",
+														"V_UV",
+														"V_WEIGHT",
+														"V_DISTANCE",
+														"V_IMPEDANCE",
+														"V_ARMED",
+														"V_TRIPPED",
+														"V_WATT",
+														"V_KWH",
+														"V_SCENE_ON",
+														"V_SCENE_OFF",
+														"V_HVAC_FLOW_STATE",
+														"V_HVAC_SPEED",
+														"V_LIGHT_LEVEL",
+														"V_VAR1",
+														"V_VAR2",
+														"V_VAR3",
+														"V_VAR4",
+														"V_VAR5",
+														"V_UP",
+														"V_DOWN",
+														"V_STOP",
+														"V_IR_SEND",
+														"V_IR_RECEIVE",
+														"V_FLOW",
+														"V_VOLUME",
+														"V_LOCK_STATUS",
+														"V_LEVEL",
+														"V_VOLTAGE",
+														"V_CURRENT",
+														"V_RGB",
+														"V_RGBW",
+														"V_ID",
+														"V_UNIT_PREFIX",
+														"V_HVAC_SETPOINT_COOL",
+														"V_HVAC_SETPOINT_HEAT",
+														"V_HVAC_FLOW_MODE",
+														"V_TEXT",
+														"V_CUSTOM",
+														"V_POSITION",
+														"V_IR_RECORD",
+														"V_PH",
+														"V_ORP",
+														"V_EC",
+														"V_VAR",
+														"V_VA",
+														"V_POWER_FACTOR",
+														"I_BATTERY_LEVEL",
+														"I_TIME",
+														"I_VERSION",
+														"I_ID_REQUEST",
+														"I_ID_RESPONSE",
+														"I_INCLUSION_MODE",
+														"I_CONFIG",
+														"I_FIND_PARENT",
+														"I_FIND_PARENT_RESPONSE",
+														"I_LOG_MESSAGE",
+														"I_CHILDREN",
+														"I_SKETCH_NAME",
+														"I_SKETCH_VERSION",
+														"I_REBOOT",
+														"I_GATEWAY_READY",
+														"I_SIGNING_PRESENTATION",
+														"I_NONCE_REQUEST",
+														"I_NONCE_RESPONSE",
+														"I_HEARTBEAT_REQUEST",
+														"I_PRESENTATION",
+														"I_DISCOVER_REQUEST",
+														"I_DISCOVER_RESPONSE",
+														"I_HEARTBEAT_RESPONSE",
+														"I_LOCKED",
+														"I_PING",
+														"I_PONG",
+														"I_REGISTRATION_REQUEST",
+														"I_REGISTRATION_RESPONSE",
+														"I_DEBUG"
+													]
+												},
+												"sleeping": {
+													"description": "This is a sleeping sensor",
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"node_id",
+												"child_id",
+												"command",
+												"type"
 											]
 										}
 									]
