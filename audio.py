@@ -31,7 +31,7 @@ def notify(text):
 	elif output_settings["engine"] == "google": 
 		# create the wav file
 		language = output_settings["language"]
-		log.debug(utils.run_command(["gtts-cli.py",text,"-l",language,"-o",output_file+".mp3"],shell=False))
+		log.debug(utils.run_command(["gtts-cli.py","-l",language,"-o",output_file+".mp3",text],shell=False))
 		log.debug(utils.run_command(["mpg123","-w",output_file,output_file+".mp3"],shell=False))
 		# play it
 		play(output_file)
@@ -42,7 +42,7 @@ def notify(text):
 # play an audio file
 def play(filename):
 	device = "-t alsa "+str(output_settings["device"]) if output_settings["device"] != "" else ""
-	log.debug(utils.run_command("sox "+filename+" "+device+" &"))
+	log.debug(utils.run_command("play "+filename+" "+device+" &"))
 
 # capture voice and perform speech recognition
 def listen():
