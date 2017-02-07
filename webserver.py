@@ -92,7 +92,7 @@ def sensor_set(module_id,group_id,sensor_id,value):
 # send a message to a sensor
 @app.route('/<module_id>/<group_id>/<sensor_id>/send/<value>')
 def sensor_send(module_id,group_id,sensor_id,value):
-	force = True if request.args.get('force') else False
+	force = True if request.args.get('force') is not None else False
 	return sensors.data_send(module_id,group_id,sensor_id,value,force=force)
 
 # read or save the measure of a given sensor

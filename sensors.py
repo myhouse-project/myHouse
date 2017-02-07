@@ -497,8 +497,12 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 	if not hasattr(plugins[sensor["plugin"]["plugin_name"]], 'send'):
 		log.error("the plugin "+sensor["plugin"]["plugin_name"]+" does not allow sending messages")
 		return json.dumps("KO")
-	plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
-	return json.dumps("OK")
+	try:
+		plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
+		return json.dumps("OK")
+	except Exception,e:
+        	log.error("unable to send "+str(value)+": "+utils.get_exception(e))
+
 
 # manually run a command for a sensor
 def data_run(module_id,group_id,sensor_id,action):

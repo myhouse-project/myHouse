@@ -11,6 +11,7 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
+import db
 
 # limitations
 # - inclusion mode not supported
@@ -20,11 +21,17 @@ import sensors
 # nodes[<node_id>][<child_id>][<command>][<type>] = sensor
 # e.g. nodes["254"]["1"]["1"]["V_TEMP"] = sensor
 nodes = {}
+# queue for buffering outgoing messages
 queue = {}
-plugin_conf = conf["plugins"]["mysensors"]
+# variables
 gateway = None
 gateway_type = None
-# data types
+assigned_ids = []
+# constants
+plugin_conf = conf["plugins"]["mysensors"]
+assigned_ids_key = conf["constants"]["db_schema"]["tmp"]+":plugin_mysensors:assigned_ids"
+sleep_on_error = 1*30
+# mysensors data types
 commands = ["PRESENTATION","SET","REQ","INTERNAL","STREAM"]
 acks = ["NOACK","ACK"]
 types = []
@@ -49,11 +56,11 @@ def register(sensor):
 	if command_string not in nodes[node_id][child_id]: nodes[node_id][child_id][command_string] = {}
 	# check if the type has already been registered
 	if type_string in nodes[node_id][child_id][command_string]:
-		log.warning("["+__name__+"]["+node_id+"]["+child_id+"]["+command_string+"]["+type_string+"] already registered, skipping")
+		log.warning("["+__name__+"]["+str(node_id)+"]["+str(child_id)+"]["+command_string+"]["+type_string+"] already registered, skipping")
 		return
 	# add the sensor to the nodes list
 	nodes[node_id][child_id][command_string][type_string] = sensor
-	log.debug("["+__name__+"]["+node_id+"]["+child_id+"]["+command_string+"]["+type_string+"] registered sensor "+sensor['module_id']+":"+sensor['group_id']+":"+sensor['sensor_id'])
+	log.debug("["+__name__+"]["+str(node_id)+"]["+str(child_id)+"]["+command_string+"]["+type_string+"] registered sensor "+sensor['module_id']+":"+sensor['group_id']+":"+sensor['sensor_id'])
 
 # send a message to the sensor
 def send(sensor,data,force=False):
@@ -69,8 +76,8 @@ def send(sensor,data,force=False):
 		tx(node_id,child_id,command_string,type_string,data)
 	else:
 		# may be sleeping, queue it
-		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"]["+node_id+"]["+child_id+"] queuing message: "+str(data))
-		if node_id not in queue: queue[node_id] = Queue.Queue(sensor["plugin"]["maxsize"])
+		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"]["+str(+node_id)+"]["+str(child_id)+"] queuing message: "+str(data))
+		if node_id not in queue: queue[node_id] = Queue.Queue(sensor["plugin"]["queue_size"])
 		if queue[node_id].full(): 
 			# if the queue is full, clear it
 			with queue[node_id].mutex: queue[node_id].queue.clear()
@@ -153,9 +160,12 @@ def process_inbound(node_id,child_id,command,ack,type,payload):
 		elif type_string == "I_ID_REQUEST":
 			# return the next available id
 			log.info("["+str(node_id)+"] requesting node_id")
-			# TODO
-			id = 1
-			tx(node_id,child_id,command_string,"I_ID_RESPONSE",id)
+			# get the available id
+			id = get_available_id()
+			# store it into the database
+			db.set(assigned_ids_key,id,utils.now())
+			# send it back
+			tx(node_id,child_id,command_string,"I_ID_RESPONSE",str(id))
 		elif type_string == "I_CONFIG":
 			# return the controller's configuration
 			log.info("["+str(node_id)+"] requesting configuration")
@@ -173,10 +183,10 @@ def process_inbound(node_id,child_id,command,ack,type,payload):
 		elif type_string == "I_HEARTBEAT_RESPONSE":
 			# handle smart sleep
 			log.info("["+str(node_id)+"] reporting heartbeat")
-			if node_id in queue and not queue["node_id"].empty():
+			if node_id in queue and not queue[node_id].empty():
 				# process the queue 
-				while not queue["node_id"].empty():
-					node_id,child_id,command_string,type_string,payload = queue["node_id"].get()
+				while not queue[node_id].empty():
+					node_id,child_id,command_string,type_string,payload = queue[node_id].get()
 					# send the message
 					tx(node_id,child_id,command_string,type_string,payload)
 		else: log.info("["+str(node_id)+"] ignoring "+type_string)
@@ -197,96 +207,171 @@ def process_inbound(node_id,child_id,command,ack,type,payload):
                 measures.append(measure)
                 sensors.store(sensor,measures)
 
-# connect to a mqtt gateway
-def gateway_run(gw_type):
-        global gateway_type,gateway
-        gateway_type = gw_type
-        log.info("starting mysensors "+gateway_type+" gateway")
-        gateway_conf = plugin_conf["gateways"][gateway_type]
-	if gateway_type == "serial":
-		try:
-                    	# connect to the serial gateway
+
+# connect to the gateway
+def connect():
+	global gateway, gateway_type
+	gateway_conf = plugin_conf["gateways"][gateway_type]
+        if gateway_type == "serial":
+                try:
+                        # connect to the serial gateway
                         log.info("Connecting to serial gateway on "+gateway_conf["port"]+" with baud rate "+str(gateway_conf["baud"]))
                         gateway = serial.Serial(gateway_conf["port"],gateway_conf["baud"])
                 except Exception,e:
-                        log.warning("Unable to connect to the serial gateway: "+utils.get_exception(e))
-                        return
-                while True:
-                        # read a line
-                        try:
-                                line = gateway.readline().rstrip()
-                        except Exception,e:
-                                log.warning("Unable to receive data from the serial gateway: "+utils.get_exception(e))
-                                continue
-                        # parse the line
-                        try:
-                                node_id,child_id,command,ack,type,payload = line.split(";")
-                                # process the message
-                                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(payload))
-                        except Exception,e:
-				log.warning("Invalid format ("+line+"): "+utils.get_exception(e))
-                                continue
-	elif gateway_type == "ethernet":
-		try:
-			# connect to the ethernet gateway
-			log.info("Connecting to ethernet gateway on "+gateway_conf["hostname"]+":"+str(gateway_conf["port"]))
-			gateway = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			gateway.connect((gateway_conf["hostname"],gateway_conf["port"]))
-                except Exception,e:
-                        log.warning("Unable to connect to the ehternet gateway: "+utils.get_exception(e))
-                        return
-		while True:
-			# read a line
-			try:
-				line = ""
-				while True:
-					c = gateway.recv(1)
-					if c == '\n' or c == '': break
-					else: line += c
-	                except Exception,e:
-	                        log.warning("Unable to receive data from the ethernet gateway: "+utils.get_exception(e))
-	                        continue
-			# parse the line
-			try:
-				node_id,child_id,command,ack,type,payload = line.split(";")
-	                        # process the message
-        	                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(payload))
-			except Exception,e:
-	                	log.warning("Invalid format ("+line+"): "+utils.get_exception(e))
-	                        continue
-        elif gateway_type == "mqtt":
+                        log.error("Unable to connect to the serial gateway: "+utils.get_exception(e))
+                        return False
+        elif gateway_type == "ethernet":
                 try:
-                        # connect to the mqtt broker
-			log.info("Connecting to mqtt gateway on "+gateway_conf["hostname"]+":"+str(gateway_conf["port"]))
-                        gateway = mqtt.Client()
-                        gateway.connect(gateway_conf["hostname"],gateway_conf["port"],60)
+                        # connect to the ethernet gateway
+                        log.info("Connecting to ethernet gateway on "+gateway_conf["hostname"]+":"+str(gateway_conf["port"]))
+                        gateway = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        gateway.connect((gateway_conf["hostname"],gateway_conf["port"]))
                 except Exception,e:
-                        log.warning("Unable to connect to the mqtt gateway: "+utils.get_exception(e))
-                        return
+                        log.error("Unable to connect to the ehternet gateway: "+utils.get_exception(e))
+                        return False
+        elif gateway_type == "mqtt":
+		# initialize the mqtt client
+		gateway = mqtt.Client()
                 # define what to do on connect
                 def mqtt_on_connect(client,userdata,flags,rc):
                         log.info("Connected to the mqtt gateway ("+str(rc)+")")
                         log.info("Subscribing to the mqtt topic "+gateway_conf["subscribe_topic_prefix"])
                         gateway.subscribe(gateway_conf["subscribe_topic_prefix"]+"/#")
-		gateway.on_connect = mqtt_on_connect
+                gateway.on_connect = mqtt_on_connect
                 # define what to do when receiving a message
                 def mqtt_on_message(client,userdata,msg):
                         try:
+				log.debug("received "+str(msg.topic)+": "+str(payload))
                                 # split the topic
                                 topic,node_id,child_id,command,ack,type = msg.topic.split("/")
                         except Exception,e:
-				log.warning("Invalid format ("+msg.topic+"): "+utils.get_exception(e))
-                                return
+                                log.error("Invalid format ("+msg.topic+"): "+utils.get_exception(e))
+                                return False
                         # process the message
                         process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(msg.payload))
-		gateway.on_message = mqtt_on_message
-                # loop forever
-                gateway.loop_forever()
+                gateway.on_message = mqtt_on_message
+		 # connect to the mqtt broker
+                try:
+                        log.info("Connecting to mqtt gateway on "+gateway_conf["hostname"]+":"+str(gateway_conf["port"]))
+                        gateway.connect(gateway_conf["hostname"],gateway_conf["port"],60)
+                except Exception,e:
+                        log.error("Unable to connect to the mqtt gateway: "+utils.get_exception(e))
+                        return False
+	# report connected to the gateway
+	return True
+
+# read a single message from the gateway
+def read():
+	global gateway, gateway_type
+	line = ""
+	if gateway_type == "serial":
+	        # read a line
+		try:
+			line = gateway.readline().rstrip()
+	        except Exception,e:
+			log.error("Unable to receive data from the serial gateway: "+utils.get_exception(e))
+	                return None
+	elif gateway_type == "ethernet":
+         	# read a line
+                try:
+                	line = ""
+                        while True:
+                        	c = gateway.recv(1)
+                                if c == '\n' or c == '': break
+                                else: line += c
+		except Exception,e:
+                	log.error("Unable to receive data from the ethernet gateway: "+utils.get_exception(e))
+                        return None
+	return line
+
+# parse a single message from the gateway
+def parse(message):
+	log.debug("received "+str(message))
+	global gateway, gateway_type
+	# parse the message
+       	try:
+        	node_id,child_id,command,ack,type,payload = message.split(";")
+     	except Exception,e:
+        	log.warning("Invalid format ("+message+"): "+utils.get_exception(e))
+                return None
+	# process the message
+	try:
+                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(payload))
+        except Exception,e:
+                log.warning("unable to process the message ("+message+"): "+utils.get_exception(e))
+                return None
+	return True
+
+# run the controller service
+def controller_run(gw_type):
+        global gateway_type, gateway
+        gateway_type = gw_type
+        log.info("starting mysensors "+gateway_type+" gateway")
+        gateway_conf = plugin_conf["gateways"][gateway_type]
+	errors = 0
+	connected = False
+	while True:
+		# connect to the configured gateway
+		if not connected: 
+			connected = connect()
+                if not connected:
+			# something went wrong while connecting, sleep for a while and then try again
+                        time.sleep(sleep_on_error)
+                        continue
+		if gateway_type == "serial" or gateway_type == "ethernet":
+			# for serial and ethernet manage the loop manually by reading a single message first
+			message = read()
+			if message is None:
+				# something went wrong while reading the message, increase the error counter
+				errors = errors + 1
+				time.sleep(1)
+				if errors > 10:
+					# too many consecutive errors, sleep for a while and then try to reconnect
+					log.error("Too many errors, will try reconnecting in a while")
+					time.sleep(sleep_on_error)
+					connected = False
+				# go and read a new message
+				continue
+			# parse the message
+			parsed = parse(message) 
+			if parsed is None:
+				# something went wrong while parsing the message, increase the error counter
+				errors = errors + 1
+				time.sleep(1)
+                                if errors > 10:
+                                        # too many consecutive errors, sleep for a while and then try to reconnect
+					log.error("Too many errors, will try reconnecting in a while")
+                                        time.sleep(sleep_on_error)
+                                        connected = False
+				continue
+			# parsed correctly, reset the error counter
+			errors = 0
+		elif gateway_type == "mqtt":
+			# for mqtt the loop is managed automatically with callbacks
+			gateway.loop()
+			# the loop should never terminates, if it will, sleep for a while then try to reconnect
+			time.sleep(sleep_on_error)
+			connected = False
+			continue
+
+# return an available node id
+def get_available_id():
+	for i in range(1,254):
+		# return the id if not already assigned by the controller and not mapped by any sensor in the configuration
+		if i not in assigned_ids and i not in nodes: return i
 
 # run the plugin service
 def run():
 	if not plugin_conf["enabled"]: return
-	gateway_run(plugin_conf["gateway_type"])
+	global assigned_ids
+	# load previously assigned node ids
+	if db.exists(assigned_ids_key):
+		# load them all
+		assigned_ids = db.rangebyscore(assigned_ids_key,"-inf","+inf",withscores=False)
+		print assigned_ids
+	# run the controller
+	controller_run(plugin_conf["gateway_type"])
 
-
-run()
+# allow running it both as a module and when called directly
+if __name__ == '__main__':
+	run()
