@@ -2775,9 +2775,9 @@
 														"I_DEBUG"
 													]
 												},
-												"sleeping": {
-													"description": "This is a sleeping sensor",
-													"type": "boolean"
+												"queue_size": {
+													"description": "If the sensors may be sleeping, create a queue with the given size for buffering messages to be sent when it will be awake next (the sensor must implement smart sleep). Set to 0 for an infinite size",
+													"type": "integer"
 												}
 											},
 											"additionalProperties": false,
