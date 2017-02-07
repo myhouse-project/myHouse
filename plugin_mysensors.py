@@ -16,9 +16,9 @@ import sensors
 # - inclusion mode not supported
 # - ota firmware update
 
-# variables
-# nodes[<node_id>][<child_id>][<type>] = sensor
-# e.g. nodes["254"]["1"]["V_TEMP"] = sensor
+# data structure for storing registered sensors' information
+# nodes[<node_id>][<child_id>][<command>][<type>] = sensor
+# e.g. nodes["254"]["1"]["1"]["V_TEMP"] = sensor
 nodes = {}
 queue = {}
 plugin_conf = conf["plugins"]["mysensors"]
@@ -34,7 +34,7 @@ types.append(["V_TEMP","V_HUM","V_STATUS","V_PERCENTAGE","V_PRESSURE","V_FORECAS
 types.append(["I_BATTERY_LEVEL","I_TIME","I_VERSION","I_ID_REQUEST","I_ID_RESPONSE","I_INCLUSION_MODE","I_CONFIG","I_FIND_PARENT","I_FIND_PARENT_RESPONSE","I_LOG_MESSAGE","I_CHILDREN","I_SKETCH_NAME","I_SKETCH_VERSION","I_REBOOT","I_GATEWAY_READY","I_SIGNING_PRESENTATION","I_NONCE_REQUEST","I_NONCE_RESPONSE","I_HEARTBEAT_REQUEST","I_PRESENTATION","I_DISCOVER_REQUEST","I_DISCOVER_RESPONSE","I_HEARTBEAT_RESPONSE","I_LOCKED","I_PING","I_PONG","I_REGISTRATION_REQUEST","I_REGISTRATION_RESPONSE","I_DEBUG"])
 types.append(["ST_FIRMWARE_CONFIG_REQUEST","ST_FIRMWARE_CONFIG_RESPONSE","ST_FIRMWARE_REQUEST","ST_FIRMWARE_RESPONSE","ST_SOUND","ST_IMAGE"])
 
-# register a new sensor against this plugin
+# register a new myHouse sensor against this plugin
 def register(sensor):
 	if sensor["plugin"]["plugin_name"] != "mysensors": return
 	node_id = sensor["plugin"]["node_id"]
@@ -64,13 +64,16 @@ def send(sensor,data,force=False):
 	command_string = sensor["plugin"]["command"]
 	type_string = sensor["plugin"]["type"]
 	if node_id not in nodes or child_id not in nodes[node_id]: return
-	if "sleeping" not in sensor["plugin"] or force:
+	if "queue_size" not in sensor["plugin"] or force:
 		# send the message directly
 		tx(node_id,child_id,command_string,type_string,data)
 	else:
 		# may be sleeping, queue it
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"]["+node_id+"]["+child_id+"] queuing message: "+str(data))
-		if node_id not in queue: queue[node_id] = Queue()
+		if node_id not in queue: queue[node_id] = Queue.Queue(sensor["plugin"]["maxsize"])
+		if queue[node_id].full(): 
+			# if the queue is full, clear it
+			with queue[node_id].mutex: queue[node_id].queue.clear()
 		queue[node_id].put([node_id,child_id,command_string,type_string,data])
 
 # transmit a message to a sensor in the radio network
@@ -87,7 +90,7 @@ def tx(node_id,child_id,command_string,type_string,payload,ack=0,service_message
 	# send the message to the gateway
 	if gateway_type == "serial":
                 # prepare the message
-                msg = str(node_id)+";"+str(child_id)+";"+str(command)+";"+str(ack)+";"+str(type)+";"+payload+"\n"
+                msg = str(node_id)+";"+str(child_id)+";"+str(command)+";"+str(ack)+";"+str(type)+";"+str(payload)+"\n"
                 # send the message through the serial port
                 try:
                         gateway.write(msg)
@@ -95,7 +98,7 @@ def tx(node_id,child_id,command_string,type_string,payload,ack=0,service_message
                         log.error("unable to send "+str(msg)+" to the serial gateway: "+utils.get_exception(e))
 	elif gateway_type == "ethernet":
 		# prepare the message
-		msg = str(node_id)+";"+str(child_id)+";"+str(command)+";"+str(ack)+";"+str(type)+";"+payload+"\n"
+		msg = str(node_id)+";"+str(child_id)+";"+str(command)+";"+str(ack)+";"+str(type)+";"+str(payload)+"\n"
 		# send the message through the network socket
 		try:
 			gateway.sendall(msg)
@@ -150,6 +153,7 @@ def process_inbound(node_id,child_id,command,ack,type,payload):
 		elif type_string == "I_ID_REQUEST":
 			# return the next available id
 			log.info("["+str(node_id)+"] requesting node_id")
+			# TODO
 			id = 1
 			tx(node_id,child_id,command_string,"I_ID_RESPONSE",id)
 		elif type_string == "I_CONFIG":
@@ -182,7 +186,7 @@ def process_inbound(node_id,child_id,command,ack,type,payload):
 	else: log.error("Invalid command "+command_string)
         # handle messages for registered sensors
         if node_id in nodes and child_id in nodes[node_id] and command_string in nodes[node_id][child_id] and type_string in nodes[node_id][child_id][command_string]:
-                # message for a registered sensor
+                # message for a registered sensor, retrieve the myHouse sensor
                 sensor = nodes[node_id][child_id][command_string][type_string]
                 # store the value for the sensor
                 value = payload
@@ -192,7 +196,6 @@ def process_inbound(node_id,child_id,command,ack,type,payload):
                 measure["value"] = utils.normalize(value,conf["constants"]["formats"][sensor["format"]]["formatter"])
                 measures.append(measure)
                 sensors.store(sensor,measures)
-
 
 # connect to a mqtt gateway
 def gateway_run(gw_type):
@@ -219,9 +222,9 @@ def gateway_run(gw_type):
                         try:
                                 node_id,child_id,command,ack,type,payload = line.split(";")
                                 # process the message
-                                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),payload)
+                                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(payload))
                         except Exception,e:
-                                log.warning("Invalid format: "+line)
+				log.warning("Invalid format ("+line+"): "+utils.get_exception(e))
                                 continue
 	elif gateway_type == "ethernet":
 		try:
@@ -247,9 +250,9 @@ def gateway_run(gw_type):
 			try:
 				node_id,child_id,command,ack,type,payload = line.split(";")
 	                        # process the message
-        	                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),payload)
+        	                process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(payload))
 			except Exception,e:
-	                	log.warning("Invalid format: "+line)
+	                	log.warning("Invalid format ("+line+"): "+utils.get_exception(e))
 	                        continue
         elif gateway_type == "mqtt":
                 try:
@@ -272,10 +275,10 @@ def gateway_run(gw_type):
                                 # split the topic
                                 topic,node_id,child_id,command,ack,type = msg.topic.split("/")
                         except Exception,e:
-                                log.warning("Invalid format: "+msg.topic)
+				log.warning("Invalid format ("+msg.topic+"): "+utils.get_exception(e))
                                 return
                         # process the message
-                        process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),msg.payload)
+                        process_inbound(int(node_id),int(child_id),int(command),int(ack),int(type),str(msg.payload))
 		gateway.on_message = mqtt_on_message
                 # loop forever
                 gateway.loop_forever()

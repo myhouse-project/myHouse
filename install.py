@@ -15,15 +15,20 @@ def run_command(command):
 	if debug: print "Executing "+command
 	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 	output = ''
-	for line in process.stdout.readlines():
-		output = output+line
+	for line in process.stdout.readlines(): output = output+line
 	if debug: print output.rstrip()
+	# print out errors if any
+	if " failed " in output or "error:" in output: print "ERROR: "+output
 
 # install all the dependencies
 def install_deps():
 	print "Preparing dependencies..."
 	print "Refreshing apt cache..."
 	run_command("apt-get update")
+        print "Installing python-dev..."
+        run_command("apt-get install -y python-dev")
+        print "Installing python-pip..."
+        run_command("apt-get install -y python-pip")
 	print "Installing redis..."
 	run_command("apt-get install -y redis-server")
 	print "Installing flask..."
