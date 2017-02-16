@@ -52,8 +52,8 @@ commands = {
 		'command_parse': 'grep dump.rdb|awk \'{print $5}\' |grep -o \'[0-9.]\\+\''
 	},
 	'uptime': {
-		'command_poll': 'date -d \"$(uptime -s)\" +%s',
-		'command_parse': ''
+		'command_poll': 'cat /proc/uptime',
+		'command_parse': 'cut -f 1 -d "."'
 	},
 	'logwatch': {
 		'command_poll': 'logwatch --range yesterday --output stdout --format text',
