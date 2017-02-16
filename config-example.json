@@ -131,7 +131,27 @@
     "ds18b20": null,
     "dht": null,
     "ads1x15": null,
-	"rss": null
+	"rss": null,
+	"mysensors": {
+		"enabled": true,
+		"gateway_type": "ethernet",
+		"gateways": {
+			"serial": {
+				"port": "/dev/ttyAMA0",
+				"baud": 57600
+			},
+			"ethernet": {
+				"hostname": "localhost",
+				"port": 5003
+			},
+			"mqtt": {
+				"hostname": "localhost",
+				"port": 1883,
+				"subscribe_topic_prefix": "mysensors-out",
+				"publish_topic_prefix": "mysensors-in"
+			}
+		}
+	}
   },
   "modules": [
     {
@@ -1684,8 +1704,7 @@
           {
             "widget_id": "indoor_air_summary",
             "display_name": {
-				"en": "Air: Summary",
-				"it": "Aria: Sommario"
+				"en": "Air: Summary"
 				},
             "enabled": false,
             "size": 3,
@@ -1704,8 +1723,7 @@
           {
             "widget_id": "indoor_air_recent",
             "display_name": {
-				"en": "Air: Recent",
-				"it": "Aria: Recente"
+				"en": "Air: Recent"
 				},
             "enabled": false,
             "size": 3,
@@ -1720,8 +1738,7 @@
           {
             "widget_id": "indoor_air_history",
             "display_name": {
-				"en": "Air: History",
-				"it": "Aria: Storico"
+				"en": "Air: History"
 				},
             "enabled": false,
             "size": 6,
@@ -1930,8 +1947,7 @@
         {
           "rule_id": "low_air_quality",
           "display_name": {
-			"en": "The concentration of gas (%gas%) indoor is making the air quality very low. You'd be better to open the window for a while",
-			"it": "La concentrazione di gas (%gas%) dentro rende la qualità dell'aria molto bassa. Faresti bene ad aprire la finestra per un po'"
+			"en": "The concentration of gas (%gas%) indoor is making the air quality very low. You'd be better to open the window for a while"
 			},
           "enabled": false,
           "severity": "info",
@@ -2495,8 +2511,7 @@
           "sensor_id": "air_quality",
 		  "enabled": false,
           "display_name": {
-			"en": "Air Quality",
-			"it": "Qualità dell'aria"
+			"en": "Air Quality"
 			},
           "plugin": {
             "plugin_name": "ads1x15",
@@ -4800,8 +4815,7 @@
           "sensor_id": "usgs",
 		  "enabled": true,
           "display_name": {
-			"en": "USGS",
-			"it": "USGS"
+			"en": "USGS"
 			},
           "plugin": {
             "plugin_name": "earthquake",
@@ -4871,7 +4885,280 @@
 		  }
         }
       ]
-    }
+    },
+{
+      "module_id": "test",
+      "section_id": "Sensors",
+      "display_name": {
+		"en": "MySensors"
+		},
+      "icon": "fa-code",
+      "enabled": true,
+      "daily_digest": false,
+      "widgets": [
+        [
+          {
+            "widget_id": "test_temperature_summary",
+            "display_name": {
+				"en": "Temperature: Summary"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "test:temperature:test",
+                "icon": "web/images/temperature.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "test:temperature"
+              }
+            ]
+          },
+          {
+            "widget_id": "test_temperature_realtime",
+            "display_name": {
+				"en": "Temperature: Realtime"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:temperature",
+                "timeframe": "realtime"
+              }
+            ]
+          },
+          {
+            "widget_id": "test_temperature_recent",
+            "display_name": {
+				"en": "Temperature: Recent"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:temperature",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "test_temperature_history",
+            "display_name": {
+				"en": "Temperature: History"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:temperature",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+		[
+          {
+            "widget_id": "test_light_summary",
+            "display_name": {
+				"en": "Light: Summary"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "current",
+                "sensor": "test:light:test",
+                "icon": "web/images/light.png"
+              },
+              {
+                "type": "sensor_group_summary",
+                "group": "test:light"
+              }
+            ]
+          },
+          {
+            "widget_id": "test_light_realtime",
+            "display_name": {
+				"en": "light: Realtime"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:light",
+                "timeframe": "realtime"
+              }
+            ]
+          },
+          {
+            "widget_id": "test_light_recent",
+            "display_name": {
+				"en": "light: Recent"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:light",
+                "timeframe": "recent"
+              }
+            ]
+          },
+          {
+            "widget_id": "test_light_history",
+            "display_name": {
+				"en": "light: History"
+				},
+            "enabled": true,
+            "size": 3,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:light",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ],
+		[
+         {
+            "widget_id": "test_battery_history",
+            "display_name": {
+				"en": "battery: History"
+				},
+            "enabled": true,
+            "size": 12,
+            "layout": [
+              {
+                "type": "sensor_group_timeline",
+                "group": "test:battery",
+                "timeframe": "history"
+              }
+            ]
+          }
+        ]
+	   ],
+      "sensors": [
+        {
+		  "module_id": "test",
+          "group_id": "temperature",
+          "sensor_id": "test",
+		  "enabled": true,
+          "display_name": {
+			"en": "Test"
+			},
+          "plugin": {
+            "plugin_name": "mysensors",
+			"node_id": 254,
+            "child_id": 1,
+			"command": "SET",
+			"type": "V_TEMP"
+          },
+          "format": "temperature",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+		  "module_id": "test",
+          "group_id": "light",
+          "sensor_id": "test",
+		  "enabled": true,
+          "display_name": {
+			"en": "Test"
+			},
+          "plugin": {
+            "plugin_name": "mysensors",
+			"node_id": 254,
+            "child_id": 2,
+			"command": "SET",
+			"type": "V_LIGHT_LEVEL"
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "avg",
+              "type": "spline"
+            },
+            {
+              "series_id": "range",
+              "type": "arearange"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+		  "module_id": "test",
+          "group_id": "battery",
+          "sensor_id": "test",
+		  "enabled": true,
+          "display_name": {
+			"en": "Test"
+			},
+          "plugin": {
+            "plugin_name": "mysensors",
+			"node_id": 254,
+            "child_id": 255,
+			"command": "INTERNAL",
+			"type": "I_BATTERY_LEVEL"
+          },
+          "format": "percentage",
+          "series": [
+            {
+              "series_id": "min",
+              "type": "spline"
+            }
+          ],
+          "summarize": {
+            "avg": true,
+            "min_max": true
+          }
+        },
+        {
+		  "module_id": "test",
+          "group_id": "relay",
+          "sensor_id": "test",
+		  "enabled": true,
+          "display_name": {
+			"en": "Test Relay"
+			},
+          "plugin": {
+            "plugin_name": "mysensors",
+			"node_id": 254,
+            "child_id": 200,
+			"command": "REQ",
+			"type": "V_CUSTOM",
+			"queue_size": 10
+          },
+          "format": "string",
+		   "retention": {
+			"realtime_count": 1
+          }
+        }
+	  ]
+	}
   ],
   "general": {
     "house_name": "myHouse",
