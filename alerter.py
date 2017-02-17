@@ -21,7 +21,7 @@ import sensors
 import image_utils
 
 # for an image apply the configured object detection techniques
-def parse_image(sensor,data):
+def analyze_image(sensor,data):
 	alert_text = ""
 	if len(data) == 0: return [alert_text]
 	# detect movements if there are at least two images
@@ -55,31 +55,6 @@ def parse_image(sensor,data):
 			log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] object detected: "+text)
                         alert_text = text
 	return [alert_text]
-
-# for a location parse the data and return the label
-def parse_position(data,key):
-	if len(data) != 1: return []
-	data = json.loads(data[0])
-	return [data[key]]
-
-# for a calendar parse the data and return the value
-def parse_calendar(data):
-	# the calendar string is at position 0
-	if len(data) != 1: return []
-	data = json.loads(data[0])
-	# the list of events is at position 1
-	if len(data) != 2: return []
-	events = json.loads(data[1])
-	for event in events:
-		# generate the timestamp of start and end date
-		start_date = datetime.datetime.strptime(event["start_date"],"%Y-%m-%dT%H:%M:%S.000Z")
-		start_timestamp = utils.timezone(utils.timezone(int(time.mktime(start_date.timetuple()))))
-		end_date = datetime.datetime.strptime(event["end_date"],"%Y-%m-%dT%H:%M:%S.000Z")
-		end_timestamp = utils.timezone(utils.timezone(int(time.mktime(end_date.timetuple()))))
-		now = utils.now()
-		# check if we are within an event
-		if now > start_timestamp and now < end_timestamp: return [event["text"]]
-	return [0]
 
 # retrieve for the database the requested data
 def get_data(sensor,request):
@@ -121,13 +96,13 @@ def get_data(sensor,request):
 	else: 
 		# just retrieve the data
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
-		if sensor["format"] == "calendar": data = parse_calendar(data)
+		if sensor["format"] == "calendar": data = utils.parse_calendar(data)
 		if sensor["format"] == "position": 
 			# define the key to return
 			key = "label"
 			if transform is not None and transform == "text": key = "text"
-			data = parse_position(data,key)
-		if sensor["format"] == "image": data = parse_image(sensor,data)
+			data = utils.parse_position(data,key)
+		if sensor["format"] == "image": data = analyze_image(sensor,data)
 	return data
 
 # evaluate if a condition is met
