@@ -370,8 +370,21 @@ def data_get_current(module_id,group_id,sensor_id):
 	data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 	# if an image, decode it and return it
 	if sensor["format"] == "image": return base64.b64decode(data[0])
+	# if a calendar, return the current value
 	elif sensor["format"] == "calendar": return json.dumps(utils.parse_calendar(data))
 	else: return json.dumps(data)
+
+# return a calendar's configuration
+def data_get_calendar(module_id,group_id,sensor_id):
+        data = []
+        sensor = utils.get_sensor(module_id,group_id,sensor_id)
+        if sensor is None:
+                log.error("["+module_id+"]["+group_id+"]["+sensor_id+"] sensor not found")
+                return json.dumps(data)
+        key = conf["constants"]["db_schema"]["root"]+":"+module_id+":"+group_id+":"+sensor_id
+        # return the latest measure
+        data = db.range(key,withscores=False,milliseconds=True,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+        return json.dumps(data)
 
 # return the latest image of a sensor for a web request
 def data_get_current_image(module_id,group_id,sensor_id,night_day):
