@@ -67,7 +67,7 @@ def sensor_get_current(module_id,group_id,sensor_id):
 	if sensor is not None and sensor["format"] == "image": content_type = "image"
 	return Response(sensors.data_get_current(module_id,group_id,sensor_id), mimetype=content_type)
 
-# return a calendar's configuratio
+# return a calendar's configuration
 @app.route('/<module_id>/<group_id>/<sensor_id>/calendar')
 def sensor_get_calendar(module_id,group_id,sensor_id):
 	return sensors.data_get_calendar(module_id,group_id,sensor_id)
