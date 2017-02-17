@@ -48,8 +48,8 @@ commands = {
 		'command_parse': 'awk \'{printf "%.1f",$0/1000}\'',
 	},
 	'application_database': {
-		'command_poll': 'ls -alh /var/lib/redis/',
-		'command_parse': 'grep dump.rdb|awk \'{print $5}\' |grep -o \'[0-9.]\\+\''
+		'command_poll': 'ls -al /var/lib/redis/',
+		'command_parse': 'grep dump.rdb|awk \'{print $5}\' |grep -o \'[0-9.]\\+\' | awk \'{printf "%.1f",$0/1024/1024}\''
 	},
 	'uptime': {
 		'command_poll': 'cat /proc/uptime',
