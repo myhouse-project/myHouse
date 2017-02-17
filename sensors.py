@@ -515,7 +515,12 @@ def data_send(module_id,group_id,sensor_id,value,force=False):
 		log.error("the plugin "+sensor["plugin"]["plugin_name"]+" does not allow sending messages")
 		return json.dumps("KO")
 	try:
-		plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
+		try: 
+			# invoke the plugin-specific send function
+			plugins[sensor["plugin"]["plugin_name"]].send(sensor,value,force=force)
+		except TypeError:
+			# not all the plugins support "force", call it without it
+			plugins[sensor["plugin"]["plugin_name"]].send(sensor,value)
 		return json.dumps("OK")
 	except Exception,e:
         	log.error("unable to send "+str(value)+": "+utils.get_exception(e))
