@@ -87,7 +87,7 @@ def get_data(sensor,request):
 	key = split[0]
 	start = split[1]
 	end = split[2]
-	trasform = split[3] if len(split) > 3 else None
+	transform = split[3] if len(split) > 3 else None
 	key_split = key.split(":")
 	# adjust start and end based on the request
 	query = None
@@ -103,16 +103,16 @@ def get_data(sensor,request):
 	key = key.replace(key_split[0]+":","",1)	
 	key = conf["constants"]["db_schema"]["root"]+":"+key_split[0]+":"+key
 	# handle special requests
-	if trasform is not None and trasform == "elapsed":
+	if transform is not None and transform == "elapsed":
 		# retrieve the timestamp and calculate the time difference
 		data = query(key,start=start,end=end,withscores=True)
 		time_diff = (utils.now() - data[0][0])/60
 		return [time_diff]
-	if trasform is not None and trasform == "timestamp":
+	if transform is not None and transform == "timestamp":
 		# retrieve the timestamp 
 		data = query(key,start=start,end=end,withscores=True)
 		return [data[0][0]]
-	elif trasform is not None and trasform == "distance":
+	elif transform is not None and transform == "distance":
 		# calculate the distance between the point and our location
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
 		data = json.loads(data[0])
@@ -125,7 +125,7 @@ def get_data(sensor,request):
 		if sensor["format"] == "position": 
 			# define the key to return
 			key = "label"
-			if trasform is not None and trasform == "text": key = "text"
+			if transform is not None and transform == "text": key = "text"
 			data = parse_position(data,key)
 		if sensor["format"] == "image": data = parse_image(sensor,data)
 	return data

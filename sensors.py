@@ -16,6 +16,7 @@ conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
 
+# import plugins
 import plugin_wunderground
 import plugin_weatherchannel
 import plugin_command
@@ -33,6 +34,7 @@ import plugin_ds18b20
 import plugin_ads1x15
 import plugin_rss
 import plugin_mysensors
+import plugin_bluetooth
 
 # variables
 plugins = {}
@@ -60,6 +62,7 @@ def init_plugins():
 		elif name == "ads1x15": plugin = plugin_ads1x15
 		elif name == "rss": plugin = plugin_rss
 		elif name == "mysensors": plugin = plugin_mysensors
+		elif name == "bluetooth": plugin = plugin_bluetooth
 		if plugin is None:
 			log.error("plugin "+name+" not supported")
 			continue
