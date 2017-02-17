@@ -1064,7 +1064,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		sensor = get_sensor_string(layout["sensor"])
 		if (sensor == null) return;
 		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
-		$.getJSON(hostname+sensor_url+"/current", function (data) {
+		$.getJSON(hostname+sensor_url+"/calendar", function (data) {
 			data = JSON.parse(data)
 			if (data.length > 0)  scheduler.parse(data[0],"json");
 		});
