@@ -1125,6 +1125,21 @@
 						"gateway_type",
 						"gateways"
 					]
+				},
+				"bluetooth": {
+					"type": "object",
+					"description": "Bluetooth Low Energy plugin configuration",
+					"properties": {
+						"adapter": {
+							"type": "string",
+							"description": "The bluetooth adapater to use",
+							"value": "hci0"
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"adapter"
+					]
 				}
 			},
 			"additionalProperties": false,
@@ -1145,7 +1160,8 @@
 				"dht",
 				"ads1x15",
 				"rss",
-				"mysensors"
+				"mysensors",
+				"bluetooth"
 			]
 		},
 		"pws": {
@@ -2787,6 +2803,63 @@
 												"child_id",
 												"command",
 												"type"
+											]
+										},
+										{
+											"title": "bluetooth",
+											"description": "Read a measure from a Bluetooth Low Energy device. Run plugin_bluetooth.py to discover available devices and handles",
+											"properties": {
+												"plugin_name": {
+													"type": "string",
+													"enum": [
+														"bluetooth"
+													],
+													"value": "bluetooth"
+												},
+												"mac": {
+													"type": "string",
+													"description": "The MAC address of the device to connect to"
+												},
+												"handle": {
+													"type": "string",
+													"description": "The handle to query (e.g 0x0003)"
+												},
+												"handle_type": {
+													"type": "string",
+													"description": "If the handle is storing the value or if a notification",
+													"enum": [
+														"value",
+														"notification"
+													]
+												},
+												"transform": {
+													"description": "Apply a trasformation function to the value",
+													"type": "string",
+													"enum": [
+														"/10",
+														"/100"
+													]
+												},
+												"polling_interval": {
+													"description": "Poll the sensor every X minutes",
+													"type": "integer"
+												},
+												"poll_on_demand": {
+													"description": "Do not poll the sensor at regular interval but poll only when the data is requested",
+													"value": false,
+													"type": "boolean"
+												},
+												"cache_expire_min": {
+													"description": "Optional per-sensor validity of the polling cache in minutes",
+													"type": "integer"
+												}
+											},
+											"additionalProperties": false,
+											"required": [
+												"plugin_name",
+												"mac",
+												"handle",
+												"handle_type"
 											]
 										}
 									]

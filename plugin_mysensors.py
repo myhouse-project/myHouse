@@ -368,7 +368,6 @@ def run():
 	if db.exists(assigned_ids_key):
 		# load them all
 		assigned_ids = db.rangebyscore(assigned_ids_key,"-inf","+inf",withscores=False)
-		print assigned_ids
 	# run the controller
 	controller_run(plugin_conf["gateway_type"])
 

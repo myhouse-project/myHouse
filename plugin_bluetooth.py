@@ -7,64 +7,68 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
+if "bluetooth" in conf["plugins"]:
+	plugin_conf = conf["plugins"]["bluetooth"]
+	hci = plugin_conf["adapter"]
+scan_timeout = 10
+notification_timeout = 10
+
 # poll the sensor
 def poll(sensor):
-	command = sensor['plugin']['command_poll']
-	# run the poll command
-	command = "cd '"+conf["constants"]["base_dir"]+"'; "+command
-	return utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])
+	# return the raw value 
+	value = ""
+	if sensor["plugin"]["handle_type"] == "value": value = get_value(sensor["plugin"]["mac"],sensor["plugin"]["handle"])
+	elif sensor["plugin"]["handle_type"] == "notification": value = get_notification(sensor["plugin"]["mac"],sensor["plugin"]["handle"])
+	else: log.error("Invalid handle type: "+sensor["plugin"]["handle_type"])
+	log.debug("polled: "+str(value))
+	return value
 
 # parse the data
 def parse(sensor,data):
-	data = str(data).replace("'","''")
-	# no command parse, return the raw data
-	if 'command_parse' not in sensor['plugin'] or sensor['plugin']['command_parse'] == "": return data
-	command = "cd '"+conf["constants"]["base_dir"]+"'; echo '"+data+"' |"+sensor['plugin']['command_parse']
-	return utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])
+	if data is "": return None
+	# get what data format this sensor would expect
+	formatter = conf["constants"]["formats"][sensor["format"]]["formatter"]
+	# format the hex data into the expected format
+	if formatter == "int" or formatter == "float_1" or formatter == "float_2": data = hex2int(data)
+	elif formatter == "string": data = hex2string(data)
+	else: log.error("Invalid formatter: "+str(formatter))
+	# apply any trasformation if needed
+	if "transform" in sensor["plugin"]:
+		if sensor["plugin"]["transform"] == "/10": data = float(data)/10
+		if sensor["plugin"]["transform"] == "/100": data = float(data)/100
+	return data
 
 # return the cache schema
 def cache_schema(sensor):
-	return sensor['plugin']['command_poll']
-
-# run a command
-def send(sensor,data):
-	# run the command in the script directory
-	command = "cd '"+conf["constants"]["base_dir"]+"'; "+data
-	utils.run_command(command,timeout=conf["plugins"]["command"]["timeout"])
+	return sensor["plugin"]["mac"]+"_"+sensor["plugin"]["handle"]
 
 # convert a hex string into an integer
 def hex2int(hex):
 	try:
 		hex = "0x"+hex.replace(" ","")
 		return int(hex, 16)
-	except: return 0
-
-# convert a hex string into a float and adjust based on precision
-def hex2float(hex,precision = 0):
-	int = float(hex2int(hex))
-	if precision == 0: return int
-	else: return int/(10*precision)
+	except: return None
 
 # convert a hex string into a ascii string
 def hex2string(hex):
 	try:
 		string = hex.decode("hex")
 		return string
-	except: return ""
+	except: return None
 
-# read a value from the device handle
+# read a value from the device handle and return its hex
 def get_value(device,handle):
 	# use char read
-	output = utils.run_command("gatttool -b "+device+" -t random --char-read -a "+handle)
+	output = utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-read -a "+handle)
 	# clean up the output
 	return output.replace("Characteristic value/descriptor: ","")
 
-# read a value from the device notification handle
+# read a value from the device notification handle and return its hex
 def get_notification(device,handle):
 	# enable notification on the provided handle
-	output = utils.run_command("gatttool -b "+device+" -t random --char-write-req -a "+handle+" -n 0100 --listen",timeout=10)
+	output = utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-write-req -a "+handle+" -n 0100 --listen",timeout=notification_timeout)
 	# disable notifications
-	utils.run_command("gatttool -b "+device+" -t random --char-write-req -a "+handle+" -n 0000")
+	utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-write-req -a "+handle+" -n 0000")
 	# find all the values
 	values = re.findall("value: (.+)\n",output)
 	# return the first match
@@ -74,7 +78,7 @@ def get_notification(device,handle):
 # discover BLE devices
 def discover(): 
 	print "Scanning for BLE devices..."
-	scan = utils.run_command("hcitool lescan",timeout=5)
+	scan = utils.run_command("hcitool -i "+hci+" lescan",timeout=scan_timeout)
 	# search for MAC addresses
 	devices = set(re.findall("(\w\w:\w\w:\w\w:\w\w:\w\w:\w\w)",scan))
 	print "Found "+str(len(devices))+" device(s):"
@@ -82,7 +86,7 @@ def discover():
 	for device in devices:
 		print "\t- Device "+device+":"
 		# for value handles read the characteristics
-		characteristics = utils.run_command("gatttool -b "+device+" -t random --characteristics")
+		characteristics = utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --characteristics")
 		# filter by char properties (02 and 12 is READ)
 		value_handles = re.findall("char properties = 0x(12|02), char value handle = (.+), uuid =",characteristics)
 		for value_handle in value_handles:
@@ -90,9 +94,9 @@ def discover():
 			handle = value_handle[1]
 			# read the value
 			value = get_value(device,handle)
-			print "\t\t - Read handle "+handle+", value: "+str(value)+", int="+str(hex2int(value))+", string="+str(hex2string(value))
+			print "\t\t - Value handle "+handle+", value: "+str(value)+", int="+str(hex2int(value))+", string="+str(hex2string(value))
 		# for notification handles, find all the handles with 2902 UUID
-		notifications = utils.run_command("gatttool -b "+device+" -t random --char-read -u 2902")
+		notifications = utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-read -u 2902")
 		notification_handles = re.findall("handle: (\S+) ",notifications)
 		for notification_handle in notification_handles:
 			# for each handle
@@ -104,4 +108,5 @@ def discover():
 	
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
+	# run the discover service
         discover()
