@@ -62,7 +62,7 @@ def get_value(device,handle):
 # read a value from the device notification handle
 def get_notification(device,handle):
 	# enable notification on the provided handle
-	output = utils.run_command("timeout -s SIGINT 7s gatttool -b "+device+" -t random --char-write-req -a "+handle+" -n 0100 --listen")
+	output = utils.run_command("gatttool -b "+device+" -t random --char-write-req -a "+handle+" -n 0100 --listen",timeout=10)
 	# disable notifications
 	utils.run_command("gatttool -b "+device+" -t random --char-write-req -a "+handle+" -n 0000")
 	# find all the values
@@ -74,7 +74,7 @@ def get_notification(device,handle):
 # discover BLE devices
 def discover(): 
 	print "Scanning for BLE devices..."
-	scan = utils.run_command("timeout -s SIGINT 2s hcitool lescan")
+	scan = utils.run_command("hcitool lescan",timeout=5)
 	# search for MAC addresses
 	devices = set(re.findall("(\w\w:\w\w:\w\w:\w\w:\w\w:\w\w)",scan))
 	print "Found "+str(len(devices))+" device(s):"
@@ -105,4 +105,3 @@ def discover():
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
         discover()
-
