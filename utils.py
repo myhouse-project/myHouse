@@ -14,6 +14,7 @@ import __builtin__
 from math import radians, cos, sin, asin, sqrt
 import Queue
 import threading
+import json
 
 import logger
 import config
@@ -255,7 +256,7 @@ class Command(object):
 	def run(self, timeout):
 		def target(queue):
 			# if running in a shell, the os.setsid() is passed in the argument preexec_fn so it's run after the fork() and before  exec() to run the shell
-			if self.shell: preexec_fn = os.setsid
+			preexec_fn = os.setsid if self.shell else None
 			# run the process
 			self.process = subprocess.Popen(self.cmd, shell=self.shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, preexec_fn=preexec_fn)
 			# read the output line by line
@@ -352,3 +353,43 @@ def lang(display_name):
 	if language in display_name: return display_name[language]
 	log.warning("cannot find language "+language+" in "+str(display_name))
 	return "N.A."
+
+# convert a hex string into an integer
+def hex2int(hex):
+        try:
+                hex = "0x"+hex.replace(" ","")
+                return int(hex, 16)
+        except: return None
+
+# convert a hex string into a ascii string
+def hex2string(hex):
+        try:
+                string = hex.decode("hex")
+                return string
+        except: return None
+
+# for a location parse the json data and return the label
+def parse_position(data,key):
+        if len(data) != 1: return []
+        data = json.loads(data[0])
+        return [data[key]]
+
+# for a calendar parse the json data and return the value
+def parse_calendar(data):
+        # the calendar string is at position 0
+        if len(data) != 1: return []
+        data = json.loads(data[0])
+        # the list of events is at position 1
+        if len(data) != 2: return []
+        events = json.loads(data[1])
+        for event in events:
+                # generate the timestamp of start and end date
+                start_date = datetime.datetime.strptime(event["start_date"],"%Y-%m-%dT%H:%M:%S.000Z")
+                start_timestamp = timezone(timezone(int(time.mktime(start_date.timetuple()))))
+                end_date = datetime.datetime.strptime(event["end_date"],"%Y-%m-%dT%H:%M:%S.000Z")
+                end_timestamp = timezone(timezone(int(time.mktime(end_date.timetuple()))))
+                now_ts = now()
+                # check if we are within an event
+                if now_ts > start_timestamp and now_ts < end_timestamp: return [event["text"]]
+        return [0]
+

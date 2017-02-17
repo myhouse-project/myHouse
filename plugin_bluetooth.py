@@ -29,8 +29,8 @@ def parse(sensor,data):
 	# get what data format this sensor would expect
 	formatter = conf["constants"]["formats"][sensor["format"]]["formatter"]
 	# format the hex data into the expected format
-	if formatter == "int" or formatter == "float_1" or formatter == "float_2": data = hex2int(data)
-	elif formatter == "string": data = hex2string(data)
+	if formatter == "int" or formatter == "float_1" or formatter == "float_2": data = utils.hex2int(data)
+	elif formatter == "string": data = utils.hex2string(data)
 	else: log.error("Invalid formatter: "+str(formatter))
 	# apply any trasformation if needed
 	if "transform" in sensor["plugin"]:
@@ -41,20 +41,6 @@ def parse(sensor,data):
 # return the cache schema
 def cache_schema(sensor):
 	return sensor["plugin"]["mac"]+"_"+sensor["plugin"]["handle"]
-
-# convert a hex string into an integer
-def hex2int(hex):
-	try:
-		hex = "0x"+hex.replace(" ","")
-		return int(hex, 16)
-	except: return None
-
-# convert a hex string into a ascii string
-def hex2string(hex):
-	try:
-		string = hex.decode("hex")
-		return string
-	except: return None
 
 # read a value from the device handle and return its hex
 def get_value(device,handle):
@@ -94,7 +80,7 @@ def discover():
 			handle = value_handle[1]
 			# read the value
 			value = get_value(device,handle)
-			print "\t\t - Value handle "+handle+", value: "+str(value)+", int="+str(hex2int(value))+", string="+str(hex2string(value))
+			print "\t\t - Value handle "+handle+", value: "+str(value)+", int="+str(utils.hex2int(value))+", string="+str(utils.hex2string(value))
 		# for notification handles, find all the handles with 2902 UUID
 		notifications = utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-read -u 2902")
 		notification_handles = re.findall("handle: (\S+) ",notifications)
@@ -103,7 +89,7 @@ def discover():
 			handle = notification_handle
 			# get the value by enabling notifications
 			value = get_notification(device,handle)
-			print "\t\t - Notification handle "+handle+", value: "+str(value)+", int="+str(hex2int(value))+", string="+str(hex2string(value))	
+			print "\t\t - Notification handle "+handle+", value: "+str(value)+", int="+str(utils.hex2int(value))+", string="+str(utils.hex2string(value))	
 
 	
 # allow running it both as a module and when called directly
