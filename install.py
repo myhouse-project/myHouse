@@ -84,6 +84,8 @@ def install_deps():
 	run_command("pip install Adafruit_ADS1x15")
         print "Installing python-feedparser..."
         run_command("apt-get install -y python-feedparser")
+	# from v2.3
+	run_command("apt-get install -y python-serial")
 
 # installation routine
 def install():
