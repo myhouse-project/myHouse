@@ -893,20 +893,17 @@ th.dt-center, td.dt-center { text-align: center; }
 		// add it to the page
 		$(body).append(input_html);
 		// act on click
-		$(tag+"_input").click(function(tag,url) {
+		$(tag+"_input").click(function(tag,actions) {
 			return function () {
-				$(tag).removeClass("btn-primary")
-				$.getJSON(url,function(url) {
-						return function (data) {
-							$(tag).addClass("btn-primary")
-							if (data != "OK") {
-								// handle errors
-								log("warning","error to visit "+url);
-							}
-						};
-				}(url));
+				$(tag).removeClass("btn-primary");
+				for (var i = 0; i < actions.length; i++) {
+					var split = actions[i].split(",",2)
+					if (split[0] == "send") $.get(split[1]);
+					if (split[0] == "wait") setTimeout(function(){ },split[1]);
+				}
+				$(tag).addClass("btn-primary")
 			};
-		}(tag+"_input",layout["send"]));
+		}(tag+"_input",layout["actions"]));
 	}
 	
 	// add a html control

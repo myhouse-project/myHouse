@@ -52,7 +52,7 @@ def get_value(device,handle):
 # read a value from the device notification handle and return its hex
 def get_notification(device,handle):
 	# enable notification on the provided handle
-	output = utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-write-req -a "+handle+" -n 0100 --listen",timeout=notification_timeout)
+	output = utils.run_command(["gatttool","-i",hci,"-b",device,"-t","random","--char-write-req","-a",handle,"-n","0100","--listen"],shell=False,timeout=notification_timeout)
 	# disable notifications
 	utils.run_command("gatttool -i "+hci+" -b "+device+" -t random --char-write-req -a "+handle+" -n 0000")
 	# find all the values

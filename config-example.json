@@ -2,7 +2,7 @@
   "general": {
     "house_name": "myHouse",
     "latitude": 40.71,
-	"longitude": -74.00
+    "longitude": -74.0,
     "units": {
       "imperial": false,
       "fahrenheit": false
@@ -23,11 +23,11 @@
     "hostname": "localhost",
     "port": 6379,
     "database": 2,
-	"database_file": "/var/lib/redis/dump.rdb",
-	"backup": {
-		"daily": true,
-		"weekly": true
-	}
+    "database_file": "/var/lib/redis/dump.rdb",
+    "backup": {
+      "daily": true,
+      "weekly": true
+    }
   },
   "gui": {
     "enabled": true,
@@ -38,30 +38,30 @@
     "auto_refresh_min": 5,
     "debug_console": false,
     "sections": [
-		{
-			"section_id": "Main",
-			"display_name": {
-				"en": "Main"
-			}
-		},
-		{
-			"section_id": "Sensors",
-			"display_name": {
-				"en": "Sensors"
-			}
-		},
-		{
-			"section_id": "System",
-			"display_name": {
-				"en": "System"
-			}
-		},
-		{
-			"section_id": "myHouse",
-			"display_name": {
-				"en": "myHouse"
-			}
-		}
+      {
+        "section_id": "Main",
+        "display_name": {
+          "en": "Main"
+        }
+      },
+      {
+        "section_id": "Sensors",
+        "display_name": {
+          "en": "Sensors"
+        }
+      },
+      {
+        "section_id": "System",
+        "display_name": {
+          "en": "System"
+        }
+      },
+      {
+        "section_id": "myHouse",
+        "display_name": {
+          "en": "myHouse"
+        }
+      }
     ],
     "maps": {
       "size_x": 640,
@@ -144,27 +144,27 @@
     "ds18b20": null,
     "dht": null,
     "ads1x15": null,
-	"rss": null,
-	"mysensors": {
-		"enabled": false,
-		"gateway_type": "ethernet",
-		"gateways": {
-			"serial": {
-				"port": "/dev/ttyAMA0",
-				"baud": 57600
-			},
-			"ethernet": {
-				"hostname": "localhost",
-				"port": 5003
-			},
-			"mqtt": {
-				"hostname": "localhost",
-				"port": 1883,
-				"subscribe_topic_prefix": "mysensors-out",
-				"publish_topic_prefix": "mysensors-in"
-			}
-		}
-	},
+    "rss": null,
+    "mysensors": {
+      "enabled": false,
+      "gateway_type": "ethernet",
+      "gateways": {
+        "serial": {
+          "port": "/dev/ttyAMA0",
+          "baud": 57600
+        },
+        "ethernet": {
+          "hostname": "localhost",
+          "port": 5003
+        },
+        "mqtt": {
+          "hostname": "localhost",
+          "port": 1883,
+          "subscribe_topic_prefix": "mysensors-out",
+          "publish_topic_prefix": "mysensors-in"
+        }
+      }
+    },
     "bluetooth": {
       "adapter": "hci0"
     }
@@ -559,7 +559,7 @@
             "temperature_max_yesterday": "outdoor:temperature:external:day:max,-2,-2",
             "temperature_min_yesterday": "outdoor:temperature:external:day:min,-2,-2",
             "temperature_avg_yesterday": "outdoor:temperature:external:day:avg,-2,-2",
-			"condition_avg_yesterday": "outdoor:temperature:condition:day:avg,-2,-2"
+            "condition_avg_yesterday": "outdoor:temperature:condition:day:avg,-2,-2"
           }
         },
         {
@@ -809,7 +809,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "temperature",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Temperature"
           },
@@ -830,7 +830,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "condition",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Condition"
           },
@@ -854,7 +854,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "pop",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Chance of rain"
           },
@@ -875,7 +875,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "rain",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Rain"
           },
@@ -896,7 +896,7 @@
         {
           "group_id": "forecast",
           "sensor_id": "snow",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Snow"
           },
@@ -917,7 +917,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "external",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -946,7 +946,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "record",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Record"
           },
@@ -983,7 +983,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "normal",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Normal"
           },
@@ -998,7 +998,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "condition",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Condition"
           },
@@ -1026,7 +1026,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "record_year",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Record Year"
           },
@@ -1041,7 +1041,7 @@
         {
           "group_id": "precipitation",
           "sensor_id": "rain",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Rain"
           },
@@ -1062,7 +1062,7 @@
         {
           "group_id": "precipitation",
           "sensor_id": "snow",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Snow"
           },
@@ -1083,7 +1083,7 @@
         {
           "group_id": "wind",
           "sensor_id": "speed",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Wind"
           },
@@ -1113,7 +1113,7 @@
         {
           "group_id": "wind",
           "sensor_id": "gust",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Wind Gust"
           },
@@ -1139,7 +1139,7 @@
         {
           "group_id": "wind",
           "sensor_id": "wind_direction",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Wind Direction"
           },
@@ -1167,7 +1167,7 @@
         {
           "group_id": "humidity",
           "sensor_id": "external",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -1196,7 +1196,7 @@
         {
           "group_id": "pressure",
           "sensor_id": "external",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "External"
           },
@@ -1297,7 +1297,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "1",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Webcam 1"
           },
@@ -1315,7 +1315,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "2",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Webcam 2"
           },
@@ -1333,7 +1333,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "3",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Webcam 3"
           },
@@ -1351,7 +1351,7 @@
         {
           "group_id": "neighbourhood",
           "sensor_id": "4",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Webcam 4"
           },
@@ -1774,7 +1774,7 @@
         {
           "group_id": "cpu",
           "sensor_id": "cpu_user",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "CPU User"
           },
@@ -1799,7 +1799,7 @@
         {
           "group_id": "cpu",
           "sensor_id": "cpu_system",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "CPU System"
           },
@@ -1824,7 +1824,7 @@
         {
           "group_id": "memory",
           "sensor_id": "ram",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "RAM"
           },
@@ -1849,7 +1849,7 @@
         {
           "group_id": "load",
           "sensor_id": "load_1",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Load 1 min"
           },
@@ -1874,7 +1874,7 @@
         {
           "group_id": "network",
           "sensor_id": "services",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Services"
           },
@@ -1899,7 +1899,7 @@
         {
           "group_id": "network",
           "sensor_id": "connections",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Connections"
           },
@@ -1924,7 +1924,7 @@
         {
           "group_id": "temperature",
           "sensor_id": "temperature",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Temperature"
           },
@@ -1953,7 +1953,7 @@
         {
           "group_id": "myhouse_database",
           "sensor_id": "database",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Database Size"
           },
@@ -1979,7 +1979,7 @@
         },
         {
           "sensor_id": "uptime",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "uptime"
           },
@@ -2068,7 +2068,7 @@
         {
           "group_id": "myhouse",
           "sensor_id": "main",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "myHouse"
           },
@@ -2084,7 +2084,7 @@
         {
           "group_id": "system",
           "sensor_id": "messages",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
             "en": "Messages"
           },
@@ -2128,7 +2128,7 @@
     },
     {
       "display_name": {
-          "en": "Reboot/Shutdown"
+        "en": "Reboot/Shutdown"
       },
       "enabled": true,
       "section_id": "System",
@@ -2136,17 +2136,19 @@
         [
           {
             "display_name": {
-                "en": "Reboot the system"
+              "en": "Reboot the system"
             },
             "enabled": true,
             "offset": 1,
             "layout": [
               {
                 "display_name": {
-                    "en": "Reboot"
+                  "en": "Reboot"
                 },
                 "type": "button",
-                "send": "power/command/reboot/run/save"
+                "actions": [
+                  "send,power/command/reboot/run/save"
+                ]
               }
             ],
             "widget_id": "reboot",
@@ -2154,17 +2156,19 @@
           },
           {
             "display_name": {
-                "en": "Shutdown the system"
+              "en": "Shutdown the system"
             },
             "enabled": true,
             "offset": 2,
             "layout": [
               {
                 "display_name": {
-                    "en": "Shutdown"
+                  "en": "Shutdown"
                 },
                 "type": "button",
-                "send": "power/command/shutdown/run/save"
+                "actions": [
+                  "send,power/command/shutdown/run/save"
+                ]
               }
             ],
             "widget_id": "shutdown",
@@ -2176,7 +2180,7 @@
       "sensors": [
         {
           "sensor_id": "reboot",
-		  "enabled": true,
+          "enabled": true,
           "format": "string",
           "plugin": {
             "plugin_name": "system",
@@ -2190,7 +2194,7 @@
         },
         {
           "sensor_id": "shutdown",
-		  "enabled": true,
+          "enabled": true,
           "format": "string",
           "plugin": {
             "plugin_name": "system",
@@ -2205,12 +2209,12 @@
       ],
       "icon": "fa-power-off"
     },
-	{
+    {
       "module_id": "earthquake",
       "section_id": "Sensors",
       "display_name": {
-		"en": "Earthquakes"
-		},
+        "en": "Earthquakes"
+      },
       "icon": "fa-bullseye",
       "enabled": true,
       "widgets": [
@@ -2218,89 +2222,98 @@
           {
             "widget_id": "earthquake_map",
             "display_name": {
-				"en": "Earthquake Map"
-				},
+              "en": "Earthquake Map"
+            },
             "enabled": true,
             "size": 12,
             "layout": [
               {
                 "type": "map",
                 "group": "earthquake:networks",
-				"tracking": false,
-				"timeframe": "history"
+                "tracking": false,
+                "timeframe": "history"
               }
             ]
           }
         ]
       ],
       "rules": [
-         {
+        {
           "rule_id": "earthquake_world",
-		  "for": [
-			"-10","-9","-8","-7","-6","-5","-4","-3","-2","-1"
-		  ],
+          "for": [
+            "-10",
+            "-9",
+            "-8",
+            "-7",
+            "-6",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1"
+          ],
           "display_name": {
-			"en": "A strong earthquake magnitude %magnitude% has taken place %distance% away at %timestamp% in %text"
-			},
+            "en": "A strong earthquake magnitude %magnitude% has taken place %distance% away at %timestamp% in %text"
+          },
           "enabled": true,
           "severity": "info",
           "run_every": "minute",
           "conditions": [
             "magnitude > min_magnitude",
-			"timestamp > last_alert"
+            "timestamp > last_alert"
           ],
           "definitions": {
             "magnitude": "earthquake:networks:usgs:day:avg,%i%,%i%",
-			"distance": "earthquake:networks:usgs:day:avg,%i%,%i%,distance",
-			"timestamp": "earthquake:networks:usgs:day:avg,%i%,%i%,timestamp",
-			"text": "earthquake:networks:usgs:day:avg,%i%,%i%,text",
-			"last_alert": "earthquake:alert:world,-1,-1",
+            "distance": "earthquake:networks:usgs:day:avg,%i%,%i%,distance",
+            "timestamp": "earthquake:networks:usgs:day:avg,%i%,%i%,timestamp",
+            "text": "earthquake:networks:usgs:day:avg,%i%,%i%,text",
+            "last_alert": "earthquake:alert:world,-1,-1",
             "min_magnitude": 7
           },
-		  "actions": [
-			"set,earthquake:alert:world,%timestamp%"
-		  ]
+          "actions": [
+            "set,earthquake:alert:world,%timestamp%"
+          ]
         }
-	  ],
+      ],
       "sensors": [
         {
-		  "module_id": "earthquake",
+          "module_id": "earthquake",
           "group_id": "networks",
           "sensor_id": "usgs",
-		  "enabled": true,
+          "enabled": true,
           "display_name": {
-			"en": "USGS"
-			},
+            "en": "USGS"
+          },
           "plugin": {
             "plugin_name": "earthquake",
             "domain": "earthquake.usgs.gov",
-			"query": "minmag=7",
-			"polling_interval": 10
-		  },
-		  "retention": {
-			"realtime_new_only": true,
-			"history_days": 3
-		  },
+            "query": "minmag=7",
+            "polling_interval": 10
+          },
+          "retention": {
+            "realtime_new_only": true,
+            "history_days": 3
+          },
           "format": "position"
         },
         {
-		  "module_id": "earthquake",
+          "module_id": "earthquake",
           "group_id": "alert",
           "sensor_id": "world",
-		  "enabled": true,
-		  "retention": {
-			"realtime_count": 1
-		  },
+          "enabled": true,
+          "retention": {
+            "realtime_count": 1
+          },
           "format": "int"
         }
       ]
     },
-	{
+    {
       "module_id": "news",
       "section_id": "Main",
       "display_name": {
-		"en": "News"
-		},
+        "en": "News"
+      },
       "icon": "fa-newspaper-o",
       "enabled": true,
       "widgets": [
@@ -2308,8 +2321,8 @@
           {
             "widget_id": "news_recent",
             "display_name": {
-				"en": "Recent News"
-				},
+              "en": "Recent News"
+            },
             "enabled": true,
             "size": 12,
             "layout": [
@@ -2324,19 +2337,19 @@
       ],
       "sensors": [
         {
-		  "module_id": "news",
+          "module_id": "news",
           "group_id": "rss",
           "sensor_id": "all_news",
-		  "enabled": true,
+          "enabled": true,
           "plugin": {
             "plugin_name": "rss",
             "url": "http://rss.cnn.com/rss/edition.rss",
-			"polling_interval": 20
+            "polling_interval": 20
           },
           "format": "string",
-		  "retention": {
-			"realtime_count": 1
-		  }
+          "retention": {
+            "realtime_count": 1
+          }
         }
       ]
     }

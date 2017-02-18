@@ -7,7 +7,7 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 
 # constants
 constants = {
-	'version': "2.3-dev1",
+	'version': "2.3-dev2",
 	'1_minute': 60,
 	'1_hour': 3600,
 	'1_day': 86400,
