@@ -1519,15 +1519,19 @@
 															"type": "object",
 															"minItems": 1
 														},
-														"send": {
-															"description": "A URL to call when the button is pressed to e.g. send a message to a sensor",
-															"type": "string"
+														"actions": {
+															"description": "A set of action to execute when pressed. Can be either 'send,<url>' where url is a url to call when the button is pressed to e.g. send a message to a sensor or 'wait <time>' where time is milliseconds to wait before executing the next action",
+															"type": "array",
+															"items": {
+																"type": "string",
+																"title": "Action"
+															}
 														}
 													},
 													"additionalProperties": false,
 													"required": [
 														"type",
-														"send",
+														"actions",
 														"display_name"
 													]
 												},

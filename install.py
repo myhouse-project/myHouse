@@ -46,9 +46,9 @@ def create_inventory():
 	log.info("\t- Listed "+str(len(inventory))+" packages")
 	# create an inventory of all python modules installed
 	log.info("Creating an inventory of the installed python modules...")
-	output = run_command("pip list --format=columns")
+	output = run_command("pip list")
         for line in output.split("\n"):
-                package = re.findall("^(\S+)\s+",line)
+                package = re.findall("^(\S+) \(",line)
 		if package is None: continue
                 if len(package) == 1: inventory_python.append(package[0].lower())
 	log.info("\t- Listed "+str(len(inventory_python))+" packages")

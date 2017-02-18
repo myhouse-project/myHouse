@@ -49,7 +49,7 @@ def run_command(command,return_code=False):
         ret = process.poll()
         if return_code: return ret
         else:
-                if ret != 0: log.info("WARNING: while the execution of "+command+": "+output)
+                if ret != 0: log.info("WARNING: during the execution of "+command+": "+output)
                 return output
 
 # backup the database and the configuration file
@@ -59,10 +59,10 @@ def backup(version):
 		exit()
 	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)
 	log.info("Backing up the database "+db_file+" into "+backup_db_file)
-	run_command("cp "+db_file+" "+backup_db_file)
+	run_command("cp -f "+db_file+" "+backup_db_file)
 	backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
 	log.info("Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file)
-	run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
+	run_command("cp -f "+conf["constants"]["config_file"]+" "+backup_config_file)
 
 # upgrade from 1.x to 2.0
 def upgrade_2_0():
@@ -743,6 +743,19 @@ def upgrade_2_3(version):
         	        }
 	        }
 		new["plugins"]["mysensors"] = mysensors
+	for module in new["modules"]:
+        	module_id = module["module_id"]
+                if "widgets" in module:
+                	for i in range(len(module["widgets"])):
+                        	for j in range(len(module["widgets"][i])):
+                                	widget = module["widgets"][i][j]
+                                        for k in range(len(widget["layout"])):
+                                        	layout = widget["layout"][k]
+                                                # add actions to button
+                                                if "type" in layout and layout["type"] == "button" and "send" in layout and "actions" not in layout:
+                                                	layout["actions"] = ["send,"+layout["send"]]
+							del layout["send"]
+							
 	# save the updated configuration
         config.save(json.dumps(new, default=lambda o: o.__dict__))
 	# update the version
