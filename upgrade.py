@@ -13,8 +13,24 @@ conf = config.get_config(validate=False)
 import utils
 import db
 
-db_file = "/var/lib/redis/dump.rdb"
+db_file = conf["db"]["database_file"]
 debug = False
+log = logging.getLogger("upgrade")
+base_dir = os.path.abspath(os.path.dirname(__file__))
+log_file = base_dir+"/logs/upgrade.log"
+
+# initialize the logger
+def init_logger():
+        log.setLevel(logging.DEBUG)
+        # initialize console logging
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        log.addHandler(console)
+        # initialize file logging
+        file = logging.FileHandler(log_file)
+        file.setLevel(logging.DEBUG)
+        file.setFormatter(logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"))
+        log.addHandler(file)
 
 # change into a given database number
 def change_db(database):
@@ -22,23 +38,31 @@ def change_db(database):
 	conf['db']['database'] = database
 
 # run a command and return the output
-def run_command(command):
-	if debug: print "Executing "+command
-	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	output = ''
-	for line in process.stdout.readlines():
-		output = output+line
-	if debug: print output.rstrip()
+def run_command(command,return_code=False):
+        log.debug("Executing "+command)
+        # run the command and buffer the output
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = ''
+        for line in process.stdout.readlines(): output = output+line
+        log.debug(output.rstrip())
+        # return the output or the return code
+        ret = process.poll()
+        if return_code: return ret
+        else:
+                if ret != 0: log.info("WARNING: while the execution of "+command+": "+output)
+                return output
 
 # backup the database and the configuration file
 def backup(version):
-	if not utils.file_exists(db_file): exit("unable to find the database at "+db_file)
+	if not utils.file_exists(db_file): 
+		log.info("ERROR: unable to find the database at "+db_file)
+		exit()
 	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)
-	print "Backing up the database "+db_file+" into "+backup_db_file
-	utils.run_command("cp "+db_file+" "+backup_db_file)
+	log.info("Backing up the database "+db_file+" into "+backup_db_file)
+	run_command("cp "+db_file+" "+backup_db_file)
 	backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
-	print "Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file
-	utils.run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
+	log.info("Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file)
+	run_command("cp "+conf["constants"]["config_file"]+" "+backup_config_file)
 
 # upgrade from 1.x to 2.0
 def upgrade_2_0():
@@ -94,7 +118,6 @@ def upgrade_2_0():
 		print "Flushing target database..."
 		change_db(db_to)
 		db.flushdb()
-
 	# for each history key to migrate
 	print "Migrating historical data..."
 	for key_from in history:
@@ -115,7 +138,6 @@ def upgrade_2_0():
 			db.set(key_to,value,timestamp)
 			count = count +1
 		print "\t\tdone, "+str(count)+" values"
-
 	# for each recent key to migrate
 	print "Migrating recent data..."
 	for key_from in recent:
@@ -244,44 +266,12 @@ def upgrade_2_1():
 # upgrade from 2.1 to 2.2
 def upgrade_2_2():
 	# CONFIGURATION
-	upgrade_modules = True
 	upgrade_conf = True
 	upgrade_db = True
 	# END
 	conf = config.get_config(validate=False)
 	print "[Migration from v2.1 to v2.2]\n"
 	backup("2.1")
-	if upgrade_modules:
-		print "Installing additional dependencies..."
-		print "\tRefreshing apt cache..."
-		run_command("apt-get update")
-		print "\tInstalling python-paho-mqtt..."
-		run_command("pip install paho-mqtt")
-		print "\tInstalling mosquitto..."
-		run_command("apt-get install -y mosquitto")
-		print "\tInstalling picotts..."
-		run_command("apt-get install -y libttspico-utils")
-		print "\tInstalling python-opencv..."
-		run_command("apt-get install -y python-opencv")
-		print "\tInstalling python-gtts..."
-		run_command("pip install gTTS")
-		print "\tInstalling mpg123..."
-		run_command("apt-get install -y mpg123")
-		print "\tInstalling python-speech-recognition..."
-		run_command("pip install SpeechRecognition")
-		print "\tInstalling sox..."
-		run_command("apt-get install -y sox")
-		print "\tInstalling flac..."
-		run_command("apt-get install -y flac")
-		print "\tInstalling pocketsphinx..."
-		run_command("apt-get install -y pocketsphinx")
-		print "\tInstalling python-dht..."
-		run_command("pip install Adafruit_Python_DHT")
-		print "\tInstalling python-ads1x15..."
-		run_command("pip install Adafruit_ADS1x15")
-		print "\tInstalling python-feedparser..."
-		run_command("apt-get install -y python-feedparser")
-		
 	if upgrade_conf:
 		print "Upgrading configuration file..."
 		new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
@@ -713,31 +703,70 @@ def upgrade_2_2():
 				db.delete(sensor["module_id"]+":"+sensor["group_id"]+":"+sensor["sensor_id"])
 		# save the updated configuration
 		config.save(json.dumps(new, default=lambda o: o.__dict__))
-
-
 	if upgrade_db:
 		print "Upgrading database..."
 		version_key = conf["constants"]["db_schema"]["version"]
 		db.set_simple(version_key,"2.2")
 
+# upgrade from 2.2 to 2.3
+def upgrade_2_3(version):
+        conf = config.get_config(validate=False)
+        log.info("[Migration to v2.3]\n")
+        backup(version)
+	log.info("Upgrading configuration file...")
+        new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
+	# add bluetooth plugin
+	if "bluetooth" not in new["plugins"]:
+		bluetooth = {
+			"adapter": "hci0"
+		}
+		new["plugins"]["bluetooth"] = bluetooth
+	if "mysensors" not in new["plugins"]:
+		mysensors = {
+	                "enabled": False,
+	                "gateway_type": "ethernet",
+	                "gateways": {
+                        	"serial": {
+	                                "port": "/dev/ttyAMA0",
+	                                "baud": 57600
+	                        },
+	                        "ethernet": {
+	                                "hostname": "localhost",
+	                                "port": 5003
+	                        },
+	                        "mqtt": {
+	                                "hostname": "localhost",
+	                                "port": 1883,
+	                                "subscribe_topic_prefix": "mysensors-out",
+	                                "publish_topic_prefix": "mysensors-in"
+	                        }
+        	        }
+	        }
+		new["plugins"]["mysensors"] = mysensors
+	# save the updated configuration
+        config.save(json.dumps(new, default=lambda o: o.__dict__))
+	# update the version
+	db.set_version(conf["constants"]["version"])
+
 # main 
-def main():
+if __name__ == '__main__':
 	# ensure it is run as root
-	if os.geteuid() != 0:
-		exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
-	print "Welcome to myHouse Upgrade Utility"
-	print "-----------------------------------------"
+	if os.geteuid() != 0: exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+	init_logger()
+	log.info("Welcome to myHouse")
+	log.info("------------------")
 	# retrieve the version from the database
-	version_key = conf["constants"]["db_schema"]["version"]
-	version = None
-	if not db.exists(version_key): version = "1.0"
-	else: version = db.get(version_key)
-	print "Detected version: "+version
-	if version == conf["constants"]["version"]: exit("Already running the latest version ("+str(version)+"). Exiting.")
+	version = db.get_version()
+	if version is None:
+		log.info("ERROR: a previous version of myHouse was not found on the configured database")
+		exit()
+	log.info("Detected version: "+version)
+	if version == conf["constants"]["version"]: 
+		log.info("Already running the latest version ("+str(version)+"). Exiting.")
+		exit()
 	if version == "1.0": upgrade_2_0()
 	if version == "2.0": upgrade_2_1()
 	if version == "2.1": upgrade_2_2()
-	print "\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service"
+	if version == "2.2" or version.startswith("2.3-dev"): upgrade_2_3(version)
+	log.info("\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service")
 
-# run main()
-main()

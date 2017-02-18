@@ -19,7 +19,7 @@ import pws
 
 # run the main application
 def run():
-	log.info("Welcome to myHouse v"+conf["constants"]["version_string"])
+	log.info("Welcome to myHouse v"+conf["constants"]["version"])
 	# initialize the database
 	initialized = db.init()	
 	if not initialized: sys.exit(1)

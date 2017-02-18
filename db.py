@@ -145,17 +145,27 @@ def flushdb():
 # initialize an empty database
 def init():
 	db = connect()
-	# check the version
-	version_key = conf["constants"]["db_schema"]["version"]
-	if not exists(version_key): 
-		set_simple(version_key,conf["constants"]["version"])
+	version = get_version()
+	if version is None:
+		# first installation
+		set_version(conf["constants"]["version"]) 
 		return True
 	else:
-		version = float(get(version_key))
 		if version != conf["constants"]["version"]: 
-			log.error("run the upgrade.py script first to upgrade the database (expecting v"+str(conf["constants"]["version"])+" but found v"+str(version)+")")
+			log.error("run the upgrade.py script (expecting v"+str(conf["constants"]["version"])+" but found v"+str(version)+")")
 			return False
 	return True
+
+# return myHouse version or None
+def get_version():
+	version_key = conf["constants"]["db_schema"]["version"]
+	if not exists(version_key): return None
+	return get(version_key)
+
+# set myHouse version to the database
+def set_version(version):
+	version_key = conf["constants"]["db_schema"]["version"]
+	set_simple(version_key,version)
 
 # main
 if __name__ == '__main__':
