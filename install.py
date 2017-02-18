@@ -2,132 +2,154 @@
 import sys
 import os
 import subprocess
+import re
+import logging
+import logging.handlers
 
 # variables
 base_dir = os.path.abspath(os.path.dirname(__file__))
+log_file = base_dir+"/logs/install.log"
 service_template = base_dir+"/template_service.sh"
 service_location = '/etc/init.d/myhouse'
 filename = service_location.split('/')[-1]
-debug = False
+dependencies = ["python-dev","redis-server","python-flask","python-redis","python-numpy","python-rpi.gpio","mosquitto","libttspico-utils","python-opencv","mpg123","sox","flac","pocketsphinx","python-feedparser","python-serial"]
+dependencies_python = ["APScheduler","slackclient","simplejson","python-Levenshtein","fuzzywuzzy","pyicloud","motionless","flask-compress","jsonschema","paho-mqtt","gTTS","SpeechRecognition","Adafruit-Python-DHT","Adafruit-ADS1x15"]
+inventory = []
+inventory_python = []
+log = logging.getLogger("install")
+
+# initialize the logger
+def init_logger():
+	log.setLevel(logging.DEBUG)
+	# initialize console logging
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+	log.addHandler(console)
+	# initialize file logging
+	file = logging.FileHandler(log_file)
+	file.setLevel(logging.DEBUG)
+	file.setFormatter(logging.Formatter('[%(asctime)s] [%(filename)s:%(lineno)s - %(funcName)s()] %(levelname)s: %(message)s',"%Y-%m-%d %H:%M:%S"))
+	log.addHandler(file)
+
+# create an inventory of the software installed
+def create_inventory():
+	# updating apt cache
+	log.info("Refreshing apt cache (it may take a while)...")
+	run_command("apt-get update")
+	# create an inventory of the deb packages installed
+	log.info("Creating an inventory of the installed packages...")
+	output = run_command("dpkg -l")
+	for line in output.split("\n"):
+		package = re.findall("ii\s+(\S+)\s+",line)
+		if package is None: continue
+		if len(package) == 1: inventory.append(package[0].lower())
+	log.info("\t- Listed "+str(len(inventory))+" packages")
+	# create an inventory of all python modules installed
+	log.info("Creating an inventory of the installed python modules...")
+	output = run_command("pip list --format=columns")
+        for line in output.split("\n"):
+                package = re.findall("^(\S+)\s+",line)
+		if package is None: continue
+                if len(package) == 1: inventory_python.append(package[0].lower())
+	log.info("\t- Listed "+str(len(inventory_python))+" packages")
 
 # run a command and return the output
-def run_command(command):
-	if debug: print "Executing "+command
+def run_command(command,return_code=False):
+	log.debug("Executing "+command)
+	# run the command and buffer the output
 	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 	output = ''
 	for line in process.stdout.readlines(): output = output+line
-	if debug: print output.rstrip()
-	# print out errors if any
-	if " failed " in output or "error:" in output: print "ERROR: "+output
+	log.debug(output.rstrip())
+	# return the output or the return code
+	ret = process.poll()
+	if return_code: return ret
+	else: 
+		if ret != 0: log.info("WARNING: while the execution of "+command+": "+output)
+		return output
 
-# install all the dependencies
-def install_deps():
-	print "Preparing dependencies..."
-	print "Refreshing apt cache..."
-	run_command("apt-get update")
-        print "Installing python-dev..."
-        run_command("apt-get install -y python-dev")
-        print "Installing python-pip..."
-        run_command("apt-get install -y python-pip")
-	print "Installing redis..."
-	run_command("apt-get install -y redis-server")
-	print "Installing flask..."
-	run_command("apt-get install -y python-flask")
-	print "Installing python-redis..."
-	run_command("apt-get install -y python-redis")
-	print "Installing python-numphy..."
-	run_command("apt-get install -y python-numpy")
-	print "Installing python-rpi.gpio..."
-	run_command("apt-get install -y python-rpi.gpio")
-	print "Installing python-apscheduler..."
-	run_command("pip install APScheduler")
-	print "Installing python-slackclient..."
-	run_command("pip install slackclient")
-	print "Installing python-simplejson..."
-	run_command("pip install simplejson")
-	print "Installing python-levenshtein..."
-	run_command("pip install python-Levenshtein")
-	print "Installing python-fuzzywuzzy..."
-	run_command("pip install fuzzywuzzy")
-	print "Installing python-pyicloud..."
-	run_command("pip install pyicloud")
-	print "Installing python-motionless..."
-	run_command("pip install motionless")
-	print "Installing python-flask-compress..."
-	run_command("pip install flask-compress")
-	print "Installing python-jsonschema..."
-	run_command("pip install jsonschema")
-	# from v2.2
-	print "Installing python-paho-mqtt..."
-	run_command("pip install paho-mqtt")
-	print "Installing mosquitto..."
-	run_command("apt-get install -y mosquitto")
-	print "Installing picotts..."
-	run_command("apt-get install -y libttspico-utils")
-	print "Installing python-opencv..."
-	run_command("apt-get install -y python-opencv")
-	print "Installing python-gtts..."
-	run_command("pip install gTTS")
-	print "Installing mpg123..."
-	run_command("apt-get install -y mpg123")
-	print "Installing python-speech-recognition..."
-	run_command("pip install SpeechRecognition")
-	print "Installing sox..."
-	run_command("apt-get install -y sox")
-	print "Installing flac..."
-	run_command("apt-get install -y flac")
-	print "Installing pocketsphinx..."
-	run_command("apt-get install -y pocketsphinx")
-	print "Installing python-dht..."
-	run_command("pip install Adafruit_Python_DHT")
-	print "Installing python-ads1x15..."
-	run_command("pip install Adafruit_ADS1x15")
-        print "Installing python-feedparser..."
-        run_command("apt-get install -y python-feedparser")
-	# from v2.3
-	run_command("apt-get install -y python-serial")
+# install with apt an array of packages if not already installed
+def install_packages(packages):
+	for package in packages:
+		if package.lower() in inventory:
+			log.debug("\t- Skipping "+package+": already installed")
+		else:
+			log.info("\t- Installing package "+package+"...")
+			log.debug(run_command("apt-get install -y "+package))
 
-# installation routine
-def install():
-	install_deps()
-	print "Installing the program..."
-	# prepare the service template
-	with open(service_template, 'r') as file:
-		template = file.read()
-	template = template.replace("#base_dir#",base_dir)
-	# write the service script
-	print "Creating the service script..."
-	with open(service_location,'w') as file:
-		file.write(template)
-	file.close()
-	# make it executable
-	run_command("chmod 755 "+service_location)
-	# add it as a service
-	print "Adding it as a service..."
-	run_command("update-rc.d "+filename+" defaults")
-	# start the service
-	print "Starting the service..."
-	run_command("service "+filename+" start")
-	print "Done"
+# install with pip an array of python modules if not already installed
+def install_python(packages):
+        for package in packages:
+                if package.lower() in inventory_python:
+			log.debug("\t - Skipping "+package+": already installed")
+                else:
+                        log.info("\t - Installing python module "+package+"...")
+			log.debug(run_command("pip install "+package))
 
-# uninstall routine
-def uninstall():
-	print "Uninstalling the program..."
-	# stop the service
-	print "Stopping the service..."
-	run_command("service "+filename+" stop")
-	# remove the script
-	print "Uninstalling the service..."
-	run_command("rm -f "+service_location)
-	# disable the service
-	run_command("update-rc.d -f "+filename+" remove")
+# check if pip is installed, otherwise install it
+def install_pip():
+	log.info("Verifying Python Packet Index...")
+	ret = run_command("which pip",return_code=True)
+	if ret == 0: return
+	install_packages(["python-pip"])
 
-# ensure it is run as root
-if os.geteuid() != 0:
-	exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
-# run the installation
-print "Welcome to myHouse"
-if len(sys.argv) == 2 and sys.argv[1] == "-u": uninstall()
-else: install()
+# check if a file exists on the filesystem
+def file_exists(file):
+        return os.path.isfile(file)
 
+# install the service if not already there
+def install_service():
+	if file_exists(service_location):
+		log.debug("- Service already installed")
+		return
+        log.info("Installing the service...")
+        # prepare the service template
+        with open(service_template, 'r') as file:
+                template = file.read()
+        template = template.replace("#base_dir#",base_dir)
+        # write the service script
+        log.info("\t- Creating the service script...")
+        with open(service_location,'w') as file:
+                file.write(template)
+        file.close()
+        # make it executable
+        run_command("chmod 755 "+service_location)
+        # add it as a service
+        log.info("\t- Adding it as a service...")
+        run_command("update-rc.d "+filename+" defaults")
+        # start the service
+        log.info("\t- Starting the service...")
+        run_command("service "+filename+" start")
+
+def uninstall_service():
+        log.info("- Uninstalling...")
+        # stop the service
+        log.info("\t- Stopping the service...")
+        run_command("service "+filename+" stop")
+        # remove the script
+        log.info("\t- Uninstalling the service...")
+        run_command("rm -f "+service_location)
+        # disable the service
+        run_command("update-rc.d -f "+filename+" remove")
+
+# allow running it both as a module and when called directly
+if __name__ == '__main__':
+	# ensure it is run as root
+	if os.geteuid() != 0:
+        	exit("ERROR: You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+	init_logger()
+	log.info("Welcome to myHouse")
+	log.info("------------------")
+	if len(sys.argv) == 2 and sys.argv[1] == "-u": 
+		uninstall_service()
+	else: 
+		create_inventory()
+		install_pip()
+		log.info("Installing missing dependencies...")
+		install_packages(dependencies)
+		install_python(dependencies_python)
+		install_service()
+		log.info("Done! ")
+		log.info("------------------")
+		log.info("Access the web interface on http://raspberry.ip")
 

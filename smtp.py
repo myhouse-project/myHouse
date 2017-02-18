@@ -63,7 +63,7 @@ def get_email_body(title):
 	with open(conf['constants']['email_template'], 'r') as file:
 		template = file.read()
 	template = template.replace("#url#",conf['gui']['url'])
-	template = template.replace("#version#",conf['constants']['version_string'])
+	template = template.replace("#version#",conf['constants']['version'])
 	template = template.replace("#title#",title)
 	return template
 
