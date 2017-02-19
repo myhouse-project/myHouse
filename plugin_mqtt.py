@@ -70,7 +70,7 @@ def send(sensor,data):
 	if not plugin_conf["enabled"]: return
 	# connect to the gateway
 	client = mqtt.Client()
-	client.connect(plugin_conf["hostname"],plugin_conf["hostname"],60)
+	client.connect(plugin_conf["hostname"],plugin_conf["port"],60)
 	retain = False
 	if "retain" in sensor["plugin"]: retain = sensor["plugin"]["retain"]
 	# send the message
