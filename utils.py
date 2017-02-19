@@ -393,3 +393,11 @@ def parse_calendar(data):
                 if now_ts > start_timestamp and now_ts < end_timestamp: return [event["text"]]
         return [0]
 
+# return true if running on raspberry pi
+def is_raspberry():
+        with open("/proc/cpuinfo",'r') as file:
+                cpu = file.read()
+        file.close()
+        if "BCM27" in cpu: return True
+        return False
+

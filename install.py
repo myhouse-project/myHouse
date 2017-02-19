@@ -83,7 +83,7 @@ def install_python(packages):
                 if package.lower() in inventory_python:
 			log.debug("\t - Skipping "+package+": already installed")
                 else:
-                        log.info("\t - Installing python module "+package+"...")
+                        log.info("\t- Installing python module "+package+"...")
 			log.debug(run_command("pip install "+package))
 
 # check if pip is installed, otherwise install it
@@ -151,5 +151,5 @@ if __name__ == '__main__':
 		install_service()
 		log.info("Done! ")
 		log.info("------------------")
-		log.info("Access the web interface on http://raspberry.ip")
+		log.info("Access the web interface on http://raspberry.ip. If unavailable, review for errors the files install.log and myHouse.log into the 'logs' directory")
 
