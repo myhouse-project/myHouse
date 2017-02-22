@@ -60,9 +60,10 @@ def backup(version):
 	backup_db_file = conf["constants"]["tmp_dir"]+"/dump.rdb_"+str(version)
 	log.info("Backing up the database "+db_file+" into "+backup_db_file)
 	run_command("cp -f "+db_file+" "+backup_db_file)
-	backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
-	log.info("Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file)
-	run_command("cp -f "+conf["constants"]["config_file"]+" "+backup_config_file)
+	if utils.file_exists(conf["constants"]["config_file"]):
+		backup_config_file = conf["constants"]["tmp_dir"]+"/config.json_"+str(version)
+		log.info("Backing up the configuration file "+conf["constants"]["config_file"]+" into "+backup_config_file)
+		run_command("cp -f "+conf["constants"]["config_file"]+" "+backup_config_file)
 
 # upgrade from 1.x to 2.0
 def upgrade_2_0():
@@ -710,56 +711,62 @@ def upgrade_2_2():
 
 # upgrade from 2.2 to 2.3
 def upgrade_2_3(version):
+	upgrade_config = True
+	upgrade_db = True
         conf = config.get_config(validate=False)
-        log.info("[Migration to v2.3]\n")
+	target_version = conf["constants"]["version"]
+        log.info("[Migration to v"+target_version+"]\n")
         backup(version)
-	log.info("Upgrading configuration file...")
-        new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
-	# add bluetooth plugin
-	if "bluetooth" not in new["plugins"]:
-		bluetooth = {
-			"adapter": "hci0"
-		}
-		new["plugins"]["bluetooth"] = bluetooth
-	if "mysensors" not in new["plugins"]:
-		mysensors = {
-	                "enabled": False,
-	                "gateway_type": "ethernet",
-	                "gateways": {
-                        	"serial": {
-	                                "port": "/dev/ttyAMA0",
-	                                "baud": 57600
-	                        },
-	                        "ethernet": {
-	                                "hostname": "localhost",
-	                                "port": 5003
-	                        },
-	                        "mqtt": {
-	                                "hostname": "localhost",
-	                                "port": 1883,
-	                                "subscribe_topic_prefix": "mysensors-out",
-	                                "publish_topic_prefix": "mysensors-in"
-	                        }
-        	        }
-	        }
-		new["plugins"]["mysensors"] = mysensors
-	for module in new["modules"]:
-        	module_id = module["module_id"]
-                if "widgets" in module:
-                	for i in range(len(module["widgets"])):
-                        	for j in range(len(module["widgets"][i])):
-                                	widget = module["widgets"][i][j]
-                                        for k in range(len(widget["layout"])):
-                                        	layout = widget["layout"][k]
-                                                # add actions to button
-                                                if "type" in layout and layout["type"] == "button" and "send" in layout and "actions" not in layout:
-                                                	layout["actions"] = ["send,"+layout["send"]]
-							del layout["send"]
-							
-	# save the updated configuration
-        config.save(json.dumps(new, default=lambda o: o.__dict__))
-	# update the version
-	db.set_version(conf["constants"]["version"])
+	if upgrade_config and utils.file_exists(conf["constants"]["config_file"]):
+		log.info("Upgrading configuration file...")
+	        new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
+		# add bluetooth plugin
+		if "bluetooth" not in new["plugins"]:
+			bluetooth = {
+				"adapter": "hci0"
+			}
+			new["plugins"]["bluetooth"] = bluetooth
+		if "mysensors" not in new["plugins"]:
+			mysensors = {
+		                "enabled": False,
+		                "gateway_type": "ethernet",
+		                "gateways": {
+	                        	"serial": {
+		                                "port": "/dev/ttyAMA0",
+		                                "baud": 57600
+		                        },
+		                        "ethernet": {
+		                                "hostname": "localhost",
+		                                "port": 5003
+		                        },
+		                        "mqtt": {
+		                                "hostname": "localhost",
+		                                "port": 1883,
+		                                "subscribe_topic_prefix": "mysensors-out",
+		                                "publish_topic_prefix": "mysensors-in"
+		                        }
+	        	        }
+		        }
+			new["plugins"]["mysensors"] = mysensors
+		for module in new["modules"]:
+	        	module_id = module["module_id"]
+	                if "widgets" in module:
+	                	for i in range(len(module["widgets"])):
+	                        	for j in range(len(module["widgets"][i])):
+	                                	widget = module["widgets"][i][j]
+	                                        for k in range(len(widget["layout"])):
+	                                        	layout = widget["layout"][k]
+	                                                # add actions to button
+	                                                if "type" in layout and layout["type"] == "button" and "send" in layout and "actions" not in layout:
+	                                                	layout["actions"] = ["send,"+layout["send"]]
+								del layout["send"]
+								
+		# save the updated configuration
+	        config.save(json.dumps(new, default=lambda o: o.__dict__))
+	if upgrade_db:
+		# update the version
+		log.info("Upgrading the database...")
+		db.set_version(target_version)
 
 # main 
 if __name__ == '__main__':
@@ -770,6 +777,8 @@ if __name__ == '__main__':
 	log.info("------------------")
 	# retrieve the version from the database
 	version = db.get_version()
+	# if requested set the current version manually
+	if len(sys.argv) == 3 and sys.argv[1] == "--current-version": version = sys.argv[2]
 	if version is None:
 		log.info("ERROR: a previous version of myHouse was not found on the configured database")
 		exit()
