@@ -1022,107 +1022,144 @@
 					"type": "object",
 					"description": "MySensors plugin configuration",
 					"properties": {
-						"enabled": {
-							"type": "boolean",
-							"description": "Enable the service"
-						},
-						"gateway_type": {
-							"type": "string",
-							"description": "the gateway to connect to",
-							"enum": [
-								"mqtt",
-								"ethernet",
-								"serial"
-							]
-						},
 						"gateways": {
-							"type": "object",
-							"description": "Configuration settings of each gateway",
-							"properties": {
-								"mqtt": {
-									"type": "object",
-									"description": "MQTT gateway configuration",
-									"properties": {
-										"hostname": {
-											"type": "string",
-											"description": "The hostname of the mqtt broker"
+							"type": "array",
+							"description": "MySensors gateways to connect to",
+							"items": {
+								"type": "object",
+								"title": "Gateway",
+								"oneOf": [
+									{
+										"title": "Serial Gateway",
+										"description": "Serial Gateway configuration",
+										"properties": {
+											"gateway_type": {
+												"type": "string",
+												"enum": [
+													"serial"
+												],
+												"value": "serial"
+											},
+											"gateway_id": {
+												"type": "string",
+												"description": "A friendly name to give to this gateway. Configured myHouse sensors can then refer to this gateway_id."
+											},
+											"enabled": {
+												"type": "boolean",
+												"description": "Enable this gateway"
+											},
+											"port": {
+												"type": "string",
+												"description": "the serial port the gateway is attached to",
+												"value": "/dev/ttyAMA0"
+											},
+											"baud": {
+												"type": "integer",
+												"description": "The baud rate of the serial port",
+												"value": 57600
+											}
 										},
-										"port": {
-											"type": "integer",
-											"description": "The port the mqtt broker is listening to",
-											"value": 1883
-										},
-										"publish_topic_prefix": {
-											"type": "string",
-											"description": "MQTT publish topic prefix"
-										},
-										"subscribe_topic_prefix": {
-											"type": "string",
-											"description": "MQTT subscribe topic prefix"
-										}
+										"additionalProperties": false,
+										"required": [
+											"gateway_type",
+											"gateway_id",
+											"enabled",
+											"baud",
+											"port"
+										]
 									},
-									"additionalProperties": false,
-									"required": [
-										"hostname",
-										"port",
-										"publish_topic_prefix",
-										"subscribe_topic_prefix"
-									]
-								},
-								"ethernet": {
-									"type": "object",
-									"description": "Ethernet gateway configuration",
-									"properties": {
-										"hostname": {
-											"type": "string",
-											"description": "The hostname where the ethernet gateway is running"
+									{
+										"title": "Ethernet Gateway",
+										"description": "Ethernet Gateway configuration",
+										"properties": {
+											"gateway_type": {
+												"type": "string",
+												"enum": [
+													"ethernet"
+												],
+												"value": "ethernet"
+											},
+											"gateway_id": {
+												"type": "string",
+												"description": "A friendly name to give to this gateway. Configured myHouse sensors can then refer to this gateway_id."
+											},
+											"enabled": {
+												"type": "boolean",
+												"description": "Enable this gateway"
+											},
+											"hostname": {
+												"type": "string",
+												"description": "The hostname where the ethernet gateway is running"
+											},
+											"port": {
+												"type": "integer",
+												"description": "The port the gateway listening to",
+												"value": 5003
+											}
 										},
-										"port": {
-											"type": "integer",
-											"description": "The port the gateway listening to",
-											"value": 5003
-										}
+										"additionalProperties": false,
+										"required": [
+											"gateway_type",
+											"gateway_id",
+											"enabled",
+											"hostname",
+											"port"
+										]
 									},
-									"additionalProperties": false,
-									"required": [
-										"hostname",
-										"port"
-									]
-								},
-								"serial": {
-									"type": "object",
-									"description": "Serial gateway configuration",
-									"properties": {
-										"port": {
-											"type": "string",
-											"description": "the serial port the gateway is attached to",
-											"value": "/dev/ttyAMA0"
+									{
+										"title": "MQTT Gateway",
+										"description": "MQTT Gateway configuration",
+										"properties": {
+											"gateway_type": {
+												"type": "string",
+												"enum": [
+													"mqtt"
+												],
+												"value": "mqtt"
+											},
+											"gateway_id": {
+												"type": "string",
+												"description": "A friendly name to give to this gateway. Configured myHouse sensors can then refer to this gateway_id."
+											},
+											"enabled": {
+												"type": "boolean",
+												"description": "Enable this gateway"
+											},
+											"hostname": {
+												"type": "string",
+												"description": "The hostname of the mqtt broker"
+											},
+											"port": {
+												"type": "integer",
+												"description": "The port the mqtt broker is listening to",
+												"value": 1883
+											},
+											"publish_topic_prefix": {
+												"type": "string",
+												"description": "MQTT publish topic prefix"
+											},
+												"subscribe_topic_prefix": {
+												"type": "string",
+												"description": "MQTT subscribe topic prefix"
+											}
 										},
-										"baud": {
-											"type": "integer",
-											"description": "The baud rate of the serial port",
-											"value": 57600
-										}
-									},
-									"additionalProperties": false,
-									"required": [
-										"baud",
-										"port"
-									]
-								}
-							},
-							"additionalProperties": false,
-							"required": [
-								"mqtt",
-								"ethernet",
-								"serial"
-							]			
+										"additionalProperties": false,
+										"required": [
+											"gateway_type",
+											"gateway_id",
+											"enabled",
+											"hostname",
+											"port",
+											"publish_topic_prefix",
+											"subscribe_topic_prefix"
+										]
+									}
+								]
+							}
 						}
 					},
 					"additionalProperties": false,
 					"required": [
-						"enabled",
-						"gateway_type",
 						"gateways"
 					]
 				},
@@ -2683,6 +2720,10 @@
 														"mysensors"
 													],
 													"value": "mysensors"
+												},
+												"gateway_id": {
+													"type": "string",
+													"description": "The identifier of the gateway this sensor is connected to, as defined in the global plugin configuration"
 												},
 												"node_id": {
 													"type": "integer",
