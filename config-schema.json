@@ -2844,6 +2844,7 @@
 											"additionalProperties": false,
 											"required": [
 												"plugin_name",
+												"gateway_id",
 												"node_id",
 												"child_id",
 												"command",
