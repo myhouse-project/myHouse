@@ -133,24 +133,31 @@
     "ads1x15": null,
     "rss": null,
     "mysensors": {
-      "enabled": true,
-      "gateway_type": "ethernet",
-      "gateways": {
-        "serial": {
-          "port": "/dev/ttyAMA0",
-          "baud": 57600
+      "gateways": [
+        {
+			"gateway_type": "serial",
+			"gateway_id": "serial_1",
+			"enabled": false,
+			"port": "/dev/ttyAMA0",
+			"baud": 57600
         },
-        "ethernet": {
-          "hostname": "localhost",
-          "port": 5003
+        {
+			"gateway_type": "ethernet",
+			"gateway_id": "ethernet_1",
+			"enabled": false,
+			"hostname": "localhost",
+			"port": 5003
         },
-        "mqtt": {
-          "hostname": "localhost",
-          "port": 1883,
-          "subscribe_topic_prefix": "mysensors-out",
-          "publish_topic_prefix": "mysensors-in"
+        {
+			"gateway_type": "mqtt",
+			"gateway_id": "mqtt_1",
+			"enabled": false,
+			"hostname": "localhost",
+			"port": 1883,
+			"subscribe_topic_prefix": "mysensors-out",
+			"publish_topic_prefix": "mysensors-in"
         }
-      }
+      ]
     },
     "bluetooth": {
       "adapter": "hci0"
@@ -4895,279 +4902,6 @@
             "plugin_name": "rss",
             "url": "http://rss.cnn.com/rss/edition.rss",
             "polling_interval": 20
-          },
-          "format": "string",
-          "retention": {
-            "realtime_count": 1
-          }
-        }
-      ]
-    },
-    {
-      "module_id": "test",
-      "section_id": "Sensors",
-      "display_name": {
-        "en": "MySensors"
-      },
-      "icon": "fa-code",
-      "enabled": true,
-      "daily_digest": false,
-      "widgets": [
-        [
-          {
-            "widget_id": "test_temperature_summary",
-            "display_name": {
-              "en": "Temperature: Summary"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "current",
-                "sensor": "test:temperature:test",
-                "icon": "web/images/temperature.png"
-              },
-              {
-                "type": "sensor_group_summary",
-                "group": "test:temperature"
-              }
-            ]
-          },
-          {
-            "widget_id": "test_temperature_realtime",
-            "display_name": {
-              "en": "Temperature: Realtime"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:temperature",
-                "timeframe": "realtime"
-              }
-            ]
-          },
-          {
-            "widget_id": "test_temperature_recent",
-            "display_name": {
-              "en": "Temperature: Recent"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:temperature",
-                "timeframe": "recent"
-              }
-            ]
-          },
-          {
-            "widget_id": "test_temperature_history",
-            "display_name": {
-              "en": "Temperature: History"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:temperature",
-                "timeframe": "history"
-              }
-            ]
-          }
-        ],
-        [
-          {
-            "widget_id": "test_light_summary",
-            "display_name": {
-              "en": "Light: Summary"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "current",
-                "sensor": "test:light:test",
-                "icon": "web/images/light.png"
-              },
-              {
-                "type": "sensor_group_summary",
-                "group": "test:light"
-              }
-            ]
-          },
-          {
-            "widget_id": "test_light_realtime",
-            "display_name": {
-              "en": "light: Realtime"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:light",
-                "timeframe": "realtime"
-              }
-            ]
-          },
-          {
-            "widget_id": "test_light_recent",
-            "display_name": {
-              "en": "light: Recent"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:light",
-                "timeframe": "recent"
-              }
-            ]
-          },
-          {
-            "widget_id": "test_light_history",
-            "display_name": {
-              "en": "light: History"
-            },
-            "enabled": true,
-            "size": 3,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:light",
-                "timeframe": "history"
-              }
-            ]
-          }
-        ],
-        [
-          {
-            "widget_id": "test_battery_history",
-            "display_name": {
-              "en": "battery: History"
-            },
-            "enabled": true,
-            "size": 12,
-            "layout": [
-              {
-                "type": "sensor_group_timeline",
-                "group": "test:battery",
-                "timeframe": "history"
-              }
-            ]
-          }
-        ]
-      ],
-      "sensors": [
-        {
-          "module_id": "test",
-          "group_id": "temperature",
-          "sensor_id": "test",
-          "enabled": true,
-          "display_name": {
-            "en": "Test"
-          },
-          "plugin": {
-            "plugin_name": "mysensors",
-            "node_id": 254,
-            "child_id": 1,
-            "command": "SET",
-            "type": "V_TEMP"
-          },
-          "format": "temperature",
-          "series": [
-            {
-              "series_id": "avg",
-              "type": "spline"
-            },
-            {
-              "series_id": "range",
-              "type": "arearange"
-            }
-          ],
-          "summarize": {
-            "avg": true,
-            "min_max": true
-          }
-        },
-        {
-          "module_id": "test",
-          "group_id": "light",
-          "sensor_id": "test",
-          "enabled": true,
-          "display_name": {
-            "en": "Test"
-          },
-          "plugin": {
-            "plugin_name": "mysensors",
-            "node_id": 254,
-            "child_id": 2,
-            "command": "SET",
-            "type": "V_LIGHT_LEVEL"
-          },
-          "format": "percentage",
-          "series": [
-            {
-              "series_id": "avg",
-              "type": "spline"
-            },
-            {
-              "series_id": "range",
-              "type": "arearange"
-            }
-          ],
-          "summarize": {
-            "avg": true,
-            "min_max": true
-          }
-        },
-        {
-          "module_id": "test",
-          "group_id": "battery",
-          "sensor_id": "test",
-          "enabled": true,
-          "display_name": {
-            "en": "Test"
-          },
-          "plugin": {
-            "plugin_name": "mysensors",
-            "node_id": 254,
-            "child_id": 255,
-            "command": "INTERNAL",
-            "type": "I_BATTERY_LEVEL"
-          },
-          "format": "percentage",
-          "series": [
-            {
-              "series_id": "min",
-              "type": "spline"
-            }
-          ],
-          "summarize": {
-            "avg": true,
-            "min_max": true
-          }
-        },
-        {
-          "module_id": "test",
-          "group_id": "relay",
-          "sensor_id": "test",
-          "enabled": true,
-          "display_name": {
-            "en": "Test Relay"
-          },
-          "plugin": {
-            "plugin_name": "mysensors",
-            "node_id": 254,
-            "child_id": 200,
-            "command": "REQ",
-            "type": "V_CUSTOM",
-            "queue_size": 10
           },
           "format": "string",
           "retention": {

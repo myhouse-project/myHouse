@@ -720,32 +720,69 @@ def upgrade_2_3(version):
 	if upgrade_config and utils.file_exists(conf["constants"]["config_file"]):
 		log.info("Upgrading configuration file...")
 	        new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
+		default_mysensors_gateway = None
 		# add bluetooth plugin
 		if "bluetooth" not in new["plugins"]:
 			bluetooth = {
 				"adapter": "hci0"
 			}
 			new["plugins"]["bluetooth"] = bluetooth
+		# migrate the mysensors plugin from dev2 to dev3
+		if "mysensors" in new["plugins"] and "enabled" in new["plugins"]["mysensors"]:
+			gateway_serial = {}
+			gateway_serial["gateway_type"] = "serial"
+			gateway_serial["enabled"] = True if new["plugins"]["mysensors"]["gateway_type"] == "serial" else False
+			gateway_serial["gateway_id"] = "serial_1"
+			gateway_serial["port"] = new["plugins"]["mysensors"]["gateways"]["serial"]["port"]
+			gateway_serial["baud"] = new["plugins"]["mysensors"]["gateways"]["serial"]["baud"]
+			if gateway_serial["enabled"]: default_mysensors_gateway = "serial_1"
+                        gateway_ethernet = {}
+                        gateway_ethernet["gateway_type"] = "ethernet"
+                        gateway_ethernet["enabled"] = True if new["plugins"]["mysensors"]["gateway_type"] == "ethernet" else False
+                        gateway_ethernet["gateway_id"] = "ethernet_1"
+                        gateway_ethernet["hostname"] = new["plugins"]["mysensors"]["gateways"]["ethernet"]["hostname"]
+                        gateway_ethernet["port"] = new["plugins"]["mysensors"]["gateways"]["ethernet"]["port"]
+			if gateway_ethernet["enabled"]: default_mysensors_gateway = "ethernet_1"
+                        gateway_mqtt = {}
+                        gateway_mqtt["gateway_type"] = "mqtt"
+                        gateway_mqtt["enabled"] = True if new["plugins"]["mysensors"]["gateway_type"] == "mqtt" else False
+                        gateway_mqtt["gateway_id"] = "mqtt_1"
+                        gateway_mqtt["port"] = new["plugins"]["mysensors"]["gateways"]["mqtt"]["port"]
+                        gateway_mqtt["hostname"] = new["plugins"]["mysensors"]["gateways"]["mqtt"]["hostname"]
+                        gateway_mqtt["subscribe_topic_prefix"] = new["plugins"]["mysensors"]["gateways"]["mqtt"]["subscribe_topic_prefix"]
+                        gateway_mqtt["publish_topic_prefix"] = new["plugins"]["mysensors"]["gateways"]["mqtt"]["publish_topic_prefix"]
+			if gateway_mqtt["enabled"]: default_mysensors_gateway = "mqtt_1"
+			new["plugins"]["mysensors"]["gateways"] = []
+			new["plugins"]["mysensors"]["gateways"].extend([gateway_serial,gateway_ethernet,gateway_mqtt])
+			del new["plugins"]["mysensors"]["gateway_type"]
+			del new["plugins"]["mysensors"]["enabled"]
 		if "mysensors" not in new["plugins"]:
 			mysensors = {
-		                "enabled": False,
-		                "gateway_type": "ethernet",
-		                "gateways": {
-	                        	"serial": {
-		                                "port": "/dev/ttyAMA0",
-		                                "baud": 57600
-		                        },
-		                        "ethernet": {
-		                                "hostname": "localhost",
-		                                "port": 5003
-		                        },
-		                        "mqtt": {
-		                                "hostname": "localhost",
-		                                "port": 1883,
-		                                "subscribe_topic_prefix": "mysensors-out",
-		                                "publish_topic_prefix": "mysensors-in"
-		                        }
-	        	        }
+		                "gateways": [
+				        {
+				                "gateway_type": "serial",
+                        			"gateway_id": "serial_1",
+		                        	"enabled": False,
+			                        "port": "/dev/ttyAMA0",
+			                        "baud": 57600
+				        },
+				        {
+			                        "gateway_type": "ethernet",
+		        	                "gateway_id": "ethernet_1",
+	                		        "enabled": false,
+			                        "hostname": "localhost",
+			                        "port": 5003
+				        },
+				        {
+			                        "gateway_type": "mqtt",
+			                        "gateway_id": "mqtt_1",
+			                        "enabled": false,
+			                        "hostname": "localhost",
+			                        "port": 1883,
+			                        "subscribe_topic_prefix": "mysensors-out",
+			                        "publish_topic_prefix": "mysensors-in"
+				        }
+				]
 		        }
 			new["plugins"]["mysensors"] = mysensors
 		for module in new["modules"]:
@@ -760,7 +797,12 @@ def upgrade_2_3(version):
 	                                                if "type" in layout and layout["type"] == "button" and "send" in layout and "actions" not in layout:
 	                                                	layout["actions"] = ["send,"+layout["send"]]
 								del layout["send"]
-								
+                        if "sensors" in module:
+                                for i in range(len(module["sensors"])):
+                                        sensor = module["sensors"][i]
+					if "plugin" in sensor:
+						if sensor["plugin"]["plugin_name"] == "mysensors":
+							if default_mysensors_gateway is not None: sensor["plugin"]["gateway_id"] = default_mysensors_gateway
 		# save the updated configuration
 	        config.save(json.dumps(new, default=lambda o: o.__dict__))
 	if upgrade_db:
@@ -787,8 +829,11 @@ if __name__ == '__main__':
 		log.info("Already running the latest version ("+str(version)+"). Exiting.")
 		exit()
 	if version == "1.0": upgrade_2_0()
-	if version == "2.0": upgrade_2_1()
-	if version == "2.1": upgrade_2_2()
-	if version == "2.2" or version.startswith("2.3-dev"): upgrade_2_3(version)
+	elif version == "2.0": upgrade_2_1()
+	elif version == "2.1": upgrade_2_2()
+	elif version == "2.2" or version.startswith("2.3-dev"): upgrade_2_3(version)
+	else:
+		log.error("Unable to upgrade, unknown version "+version)
+		exit()
 	log.info("\nUpgrade completed. Please review the config.json file ensuring the configuration is correct, then run 'sudo python config.py' to verify there are no errors before restarting the service")
 

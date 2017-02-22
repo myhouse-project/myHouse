@@ -146,24 +146,31 @@
     "ads1x15": null,
     "rss": null,
     "mysensors": {
-      "enabled": false,
-      "gateway_type": "ethernet",
-      "gateways": {
-        "serial": {
-          "port": "/dev/ttyAMA0",
-          "baud": 57600
+      "gateways": [
+        {
+			"gateway_type": "serial",
+			"gateway_id": "serial_1",
+			"enabled": false,
+			"port": "/dev/ttyAMA0",
+			"baud": 57600
         },
-        "ethernet": {
-          "hostname": "localhost",
-          "port": 5003
+        {
+			"gateway_type": "ethernet",
+			"gateway_id": "ethernet_1",
+			"enabled": false,
+			"hostname": "localhost",
+			"port": 5003
         },
-        "mqtt": {
-          "hostname": "localhost",
-          "port": 1883,
-          "subscribe_topic_prefix": "mysensors-out",
-          "publish_topic_prefix": "mysensors-in"
+        {
+			"gateway_type": "mqtt",
+			"gateway_id": "mqtt_1",
+			"enabled": false,
+			"hostname": "localhost",
+			"port": 1883,
+			"subscribe_topic_prefix": "mysensors-out",
+			"publish_topic_prefix": "mysensors-in"
         }
-      }
+      ]
     },
     "bluetooth": {
       "adapter": "hci0"
