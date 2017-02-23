@@ -391,7 +391,7 @@ def parse_calendar(data):
                 now_ts = now()
                 # check if we are within an event
                 if now_ts > start_timestamp and now_ts < end_timestamp: return [event["text"]]
-        return []
+        return [""]
 
 # return true if running on raspberry pi
 def is_raspberry():

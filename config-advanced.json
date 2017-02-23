@@ -3658,7 +3658,7 @@
           "definitions": {
             "temperature": "indoor:temperature:living_room,-1,-1",
             "calendar": "boiler:scheduler:calendar,-1,-1",
-            "is_null": 0,
+            "is_null": "",
             "main_switch": "boiler:main:switch,-1,-1",
             "scheduler_switch": "boiler:scheduler:switch,-1,-1",
             "status_off": 0
@@ -3684,7 +3684,7 @@
           "definitions": {
             "temperature": "indoor:temperature:living_room,-1,-1",
             "calendar": "boiler:scheduler:calendar,-1,-1",
-            "is_null": 0,
+            "is_null": "",
             "main_switch": "boiler:main:switch,-1,-1",
             "scheduler_switch": "boiler:scheduler:switch,-1,-1",
             "status_on": 1,
@@ -3712,7 +3712,7 @@
           "definitions": {
             "temperature": "indoor:temperature:living_room,-1,-1",
             "calendar": "boiler:scheduler:calendar,-1,-1",
-            "is_null": 0,
+            "is_null": "",
             "main_switch": "boiler:main:switch,-1,-1",
             "scheduler_switch": "boiler:scheduler:switch,-1,-1",
             "status_on": 1,
