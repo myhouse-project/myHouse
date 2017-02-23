@@ -434,15 +434,15 @@ th.dt-center, td.dt-center { text-align: center; }
 	// load a given widget
 	function load_widget(tag,widget) {
 		if (! ('layout' in widget)) return;
-		// search for the "current" layout
-		var current_layout = get_current_layout(widget)
+		// search for the "current_header" layout
+		var current_header_layout = get_current_header_layout(widget)
 		// add the current layout if requested
-		if (current_layout != null) add_current_measure_header(tag,widget["layout"][current_layout])
+		if (current_header_layout != null) add_current_header(tag,widget["layout"][current_header_layout])
 		else add_empty_header(tag)
 		// load each layout in the widget
 		for (var i = 0; i < widget["layout"].length; i++) {
 			layout = widget["layout"][i]
-			layout["current_layout"] = current_layout
+			layout["current_header_layout"] = current_header_layout
 			if (layout["type"] == "sensor_group_summary") add_sensor_group_summary_chart(tag+"_body",layout)
 			else if (layout["type"] == "image") add_sensor_image(tag+"_body",layout)
 			else if (layout["type"] == "sensor_group_timeline") add_sensor_group_timeline_chart(tag+"_body",layout)
@@ -451,13 +451,14 @@ th.dt-center, td.dt-center { text-align: center; }
 			else if (layout["type"] == "checkbox") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "separator") add_html_separator(tag+"_body",tag+"_body_"+i,layout)
+			else if (layout["type"] == "current_measure") add_current_measure(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "button") add_button(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
 			else if (layout["type"] == "configuration") add_configuration_widget(tag+"_body",layout)
 			else if (layout["type"] == "data") add_sensor_data(tag+"_body",layout)
 			else if (layout["type"] == "table") add_sensor_table(tag+"_body",layout)
 			else if (layout["type"] == "map") add_sensor_map(tag+"_body",layout)
-			else if (layout["type"] == "current") continue
+			else if (layout["type"] == "current_header") continue
 			else log("warning","unknown layout "+layout["type"])
 		}
 	}
@@ -484,7 +485,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 		else return
 		var options = $.extend(true,{}, conf["constants"]["charts"]["chart_sensor_group_summary"]);
-		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		if (layout["current_header_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts(options);
 		var chart = $(tag).highcharts();
 		// for each sensor	
@@ -530,7 +531,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		}
 		else return
 		var options = $.extend(true,{},conf["constants"]["charts"]["chart_"+layout["type"]+"_"+layout["timeframe"]]);
-		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		if (layout["current_header_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		$(tag).highcharts('StockChart',options);
 		var chart = $(tag).highcharts();
 		// for each sensor
@@ -558,7 +559,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
 		// add the chart
 		var options = $.extend(true,{}, conf["constants"]["charts"][layout["type"]]);
-		if (layout["current_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
+		if (layout["current_header_layout"] != null) options["chart"]["height"] = conf["constants"]["chart_short_height"]
 		// set min/max based on the format
 		if (sensor["format"] == "percentage") options["yAxis"]["max"] = 100;
 		$(tag).highcharts(options);
@@ -906,6 +907,36 @@ th.dt-center, td.dt-center { text-align: center; }
 		}(tag+"_input",layout["actions"]));
 	}
 	
+	// add the current measure layout
+	function add_current_measure(body,tag,layout) {
+		// add the label
+		if ("display_name" in layout) $(body).append('<div class="text-center">'+lang(layout["display_name"])+'</div>');
+		tag = tag.replace("#","")
+		var html = '\
+					<h3 class="profile-username text-center"><span id="'+tag+'_current"></span><span id="'+tag+'_current_suffix"></span></h3>\
+					<p class="text-muted text-center" id="'+tag+'_timestamp"></p>';
+		tag = "#"+tag;
+		// add the html
+		$(body).append(html);
+		// set the current measure
+		if ("sensor" in layout) {
+			if (!("sensor" in layout)) return
+			sensor = get_sensor_string(layout["sensor"])
+			if (sensor == null) return;
+			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			set_html(tag+"_current",sensor_url+"/current");
+			$(tag+"_current_suffix").html(conf['constants']['formats'][sensor['format']]['suffix']);
+		}
+		// if a timestamp has to be set, retrieve it
+		if ("timestamp" in layout) {
+			sensor = get_sensor_string(layout["timestamp"])
+			if (sensor == null) return;
+			var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+			// set the timestamp
+			set_html(tag+"_timestamp",sensor_url+"/timestamp");			
+		}
+	}
+	
 	// add a html control
 	function add_html_control(body,tag,layout) {
 		var type = layout["type"]
@@ -1123,7 +1154,7 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// add the current measure widget
-	function add_current_measure_header(tag,layout) {
+	function add_current_header(tag,layout) {
 		tag = tag.replace("#","")
 		var summary_body = '\
 			<div class="box-profile">\
@@ -1161,10 +1192,10 @@ th.dt-center, td.dt-center { text-align: center; }
 	}
 	
 	// get the current layout id
-	function get_current_layout(widget) {
+	function get_current_header_layout(widget) {
 		var current_layout = -1
 		for (var i = 0; i < widget["layout"].length; i++) {
-			if (widget["layout"][i]["type"] == "current") current_layout = i
+			if (widget["layout"][i]["type"] == "current_header") current_layout = i
 		}
 		if (current_layout >= 0) return current_layout
 		else return null
