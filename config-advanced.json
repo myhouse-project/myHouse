@@ -184,7 +184,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:temperature:external",
                 "icon": "outdoor/temperature/condition/image?night_day=1"
               },
@@ -221,7 +221,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:temperature:living_room",
                 "icon": "web/images/home.png"
               },
@@ -243,7 +243,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "icon": "indoor/temperature/boiler_status/image",
                 "timestamp": "boiler:main:heartbeat"
               },
@@ -466,7 +466,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:temperature:external",
                 "icon": "outdoor/temperature/condition/image"
               },
@@ -535,7 +535,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:wind:speed",
                 "icon": "web/images/wind.png"
               },
@@ -584,7 +584,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:humidity:external",
                 "icon": "web/images/humidity.png"
               },
@@ -635,7 +635,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:light:external",
                 "icon": "web/images/light.png"
               },
@@ -686,7 +686,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:pressure:external",
                 "icon": "web/images/pressure.png"
               },
@@ -1490,7 +1490,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:temperature:living_room",
                 "icon": "web/images/living_room.png"
               }
@@ -1505,7 +1505,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:temperature:ground_floor",
                 "icon": "web/images/guest_room.png"
               }
@@ -1520,7 +1520,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:temperature:bedroom",
                 "icon": "web/images/bedroom.png"
               }
@@ -1535,7 +1535,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:temperature:study_room",
                 "icon": "web/images/study_room.png"
               }
@@ -1618,7 +1618,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:humidity:first_floor",
                 "icon": "web/images/humidity.png"
               },
@@ -1669,7 +1669,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:fridge:refrigerator",
                 "icon": "web/images/fridge.png"
               },
@@ -1720,7 +1720,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "indoor:air:air_quality",
                 "icon": "web/images/gas.png"
               },
@@ -2870,7 +2870,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:cpu:cpu_user",
                 "icon": "web/images/cpu.png"
               },
@@ -2921,7 +2921,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:memory:ram",
                 "icon": "web/images/memory.png"
               },
@@ -2972,7 +2972,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:load:load_1",
                 "icon": "web/images/load.png"
               },
@@ -3023,7 +3023,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:network:connections",
                 "icon": "web/images/network.png"
               },
@@ -3074,7 +3074,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:temperature:temperature",
                 "icon": "web/images/temperature.png"
               },
@@ -3125,7 +3125,7 @@
             "size": 12,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:myhouse_database:database",
                 "icon": "web/images/database.png"
               },
@@ -3521,7 +3521,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "icon": "indoor/temperature/boiler_status/image",
                 "timestamp": "boiler:main:heartbeat"
               },
@@ -4109,7 +4109,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "icon": "alarm/main/alarm_status/image",
                 "timestamp": "alarm:main:alarm_status"
               },
@@ -4145,7 +4145,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "icon": "web/images/indoor.png",
                 "timestamp": "alarm:sensors:pir_first_floor"
               },
@@ -4165,7 +4165,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "icon": "web/images/indoor.png",
                 "timestamp": "alarm:sensors:pir_study_room"
               },

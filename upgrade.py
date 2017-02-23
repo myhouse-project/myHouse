@@ -797,6 +797,9 @@ def upgrade_2_3(version):
 	                                                if "type" in layout and layout["type"] == "button" and "send" in layout and "actions" not in layout:
 	                                                	layout["actions"] = ["send,"+layout["send"]]
 								del layout["send"]
+							# convert current into current_header
+							if "type" in layout and layout["type"] == "current":
+								layout["type"] = "current_header"
                         if "sensors" in module:
                                 for i in range(len(module["sensors"])):
                                         sensor = module["sensors"][i]

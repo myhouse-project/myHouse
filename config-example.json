@@ -341,7 +341,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:temperature:external",
                 "icon": "outdoor/temperature/condition/image"
               },
@@ -410,7 +410,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:wind:speed",
                 "icon": "web/images/wind.png"
               },
@@ -459,7 +459,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:humidity:external",
                 "icon": "web/images/humidity.png"
               },
@@ -510,7 +510,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "outdoor:pressure:external",
                 "icon": "web/images/pressure.png"
               },
@@ -1395,7 +1395,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:cpu:cpu_user",
                 "icon": "web/images/cpu.png"
               },
@@ -1446,7 +1446,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:memory:ram",
                 "icon": "web/images/memory.png"
               },
@@ -1497,7 +1497,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:load:load_1",
                 "icon": "web/images/load.png"
               },
@@ -1548,7 +1548,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:network:connections",
                 "icon": "web/images/network.png"
               },
@@ -1599,7 +1599,7 @@
             "size": 3,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:temperature:temperature",
                 "icon": "web/images/temperature.png"
               },
@@ -1650,7 +1650,7 @@
             "size": 12,
             "layout": [
               {
-                "type": "current",
+                "type": "current_header",
                 "sensor": "system:myhouse_database:database",
                 "icon": "web/images/database.png"
               },

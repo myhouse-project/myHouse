@@ -1573,15 +1573,15 @@
 													]
 												},
 												{
-													"title": "current",
+													"title": "current_header",
 													"description": "Generate a header with the current measure of a sensor and an icon",
 													"properties": {
 														"type": {
 															"type": "string",
 															"enum": [
-																"current"
+																"current_header"
 															],
-															"value": "current"
+															"value": "current_header"
 														},
 														"sensor": {
 															"description": "The sensor in the format module_id:group_id:sensor_id",
@@ -1589,6 +1589,36 @@
 														},
 														"icon": {
 															"description": "The URL of the icon to display. It can be a sensor called with the trailing /image",
+															"type": "string"
+														},
+														"timestamp": {
+															"description": "An optional sensor in the format module_id:group_id:sensor_id for the last updated timestamp. If not defined the one belonging to the previously defined sensor will be used",
+															"type": "string"
+														}
+													},
+													"additionalProperties": false,
+													"required": [
+														"type"
+													]
+												},
+												{
+													"title": "current_measure",
+													"description": "Generate a box with the current measure of a sensor",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"current_measure"
+															],
+															"value": "current_measure"
+														},
+														"display_name": {
+															"description": "An optional text to to display before the measure",
+															"type": "object",
+															"minItems": 1
+														},
+														"sensor": {
+															"description": "The sensor in the format module_id:group_id:sensor_id",
 															"type": "string"
 														},
 														"timestamp": {
@@ -1687,6 +1717,11 @@
 														"send": {
 															"description": "An optional URL to call to e.g. send a message to a sensor. The value is appended to the URL",
 															"type": "string"
+														},
+														"disabled": {
+															"description": "If the control cannot be manipulated by the user (e.g. read only)",
+															"value": false,
+															"type": "boolean"
 														}
 													},
 													"additionalProperties": false,
