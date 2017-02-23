@@ -380,8 +380,9 @@ def run():
 	if db.exists(assigned_ids_key): assigned_ids = db.rangebyscore(assigned_ids_key,"-inf","+inf",withscores=False)
 	# run the gateway services
 	for gateway in gateways:
-		gateways[gateway].run()
 		schedule.add_job(gateways[gateway].run,'date',run_date=datetime.datetime.now())
+	# start the schedule
+	schedule.start()
 	# standby
 	while True:
 		time.sleep(1)
