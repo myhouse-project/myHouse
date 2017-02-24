@@ -381,8 +381,6 @@ def run():
 	# run the gateway services
 	for gateway in gateways:
 		schedule.add_job(gateways[gateway].run,'date',run_date=datetime.datetime.now())
-	# start the schedule
-	schedule.start()
 	# standby
 	while True:
 		time.sleep(1)
@@ -395,4 +393,6 @@ for gateway_conf in plugin_conf["gateways"]:
 
 # allow running it both as a module and when called directly
 if __name__ == '__main__':
+        # start the schedule
+        schedule.start()
 	run()
