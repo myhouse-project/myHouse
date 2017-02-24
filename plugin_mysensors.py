@@ -18,11 +18,9 @@ schedule = scheduler.get_scheduler()
 
 # variables
 gateways = {}
-assigned_ids = []
 
 # constants
 plugin_conf = conf["plugins"]["mysensors"]
-assigned_ids_key = conf["constants"]["db_schema"]["tmp"]+":plugin_mysensors:assigned_ids"
 sleep_on_error = 1*30
 
 # mysensors data types
@@ -62,6 +60,8 @@ class Gateway():
 		# nodes[<node_id>][<child_id>][<command>][<type>] = sensor
 		# e.g. nodes["254"]["1"]["1"]["V_TEMP"] = sensor
 		self.nodes = {}
+		self.assigned_ids = []
+		self.assigned_ids_key = conf["constants"]["db_schema"]["tmp"]+":plugin_mysensors:"+self.gateway_id+":assigned_ids"
 	
 	# register a myHouse sensor agains this gateway		
 	def register_sensor(self,sensor):
@@ -86,6 +86,8 @@ class Gateway():
 	# run the service
 	def run(self):
 	        log.info("["+self.gateway_id+"] starting mysensors "+self.gateway_type+" gateway")
+	        # load previously assigned node ids
+        	if db.exists(self.assigned_ids_key): self.assigned_ids = db.rangebyscore(self.assigned_ids_key,"-inf","+inf",withscores=False)
 		errors = 0
 		while True:
 			# connect to the configured gateway
@@ -262,9 +264,9 @@ class Gateway():
 				# return the next available id
 				log.info("["+self.gateway_id+"]["+str(node_id)+"] requesting node_id")
 				# get the available id
-				id = get_available_id()
+				id = self.get_available_id()
 				# store it into the database
-				db.set(assigned_ids_key,id,utils.now())
+				db.set(self.assigned_ids_key,id,utils.now())
 				# send it back
 				self.tx(node_id,child_id,command_string,"I_ID_RESPONSE",str(id))
 			elif type_string == "I_CONFIG":
@@ -367,17 +369,14 @@ class Gateway():
 		if node_id in self.nodes and child_id in self.nodes[node_id] and command_string in self.nodes[node_id][child_id] and type_string in self.nodes[node_id][child_id][command_string]: return True
 		return False
 
-# return an available node id
-def get_available_id():
-	for i in range(1,254):
-		# return the id if not already assigned by the controller and not mapped by any sensor in the configuration
-		if i not in assigned_ids and i not in nodes: return i
+	# return an available node id
+	def get_available_id(self):
+		for i in range(1,254):
+			# return the id if not already assigned by the controller and not mapped by any sensor in the configuration
+			if i not in self.assigned_ids and i not in self.nodes: return i
 
 # run the plugin service
 def run():
-	global assigned_ids
-	# load previously assigned node ids
-	if db.exists(assigned_ids_key): assigned_ids = db.rangebyscore(assigned_ids_key,"-inf","+inf",withscores=False)
 	# run the gateway services
 	for gateway in gateways:
 		schedule.add_job(gateways[gateway].run,'date',run_date=datetime.datetime.now())
