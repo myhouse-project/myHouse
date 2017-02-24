@@ -33,10 +33,11 @@ def load(validate):
 	if config is not None: return
 	# load the constants
 	const = constants.get_constants()
-	# define the location of the configuration file
-	config_file_location = const['config_file'] if os.path.isfile(const['config_file']) else const['config_file_default']
+	# create a config.json file if does not exist
+	if not os.path.isfile(const['config_file']):
+		copyfile(const['config_file_example'],const['config_file'])
 	# open the config file and load it
-	with open(config_file_location, 'r') as file:
+	with open(const['config_file'], 'r') as file:
 		config_file_content = file.read()
 	file.close()
 	config = json.loads(config_file_content, object_pairs_hook=OrderedDict)

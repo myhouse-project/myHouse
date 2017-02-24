@@ -121,8 +121,10 @@ def is_true(a,operator,b):
 		elif operator == "!=":
 			if value == a: evaluation = False
 		elif operator == ">":
+			if not utils.is_number(value) or not utils.is_number(a): return False
 			if float(value) >= float(a): evaluation = False
 		elif operator == "<":
+			if not utils.is_number(value) or not utils.is_number(a): return False
 			if float(value) <= float(a): evaluation = False
 		else: evaluation = False
 	# return the evaluation

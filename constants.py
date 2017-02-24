@@ -23,7 +23,7 @@ constants = {
 	'tmp_dir': base_dir+"/tmp",
 	'config_file': base_dir+"/config.json",
 	'config_file_backup': base_dir+"/config.bak",
-	'config_file_default': base_dir+"/config-example.json",
+	'config_file_example': base_dir+"/config-example.json",
 	'config_file_schema': base_dir+"/config-schema.json",
 	'email_template': base_dir+"/template_email.html",
 	'service_template': base_dir+"/template_service.sh",
