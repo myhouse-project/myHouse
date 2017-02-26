@@ -50,17 +50,23 @@ def send(sensor,data,force=False):
 # MySensors gatewat class
 class Gateway():
 	def __init__(self, gateway_conf):
+		# gateway settings
 		self.gateway_conf = gateway_conf
 		self.gateway_type = gateway_conf["gateway_type"]
 		self.gateway_id = gateway_conf["gateway_id"]
+		# variable to store the gateway object
 		self.gateway = None
+		# keep track if we are connected to the gateway
 		self.connected = False
+		# queue of messages for sleeping nodes
 		self.queue = {}
 		# data structure for storing registered sensors' information
 		# nodes[<node_id>][<child_id>][<command>][<type>] = sensor
 		# e.g. nodes["254"]["1"]["1"]["V_TEMP"] = sensor
 		self.nodes = {}
+		# data structure for storing the assigned node IDs
 		self.assigned_ids = []
+		# the database key where assigned node IDs are stored
 		self.assigned_ids_key = conf["constants"]["db_schema"]["tmp"]+":plugin_mysensors:"+self.gateway_id+":assigned_ids"
 	
 	# register a myHouse sensor agains this gateway		
