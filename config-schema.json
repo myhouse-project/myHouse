@@ -1288,7 +1288,7 @@
 									},
 									"display_name": {
 										"type": "object",
-										"description": "The title of the widget (for each configured language)",
+										"description": "The title of the widget (for each configured language, add a property named as the configured language and a string description)",
 										"minItems": 1
 									},
 									"keywords": {

@@ -351,7 +351,7 @@ class Gateway():
 		child_id = sensor["plugin"]["child_id"]
 		command_string = sensor["plugin"]["command"]
 		type_string = sensor["plugin"]["type"]
-		if not is_registered(node_id,child_id,command_string,type_string): return
+		if not self.is_registered(node_id,child_id,command_string,type_string): return
 		if "queue_size" not in sensor["plugin"] or force:
 			# send the message directly
 			self.tx(node_id,child_id,command_string,type_string,data)
