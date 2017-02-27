@@ -91,6 +91,7 @@ def poll(sensor):
 		db.set(sensor["db_cache"],data,utils.now())
 	except Exception,e: 
 		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to poll: "+utils.get_exception(e))
+		return None
 	return data
 
 # parse the data of a sensor from the cache and return the value read
@@ -124,6 +125,7 @@ def parse(sensor):
 		log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] parsed: "+str(measures))
 	except Exception,e:
 		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] unable to parse "+str(data)+": "+utils.get_exception(e))
+		return None
 	# return the structured data
 	return measures
 
