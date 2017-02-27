@@ -130,6 +130,21 @@ def is_true(a,operator,b):
 	# return the evaluation
 	return evaluation
 
+# calculate a sub expression
+def sub_expression(a,operator,b):
+        # prepare the values (can be an array)
+        if isinstance(a,list): a = a[0]
+	if isinstance(b,list): b = b[0]
+	# perform integrity checks
+	if a is None or b is None: return None
+	if not utils.is_number(a) or not utils.is_number(b): return None
+	# calculate the expression
+	if operator == "+": return float(a)+float(b)
+	elif operator == "-": return float(a)-float(b)
+	elif operator == "*": return float(a)*float(b)
+	elif operator == "/": return float(a)/float(b)
+	return None
+
 # determine if a definition is involving a sensor
 def is_sensor(definition):
 	if utils.is_number(definition): return False
@@ -194,6 +209,19 @@ def run(module_id,rule_id,notify=True):
 				evaluation = True
 				for condition in rule["conditions"]:
 					condition = re.sub(' +',' ',condition)
+					# look for sub expressions and calculate them
+					expressions = re.findall("\(([^\)]+)\)",condition)
+					for i in range(len(expressions)):
+						expression = expressions[i]
+						placeholder = "%exp_"+str(i)+"%"
+						exp1,operator,exp2 = expression.split(' ')
+						# calculate the sub expression
+						exp_value = sub_expression(definitions[exp1],operator,definitions[exp2])
+						log.debug("["+module_id+"]["+rule_id+"] resolving "+exp1+" ("+str(definitions[exp1])+") "+operator+" "+exp2+" ("+str(definitions[exp2])+"): "+str(exp_value)+" (alias "+placeholder+")")
+						# add the sub expressions to the definitions
+						definitions[placeholder] = exp_value
+						condition = condition.replace("("+expression+")",placeholder)
+					# do the comparison and apply the condition
 					a,operator,b = condition.split(' ')
 					sub_evaluation = is_true(definitions[a],operator,definitions[b])
 					log.debug("["+module_id+"]["+rule_id+"] evaluating "+a+" ("+str(definitions[a])+") "+operator+" "+b+" ("+str(definitions[b])+"): "+str(sub_evaluation))

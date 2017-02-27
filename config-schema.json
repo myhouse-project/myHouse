@@ -1916,7 +1916,7 @@
 									"items": {
 										"type": "string",
 										"title": "Condition",
-										"description": "Compare what has been defined in definitions with the operator ==, !=, >, <"
+										"description": "Compare what has been defined in definitions with the operators ==, !=, >, <. Sub expression can also be defined in the format '(condition1 + condition2)' to the left or right of the operator"
 									}
 								},
 								"definitions": {
