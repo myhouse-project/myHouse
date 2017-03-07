@@ -150,7 +150,7 @@ def run():
 						slack_message(channel,oracle.get_wait_message())
 						# generate the image
 						module_id,widget_id = response["content"].split(",")
-						widget = utils.get_widget(module_id,widget_id)
+						widget = utils.get_widget_chart(module_id,widget_id)
 						try: 
 							files = generate_widget.run(module_id,widget_id)
 						except Exception,e:
