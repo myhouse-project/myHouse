@@ -451,6 +451,7 @@ th.dt-center, td.dt-center { text-align: center; }
 			else if (layout["type"] == "checkbox") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "input") add_html_control(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "separator") add_html_separator(tag+"_body",tag+"_body_"+i,layout)
+			else if (layout["type"] == "clock") add_clock(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "current_measure") add_current_measure(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "button") add_button(tag+"_body",tag+"_body_"+i,layout)
 			else if (layout["type"] == "calendar") add_calender_widget(tag+"_body",layout)
@@ -886,6 +887,119 @@ th.dt-center, td.dt-center { text-align: center; }
 		if ("color" in layout) style = style + "border-color: "+layout["color"]+";";
 		if ("height" in layout) style = style + "border-width: "+layout["height"]+"px;";
 		$(body).append('<hr style="'+style+'"></hr>');
+	}
+
+	// add a clock
+	function add_clock(body,tag,layout) {
+		tag = tag.replace("#","");
+		// add the clock placeholder
+		var clock_html = '<div class="text-center" id="'+tag+'_clock"></div>';
+		$(body).append(clock_html);
+		// Create the chart
+		var now = getNow();
+		Highcharts.chart(tag+"_clock", {
+			chart: {
+				type: 'gauge',
+				plotBackgroundColor: null,
+				plotBackgroundImage: null,
+				plotBorderWidth: 0,
+				plotShadow: false,
+				height: 200
+			},
+			credits: { enabled: false },
+			title: { text: '' },
+			pane: {
+				background: [
+					{ },
+					{
+						backgroundColor: Highcharts.svg ? {
+							radialGradient: {
+								cx: 0.5,
+								cy: -0.4,
+								r: 1.9
+							},
+							stops: [
+								[0.5, 'rgba(255, 255, 255, 0.2)'],
+								[0.5, 'rgba(200, 200, 200, 0.2)']
+							]
+						} : null
+					}
+				]
+			},
+			yAxis: {
+				labels: { distance: -20 },
+				min: 0,
+				max: 12,
+				lineWidth: 0,
+				showFirstLabel: false,
+				minorTickInterval: 'auto',
+				minorTickWidth: 1,
+				minorTickLength: 5,
+				minorTickPosition: 'inside',
+				minorGridLineWidth: 0,
+				minorTickColor: '#666',
+				tickInterval: 1,
+				tickWidth: 2,
+				tickPosition: 'inside',
+				tickLength: 10,
+				tickColor: '#666'
+			},
+			exporting: { enabled: false},
+			tooltip: {
+				formatter: function () {
+					return this.series.chart.tooltipText;
+				}
+			},
+			series: [{
+				data: [{
+					id: 'hour',
+					y: now.hours,
+					dial: {
+						radius: '60%',
+						baseWidth: 4,
+						baseLength: '95%',
+						rearLength: 0
+					}
+				}, {
+					id: 'minute',
+					y: now.minutes,
+					dial: {
+						baseLength: '95%',
+						rearLength: 0
+					}
+				}, {
+					id: 'second',
+					y: now.seconds,
+					dial: {
+						radius: '100%',
+						baseWidth: 1,
+						rearLength: '20%'
+					}
+				}],
+				animation: false,
+				dataLabels: { enabled: false }
+			}]
+		},
+		function (chart) {
+			setInterval(function () {
+				now = getNow();
+				if (chart.axes) { // not destroyed
+					var hour = chart.get('hour'),
+						minute = chart.get('minute'),
+						second = chart.get('second'),
+						// run animation unless we're wrapping around from 59 to 0
+						animation = now.seconds === 0 ?
+							false : {
+								easing: 'easeOutBounce'
+							};
+					// Cache the tooltip text
+					chart.tooltipText = pad(Math.floor(now.hours), 2) + ':' + pad(Math.floor(now.minutes * 5), 2) + ':' + pad(now.seconds * 5, 2);
+					hour.update(now.hours, true, animation);
+					minute.update(now.minutes, true, animation);
+					second.update(now.seconds, true, animation);
+				}
+			}, 1000);
+		});		
 	}
 	
 	// add a button
@@ -1436,6 +1550,29 @@ th.dt-center, td.dt-center { text-align: center; }
 		log("warning","cannot find language "+language+" in "+display_name)
         return "N.A."
 	}
+	
+	// return now's time in a structured way
+	function getNow() {
+		var now = new Date();
+		return {
+			hours: now.getHours() + now.getMinutes() / 60,
+			minutes: now.getMinutes() * 12 / 60 + now.getSeconds() * 12 / 3600,
+			seconds: now.getSeconds() * 12 / 60
+		};
+	}
+
+	// pad a number, create an array of the remaining length + 1 and join it with 0's
+	function pad(number, length) {
+		return new Array((length || 2) + 1 - String(number).length).join(0) + number;
+	}
+	
+	// Easing function from https://github.com/danro/easing-js/blob/master/easing.js
+	Math.easeOutBounce = function (pos) {
+		if ((pos) < (1 / 2.75)) return (7.5625 * pos * pos);
+		if (pos < (2 / 2.75)) return (7.5625 * (pos -= (1.5 / 2.75)) * pos + 0.75);
+		if (pos < (2.5 / 2.75)) return (7.5625 * (pos -= (2.25 / 2.75)) * pos + 0.9375);
+		return (7.5625 * (pos -= (2.625 / 2.75)) * pos + 0.984375);
+	};
 	
 	</script>
 

@@ -303,6 +303,10 @@ for chart_id in constants['charts']:
 	new_chart = constants['charts'][chart['template']].copy()
 	new_chart.update(chart)
 	constants['charts'][chart_id] = new_chart
+# add UTC offset
+is_dst = time.daylight and time.localtime().tm_isdst > 0
+utc_offset = - (time.altzone if is_dst else time.timezone)
+constants["utc_offset"] = int(utc_offset/3600)
 
 # return all the configuration settings as an object
 def get_constants():
