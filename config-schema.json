@@ -1756,6 +1756,14 @@
 																"configuration"
 															],
 															"value": "configuration"
+														},
+														"color": {
+															"description": "An optional color of the separator (e.g. black or #000000)",
+															"type": "string"
+														},
+														"height": {
+															"description": "An optional height in pixel of the separator",
+															"type": "integer"
 														}
 													},
 													"additionalProperties": false,
