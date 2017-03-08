@@ -882,7 +882,10 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// add a html separator
 	function add_html_separator(body,tag,layout) {
-		$(body).append("<hr>");
+		var style = "";
+		if ("color" in layout) style = style + "border-color: "+layout["color"]+";";
+		if ("height" in layout) style = style + "border-width: "+layout["height"]+"px;";
+		$(body).append('<hr style="'+style+'"></hr>');
 	}
 	
 	// add a button
