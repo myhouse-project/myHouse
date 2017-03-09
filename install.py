@@ -12,7 +12,7 @@ log_file = base_dir+"/logs/install.log"
 service_template = base_dir+"/template_service.sh"
 service_location = '/etc/init.d/myhouse'
 filename = service_location.split('/')[-1]
-dependencies = ["python-dev","redis-server","python-flask","python-redis","python-numpy","python-rpi.gpio","mosquitto","libttspico-utils","python-opencv","mpg123","sox","flac","pocketsphinx","python-feedparser","python-serial"]
+dependencies = ["python-dev","redis-server","python-flask","python-redis","python-numpy","python-rpi.gpio","mosquitto","libttspico-utils","python-opencv","mpg123","sox","flac","pocketsphinx","python-feedparser","python-serial","screen"]
 dependencies_python = ["APScheduler","slackclient","simplejson","python-Levenshtein","fuzzywuzzy","pyicloud","motionless","flask-compress","jsonschema","paho-mqtt","gTTS","SpeechRecognition","Adafruit-Python-DHT","Adafruit-ADS1x15"]
 inventory = []
 inventory_python = []
@@ -32,10 +32,11 @@ def init_logger():
 	log.addHandler(file)
 
 # create an inventory of the software installed
-def create_inventory():
-	# updating apt cache
-	log.info("Refreshing apt cache (it may take a while)...")
-	run_command("apt-get update")
+def create_inventory(apt_update):
+	if apt_update:
+		# updating apt cache
+		log.info("Refreshing apt cache (it may take a while)...")
+		run_command("apt-get update")
 	# create an inventory of the deb packages installed
 	log.info("Creating an inventory of the installed packages...")
 	output = run_command("dpkg -l")
@@ -143,7 +144,9 @@ if __name__ == '__main__':
 	if len(sys.argv) == 2 and sys.argv[1] == "-u": 
 		uninstall_service()
 	else: 
-		create_inventory()
+		apt_update = True
+		if len(sys.argv) == 2 and sys.argv[1] == "-q": apt_update = False
+		create_inventory(apt_update)
 		install_pip()
 		log.info("Installing missing dependencies...")
 		install_packages(dependencies)

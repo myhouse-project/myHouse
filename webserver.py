@@ -50,8 +50,7 @@ def save_config():
 def restart():
 	log.info("Restarting the service...")
 	shutdown_server()
-	utils.run_command(conf['constants']['service_location']+" restart")
-	sys.exit(0)
+	utils.run_command("screen -d -m bash -c \""+conf['constants']['service_location']+" restart; exec /bin/bash\"")
 
 # return the internet status
 @app.route('/internet_status')
