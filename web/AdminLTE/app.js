@@ -480,6 +480,7 @@ function _init() {
     //Open the control sidebar
     open: function (sidebar, slide) {
       //Slide over content
+	  sidebar.removeClass("hidden");
       if (slide) {
         sidebar.addClass('control-sidebar-open');
       } else {
@@ -490,6 +491,7 @@ function _init() {
     },
     //Close the control sidebar
     close: function (sidebar, slide) {
+	  sidebar.addClass("hidden");
       if (slide) {
         sidebar.removeClass('control-sidebar-open');
       } else {
