@@ -82,6 +82,7 @@ th.dt-center, td.dt-center { text-align: center; }
     margin: 0 auto;
     float: none;
 }
+
 </style>
 
 <body class="hold-transition sidebar-mini">
@@ -179,7 +180,7 @@ th.dt-center, td.dt-center { text-align: center; }
 
 		<!-- =============================================== -->
 
-		<div class="modal fade" id="popup">
+		<div class="modal fade modal-fullscreen force-fullscreen" id="popup">
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -1244,7 +1245,7 @@ th.dt-center, td.dt-center { text-align: center; }
 		tag = tag.replace("#","")
 		// define the widget HTML
 		var html = '\
-					<div class="col-md-#size# col-md-offset-#offset#">\
+					<div class="col-lg-#size# col-md-offset-#offset#">\
 							<div class="box box-solid box-primary">\
 								<div class="box-header">\
 									<h3 class="box-title">#title#</h3>\
