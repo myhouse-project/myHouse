@@ -769,7 +769,7 @@ def upgrade_2_3(version):
 				        {
 			                        "gateway_type": "ethernet",
 		        	                "gateway_id": "ethernet_1",
-	                		        "enabled": false,
+	                		        "enabled": False,
 			                        "hostname": "localhost",
 			                        "port": 5003
 				        },
