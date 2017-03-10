@@ -66,7 +66,7 @@ def run_command(command,return_code=False):
 	ret = process.poll()
 	if return_code: return ret
 	else: 
-		if ret != 0: log.info("WARNING: while the execution of "+command+": "+output)
+		if ret != 0: log.debug("WARNING: during the execution of "+command+": "+output)
 		return output
 
 # install with apt an array of packages if not already installed
