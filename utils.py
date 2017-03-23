@@ -261,7 +261,7 @@ class Command(object):
 			# run the process
 			self.process = subprocess.Popen(self.cmd, shell=self.shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, preexec_fn=preexec_fn)
 			# if running in background, just return (and discard the output)
-			 if self.background: return
+			if self.background: return
 			# read the output line by line
 			for line in iter(self.process.stdout.readline,''):
 				# add the line to the queue

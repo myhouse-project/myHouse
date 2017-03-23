@@ -173,18 +173,22 @@ def store(sensor,measures,ifnotexists=False):
 			last = db.range(key,-1,-1)
 			if len(last) > 0:
 				last_timestamp = last[0][0]
-				# if the measure's timestamp is older, skip it
-				if measure["timestamp"] < last_timestamp:
+				# if the measure's timestamp is older or the same, skip it
+				if measure["timestamp"] <= last_timestamp:
 					log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") old event, ignoring "+measure["key"]+": "+str(measure["value"]))
 					continue
-		# check if there is already a value stored with the same timestamp
+                # apply the bias to the sensor if configured
+                if "bias" in sensor: measure["value"] = measure["value"]+sensor["bias"]
+		# check if there is already something stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
-			# same timestamp, do not store
-			log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") already in the database, ignoring "+measure["key"]+": "+str(measure["value"]))
-			continue
-		# apply the bias to the sensor if configured
-		if "bias" in sensor: measure["value"] = measure["value"]+sensor["bias"]
+			if old[0][1] == measure["value"]:
+				# if the value is also the same, skip it
+				log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") already in the database, ignoring "+measure["key"]+": "+str(measure["value"]))
+				continue
+			else: 
+				# same timestamp but different value, remove the old value so to store the new one
+				db.deletebyscore(key,measure["timestamp"],measure["timestamp"])
 		# store the value into the database
 		log.info("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") saving "+measure["key"]+": "+utils.truncate(str(measure["value"]))+conf["constants"]["formats"][sensor["format"]]["suffix"])
 		db.set(key,measure["value"],measure["timestamp"])
