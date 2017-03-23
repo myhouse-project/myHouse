@@ -813,6 +813,24 @@ def upgrade_2_3(version):
 		log.info("Upgrading the database...")
 		db.set_version(target_version)
 
+# upgrade from 2.3 to 2.4
+def upgrade_2_4(version):
+        upgrade_config = True
+        upgrade_db = True
+        conf = config.get_config(validate=False)
+        target_version = conf["constants"]["version"]
+        log.info("[Migration to v"+target_version+"]\n")
+        backup(version)
+        if upgrade_config and utils.file_exists(conf["constants"]["config_file"]):
+                log.info("Upgrading configuration file...")
+                new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
+                # save the updated configuration
+                config.save(json.dumps(new, default=lambda o: o.__dict__))
+        if upgrade_db:
+                # update the version
+                log.info("Upgrading the database...")
+                db.set_version(target_version)
+
 # main 
 if __name__ == '__main__':
 	# ensure it is run as root
@@ -835,6 +853,7 @@ if __name__ == '__main__':
 	elif version == "2.0": upgrade_2_1()
 	elif version == "2.1": upgrade_2_2()
 	elif version == "2.2" or version.startswith("2.3-dev"): upgrade_2_3(version)
+	elif version == "2.3" or version.startswith("2.4-dev"): upgrade_2_4(version)
 	else:
 		log.error("Unable to upgrade, unknown version "+version)
 		exit()
