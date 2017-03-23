@@ -15,6 +15,7 @@ output_settings = conf["output"]["audio"]
 input_settings = conf["input"]["audio"]
 output_file = conf["constants"]["tmp_dir"]+"/audio_output.wav"
 input_file = conf["constants"]["tmp_dir"]+"/audio_input.wav"
+run_background = True
 
 # use text to speech to notify about a given text
 def notify(text):
@@ -25,8 +26,6 @@ def notify(text):
 		log.debug(utils.run_command(["pico2wave", "-l",output_settings["language"],"-w",output_file, text],shell=False))
 		# play it
 		play(output_file)
-		# remove the wav file
-		utils.run_command("rm -f "+output_file)
 	# use the google API
 	elif output_settings["engine"] == "google": 
 		# create the wav file
@@ -35,14 +34,11 @@ def notify(text):
 		log.debug(utils.run_command(["mpg123","-w",output_file,output_file+".mp3"],shell=False))
 		# play it
 		play(output_file)
-		# remove the wav file
-		utils.run_command("rm -f "+output_file+".mp3")
-		utils.run_command("rm -f "+output_file)
 
 # play an audio file
 def play(filename):
 	device = "-t alsa "+str(output_settings["device"]) if output_settings["device"] != "" else ""
-	log.debug(utils.run_command("play "+filename+" "+device+" &"))
+	log.debug(utils.run_command("play "+filename+" "+device,background=run_background))
 
 # capture voice and perform speech recognition
 def listen():

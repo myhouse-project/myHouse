@@ -249,16 +249,19 @@ def get_sensor_string(sensor_string):
 
 # helper class for running a command in a separate thread with a timeout
 class Command(object):
-	def __init__(self,cmd,shell):
+	def __init__(self,cmd,shell,background):
 		self.cmd = cmd
 		self.process = None
 		self.shell = shell
+		self.background = background
 	def run(self, timeout):
 		def target(queue):
 			# if running in a shell, the os.setsid() is passed in the argument preexec_fn so it's run after the fork() and before  exec() to run the shell
 			preexec_fn = os.setsid if self.shell else None
 			# run the process
 			self.process = subprocess.Popen(self.cmd, shell=self.shell, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, preexec_fn=preexec_fn)
+			# if running in background, just return (and discard the output)
+			 if self.background: return
 			# read the output line by line
 			for line in iter(self.process.stdout.readline,''):
 				# add the line to the queue
@@ -288,9 +291,9 @@ class Command(object):
 			return output.rstrip()
 
 # run a command and return the output
-def run_command(command,timeout=conf["constants"]["command_timeout"],shell=True):
+def run_command(command,timeout=conf["constants"]["command_timeout"],shell=True,background=False):
 	log.debug("Executing "+str(command))
-	command = Command(command,shell)
+	command = Command(command,shell,background)
 	return command.run(timeout)
 
 # determine if it is night
