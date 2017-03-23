@@ -39,8 +39,12 @@ def send(subject,body,images=[]):
 	msg['To'] = ", ".join(conf["output"]["email"]["to"])
 	msg['Subject'] = "["+conf["general"]["house_name"]+"] "+subject
 	msg.attach(MIMEText(body, 'html'))
-	smtp = smtplib.SMTP(conf["output"]["email"]["hostname"])
-	# send it
+	smtp = smtplib.SMTP(conf["output"]["email"]["hostname"],conf["output"]["email"]["port"])
+	# setup TLS
+	if conf["output"]["email"]["tls"]: smtp.starttls()
+	# authenticate
+	if conf["output"]["email"]["username"] != '': smtp.login(conf["output"]["email"]["username"],conf["output"]["email"]["password"])
+	# send the message
 	log.info("sending email '"+subject+"' to "+msg['To'])
 	smtp.sendmail(conf["output"]["email"]["from"],conf["output"]["email"]["to"], msg.as_string())
 	smtp.quit()

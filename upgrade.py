@@ -824,6 +824,12 @@ def upgrade_2_4(version):
         if upgrade_config and utils.file_exists(conf["constants"]["config_file"]):
                 log.info("Upgrading configuration file...")
                 new = json.loads(conf["config_json"], object_pairs_hook=OrderedDict)
+		# add smtp authentication
+		if "port" not in new["output"]["email"]:
+			new["output"]["email"]["port"] = 25
+			new["output"]["email"]["tls"] = False
+			new["output"]["email"]["username"] = ''
+			new["output"]["email"]["password"] = ''
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:

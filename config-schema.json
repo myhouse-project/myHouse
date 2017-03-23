@@ -485,6 +485,22 @@
 							"type": "string",
 							"description": "SMTP server"
 						},
+						"port": {
+							"type": "integer",
+							"description": "The port of the SMTP server"
+						},
+						"tls": {
+							"type": "boolean",
+							"description": "Whether the smtp server requires a TLS connection"
+						},
+						"username": {
+							"type": "string",
+							"description": "Optional username for authenticating against the SMTP server"
+						},
+						"password": {
+							"type": "string",
+							"description": "Optional password for authenticating against the SMTP server"
+						},
 						"from": {
 							"type": "string",
 							"description": "From email address to use"
@@ -537,6 +553,10 @@
 					"required": [
 						"enabled",
 						"hostname",
+						"port",
+						"tls",
+						"username",
+						"password",
 						"from",
 						"to",
 						"alerts_digest"
