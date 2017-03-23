@@ -18,6 +18,15 @@ inventory = []
 inventory_python = []
 log = logging.getLogger("install")
 
+# determine if running on a raspberry
+# return true if running on raspberry pi
+def is_raspberry():
+        with open("/proc/cpuinfo",'r') as file:
+                cpu = file.read()
+        file.close()
+        if "BCM" in cpu: return True
+        return False
+
 # initialize the logger
 def init_logger():
 	log.setLevel(logging.DEBUG)
@@ -72,6 +81,7 @@ def run_command(command,return_code=False):
 # install with apt an array of packages if not already installed
 def install_packages(packages):
 	for package in packages:
+		if package == "python-rpi.gpio" and not is_raspberry(): continue
 		if package.lower() in inventory:
 			log.debug("\t- Skipping "+package+": already installed")
 		else:
