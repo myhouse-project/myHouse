@@ -15,7 +15,7 @@ output_settings = conf["output"]["audio"]
 input_settings = conf["input"]["audio"]
 output_file = conf["constants"]["tmp_dir"]+"/audio_output.wav"
 input_file = conf["constants"]["tmp_dir"]+"/audio_input.wav"
-run_background = True
+run_background = False
 
 # use text to speech to notify about a given text
 def notify(text):

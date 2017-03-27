@@ -830,6 +830,13 @@ def upgrade_2_4(version):
 			new["output"]["email"]["tls"] = False
 			new["output"]["email"]["username"] = ''
 			new["output"]["email"]["password"] = ''
+		# add clock 
+		if "clock" not in new["gui"]:
+			new["gui"]["clock"] = {
+				"enabled": True,
+				"24_hours": True,
+				"show_seconds": True
+			}
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:

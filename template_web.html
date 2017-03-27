@@ -105,6 +105,12 @@ th.dt-center, td.dt-center { text-align: center; }
 				</a>
 				<div class="navbar-custom-menu">
 					<ul class="nav navbar-nav">
+						<li class="dropdown notifications-menu hidden" id="clock_container">
+							<a class="logo"> 
+								<span class="logo-mini"></span> 
+								<span class="logo-lg"><b><i class="fa fa-clock-o"></i></b> <span id="clock"></span>
+							</a>
+						</li>
 						<li class="dropdown notifications-menu">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 								<i class="fa fa-ban"></i>
@@ -289,6 +295,11 @@ th.dt-center, td.dt-center { text-align: center; }
 			load_status();
 			// load the side menu
 			load_menu();
+			// load the clock
+			if (conf["gui"]["clock"]["enabled"]) {
+				$("#clock_container").removeClass("hidden");
+				setInterval(load_clock, 1000);
+			}
 			// load the alerts
 			load_alerts();
 			// load the given module
@@ -344,6 +355,33 @@ th.dt-center, td.dt-center { text-align: center; }
 	function load_version() {
 		log("info","setting version to "+conf['constants']['version']);
 		$("#version").html(conf['constants']['version']);
+	}
+	
+	// load the clock
+	function load_clock() {
+		clock_conf = conf["gui"]["clock"];
+        var date = new Date();
+        var h = date.getHours();
+		var meridiem = "";
+		if (clock_conf["24_hours"]) h = pad_number(h);
+		else {
+			if (h >= 12) meridiem = " PM";
+			else meridiem = " AM";
+			if (h > 12) h = h - 12;
+			else if (h === 0) h = 12;	
+		}
+        var m = pad_number(date.getMinutes());
+        var s = pad_number(date.getSeconds());
+		var clock = h+":"+m;
+		if (clock_conf["show_seconds"]) clock = clock+":"+s;
+		clock = clock + meridiem;
+		$("#clock").html(clock);
+	}
+	
+	// add a trailing 0 to a number
+	function pad_number(number) {
+		if (number < 10) return "0" + number;
+		return number
 	}
 	
 	// load alerts

@@ -255,6 +255,30 @@
 						"size_y",
 						"api_key"
 					]
+				},
+				"clock": {
+					"type": "object",
+					"description": "Clock properties",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Whether or not to display a digital clock on top of the screen"
+						},
+						"24_hours": {
+							"type": "boolean",
+							"description": "If displaying the time in a 24-hour format or 12-hour"
+						},
+						"show_seconds": {
+							"type": "boolean",
+							"description": "If showing the number of seconds in the digital clock"
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"enabled",
+						"24_hours",
+						"show_seconds"
+					]
 				}
 			},
 			"additionalProperties": false,
@@ -266,7 +290,9 @@
 				"default_module",
 				"auto_refresh_min",
 				"debug_console",
-				"sections"
+				"sections",
+				"maps",
+				"clock"
 			]
 		},
 		"alerter": {
