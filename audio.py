@@ -15,7 +15,7 @@ output_settings = conf["output"]["audio"]
 input_settings = conf["input"]["audio"]
 output_file = conf["constants"]["tmp_dir"]+"/audio_output.wav"
 input_file = conf["constants"]["tmp_dir"]+"/audio_input.wav"
-run_background = False
+play_background = False
 
 # use text to speech to notify about a given text
 def notify(text):
@@ -38,7 +38,7 @@ def notify(text):
 # play an audio file
 def play(filename):
 	device = "-t alsa "+str(output_settings["device"]) if output_settings["device"] != "" else ""
-	log.debug(utils.run_command("play "+filename+" "+device,background=run_background))
+	log.debug(utils.run_command("play "+filename+" "+device,background=play_background))
 
 # capture voice and perform speech recognition
 def listen():

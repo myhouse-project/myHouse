@@ -837,6 +837,14 @@ def upgrade_2_4(version):
 				"24_hours": True,
 				"show_seconds": True
 			}
+		# add buzzer output
+		if "buzzer" not in new["output"]:
+			new["output"]["buzzer"] = {
+				"enabled": False,
+				"pin": 20,
+				"duration": 0.5,
+				"min_severity": "alert"
+			}
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:

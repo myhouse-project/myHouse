@@ -777,6 +777,57 @@
 						"engine",
 						"language"
 					]
+				},
+				"buzzer": {
+					"type": "object",
+					"description": "Play a tone to an attached active buzzer for alerts",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable the module"
+						},
+						"pin": {
+							"type": "integer",
+							"description": "The pin the active buzzer is attached to (BCM numbering)"
+						},
+						"duration": {
+							"type": "number",
+							"description": "For how long to play the tone in seconds"
+						},
+						"min_severity": {
+							"type": "string",
+							"description": "Minimum severity for playing the tone",
+							"enum": [
+								"info",
+								"warning",
+								"alert"
+							],
+							"value": "info"
+						},
+						"rate_limit": {
+							"type": "integer",
+							"description": "Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+						},
+						"mute": {
+							"type": "string",
+							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						},
+						"mute_min_severity": {
+							"type": "string",
+							"description": "When muted, minimum severity which triggers the realtime notification (e.g. muted for info but not for alerts)",
+							"enum": [
+								"",
+								"warning",
+								"alert"
+							]
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"enabled",
+						"pin",
+						"duration"
+					]
 				}
 			},
 			"additionalProperties": false,
@@ -784,7 +835,8 @@
 				"email",
 				"slack",
 				"sms",
-				"audio"
+				"audio",
+				"buzzer"
 			]
 		},
 		"logging": {
