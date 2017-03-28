@@ -3,7 +3,6 @@ import datetime
 import json
 import time
 import json
-import RPi.GPIO as GPIO
 
 import utils
 import logger
@@ -12,11 +11,17 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import sensors
 
+# variables
+plugin_conf = conf['plugins']['gpio']
+pins = {}
+is_raspberry = utils.is_raspberry()
+
+# import GPIO module
+if is_raspberry: import RPi.GPIO as GPIO
+else: import OPi.GPIO as GPIO
+
 # initialize the GPIO
-if "gpio" in conf['plugins']: 
-	plugin_conf = conf['plugins']['gpio']
-	pins = {}
-	# setup the GPIO
+if plugin_conf["enabled"]:
 	GPIO.setwarnings(False)
 	mode = GPIO.BCM if plugin_conf["mode"] == "bcm" else GPIO.BOARD
 	GPIO.setmode(mode)
@@ -38,7 +43,11 @@ def register(sensor):
 	if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "up": pull_up_down = GPIO.PUD_UP
 	if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "down": pull_up_down = GPIO.PUD_DOWN
 	# setup the channel
-	GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
+	if not is_raspberry and pull_up_down is not None:
+		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] Pull up/Pull down not supported on this platform, skipping")
+		return
+	if is_raspberry: GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
+	else: GPIO.setup(pin, GPIO.IN)
 	# add callbacks
 	edge_detect = sensor["plugin"]["edge_detect"]
 	if edge_detect == "rising": GPIO.add_event_detect(pin, GPIO.RISING, callback=event_callback)

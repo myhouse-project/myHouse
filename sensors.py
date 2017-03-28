@@ -15,7 +15,6 @@ log = logger.get_logger(__name__)
 conf = config.get_config()
 import scheduler
 schedule = scheduler.get_scheduler()
-is_raspberry = utils.is_raspberry()
 
 # import plugins
 import plugin_wunderground
@@ -26,7 +25,7 @@ import plugin_csv
 import plugin_messagebridge
 import plugin_icloud
 import plugin_rtl_433
-if is_raspberry: import plugin_gpio
+import plugin_gpio
 import plugin_earthquake
 import plugin_mqtt
 import plugin_system
@@ -54,8 +53,7 @@ def init_plugins():
 		elif name == "csv": plugin = plugin_csv
 		elif name == "messagebridge": plugin = plugin_messagebridge
 		elif name == "rtl_433": plugin = plugin_rtl_433
-                elif name == "gpio" and is_raspberry: plugin = plugin_gpio
-                elif name == "gpio" and not is_raspberry: continue
+                elif name == "gpio": plugin = plugin_gpio
 		elif name == "earthquake": plugin = plugin_earthquake
 		elif name == "mqtt": plugin = plugin_mqtt
 		elif name == "system": plugin = plugin_system

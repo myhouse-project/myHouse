@@ -13,7 +13,7 @@ service_template = base_dir+"/template_service.sh"
 service_location = '/etc/init.d/myhouse'
 filename = service_location.split('/')[-1]
 dependencies = ["python-dev","redis-server","python-flask","python-redis","python-numpy","python-rpi.gpio","mosquitto","libttspico-utils","python-opencv","mpg123","sox","flac","pocketsphinx","python-feedparser","python-serial","screen"]
-dependencies_python = ["APScheduler","slackclient","simplejson","python-Levenshtein","fuzzywuzzy","pyicloud","motionless","flask-compress","jsonschema","paho-mqtt","gTTS","SpeechRecognition","Adafruit-Python-DHT","Adafruit-ADS1x15"]
+dependencies_python = ["APScheduler","slackclient","simplejson","python-Levenshtein","fuzzywuzzy","pyicloud","motionless","flask-compress","jsonschema","paho-mqtt","gTTS","SpeechRecognition","Adafruit-Python-DHT","Adafruit-ADS1x15","OPi.GPIO"]
 inventory = []
 inventory_python = []
 log = logging.getLogger("install")
@@ -91,6 +91,7 @@ def install_packages(packages):
 # install with pip an array of python modules if not already installed
 def install_python(packages):
         for package in packages:
+		if package == "OPi.GPIO" and is_raspberry(): continue
                 if package.lower() in inventory_python:
 			log.debug("\t - Skipping "+package+": already installed")
                 else:
