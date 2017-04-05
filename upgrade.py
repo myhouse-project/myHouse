@@ -845,6 +845,15 @@ def upgrade_2_4(version):
 				"duration": 0.5,
 				"min_severity": "alert"
 			}
+		# add GSM SMS notification
+		if "gsm_sms" not in new["output"]:
+			new["output"]["gsm_sms"] = {
+                                "enabled": False,
+                                "port": "/dev/ttyUSB0",
+                                "baud": 115200,
+                                "to": [],
+				"min_severity": "alert"
+                        }
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:

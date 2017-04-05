@@ -13,6 +13,7 @@ import smtp
 import sms
 import audio
 import buzzer
+import gsm_sms
 
 # variables
 current_hour = None
@@ -22,7 +23,8 @@ channels = {
 	"slack": slack,
 	"sms": sms,
 	"audio": audio,
-	"buzzer": buzzer
+	"buzzer": buzzer,
+	"gsm_sms": gsm_sms
 }
 
 # notify all the notification channels
