@@ -85,6 +85,39 @@
 						"imperial",
 						"fahrenheit"
 					]
+				},
+				"backup": {
+					"type": "array",
+					"description": "Define backup jobs. For each entry a daily and weekly backup will be automatically performed",
+					"items": {
+						"type": "object",
+						"title": "File to backup",
+						"properties": {
+							"backup_id": {
+								"type": "string",
+								"description": "A nice name to give this backup job"
+							},
+							"enabled": {
+								"type": "boolean",
+								"description": "Enable this backup policy"
+							},
+							"filename": {
+								"type": "string",
+								"description": "The full path of the file to backup"
+							},
+							"command": {
+								"type": "string",
+								"description": "The command to run to execute the backup with the placeholder %filename% replaced with the filename specified and %target% with the proper daily or weekly suffix added to the file"
+							}
+						},
+						"additionalProperties": false,
+						"required": [
+							"backup_id",
+							"enabled",
+							"filename",
+							"command"
+						]
+					}
 				}
 			},
 			"additionalProperties": false,
@@ -94,7 +127,8 @@
 				"timeframes",
 				"units",
 				"language",
-				"house_name"
+				"house_name",
+				"backup"
 			]
 		},
 		"db": {
@@ -121,25 +155,6 @@
 					"type": "string",
 					"description": "Full path of the redis database file",
 					"value": "/var/lib/redis/dump.rdb"
-				},
-				"backup": {
-					"type": "object",
-					"description": "Redis backup configuration",
-					"properties": {
-						"daily": {
-							"type": "boolean",
-							"description": "Make a daily backup of the redis database into the tmp folder"
-						},
-						"weekly": {
-							"type": "boolean",
-							"description": "Make a weekly backup of the redis database into the tmp folder"
-						}
-					},
-					"additionalProperties": false,
-					"required": [
-						"daily",
-						"weekly"
-					]
 				}
 			},
 			"additionalProperties": false,
@@ -148,8 +163,7 @@
 				"hostname",
 				"port",
 				"database",
-				"database_file",
-				"backup"
+				"database_file"
 			]
 		},
 		"gui": {

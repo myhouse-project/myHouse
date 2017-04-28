@@ -40,8 +40,6 @@ constants = {
 	'chart_short_height': 230,
 	'image_detection_save_on_disk': True,
 	'image_detection_max_saved_images': 10,
-	'db_backup_daily_filename' : "db_backup_daily.db",
-	'db_backup_weekly_filename' : "db_backup_weekly.db",
 	'formats': {
 		'int': { 
 			'formatter': 'int', 

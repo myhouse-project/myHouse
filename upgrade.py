@@ -857,6 +857,29 @@ def upgrade_2_4(version):
 		# add smtp debug
 		if "debug" not in new["output"]["email"]:
 			new["output"]["email"]["debug"] = False
+		# add backup policies
+		if "backup" not in new["general"]:
+			del new["db"]["backup"]
+			new["general"]["backup"] = [
+				{
+					"enabled": True,
+					"backup_id": "db_local_backup",
+					"filename": "/var/lib/redis/dump.rdb",
+					"command": "cp -f %filename% tmp/%target%"
+				},
+                                {
+                                        "enabled": False,
+					"backup_id": "db_cloud_backup",
+                                        "filename": "/var/lib/redis/dump.rdb",
+                                        "command": "cat %filename%| gdrive upload - %target%"
+                                },
+                                {
+                                        "enabled": False,
+					"backup_id": "config_cloud_backup",
+                                        "filename": "config.json",
+                                        "command": "cat %filename%| gdrive upload - %taget%"
+                                }
+			]
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:

@@ -16,6 +16,7 @@ import db
 import alerter
 import input
 import pws
+import backup
 
 # run the main application
 def run():
@@ -25,8 +26,8 @@ def run():
 	if not initialized: sys.exit(1)
 	# start the scheduler
 	schedule.start()
-	# schedule database backup
-	db.schedule_all()
+	# schedule backup
+	backup.schedule_all()
 	# schedule all sensors
 	if conf['sensors']['enabled']: sensors.schedule_all()
 	# schedule all alerts
