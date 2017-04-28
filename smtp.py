@@ -28,6 +28,10 @@ def attach_image(msg,image):
 		img.add_header('Content-ID', '<{}>'.format(image['id']))
 		msg.attach(img)
 
+# detect if the text contains non-ascii characters
+def is_unicode(text):
+	return not all(ord(c) < 128 for c in text)
+
 # send an email
 def send(subject,body,images=[]):
 	msg = MIMEMultipart()
@@ -38,7 +42,8 @@ def send(subject,body,images=[]):
 	msg['From'] = conf["output"]["email"]["from"]
 	msg['To'] = ", ".join(conf["output"]["email"]["to"])
 	msg['Subject'] = "["+conf["general"]["house_name"]+"] "+subject
-	msg.attach(MIMEText(body, 'html'))
+	if is_unicode(body): msg.attach(MIMEText(body.encode('utf-8'),'html','utf-8'))
+	else: msg.attach(MIMEText(body, 'html'))
 	smtp = smtplib.SMTP(conf["output"]["email"]["hostname"],conf["output"]["email"]["port"])
 	# set debug
 	smtp.set_debuglevel(conf["output"]["email"]["debug"])
