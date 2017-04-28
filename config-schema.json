@@ -543,6 +543,10 @@
 							"type": "string",
 							"description": "The subject of the email notifications"
 						},
+						"debug": {
+							"type": "boolean",
+							"description": "Enable/disable SMTP debugging"
+						},
 						"alerts_digest": {
 							"type": "boolean",
 							"description": "Send a daily digest with yesterda's alerts"
@@ -585,7 +589,8 @@
 						"password",
 						"from",
 						"to",
-						"alerts_digest"
+						"alerts_digest",
+						"debug"
 					]
 				},
 				"slack": {

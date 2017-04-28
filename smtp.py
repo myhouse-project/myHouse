@@ -40,6 +40,8 @@ def send(subject,body,images=[]):
 	msg['Subject'] = "["+conf["general"]["house_name"]+"] "+subject
 	msg.attach(MIMEText(body, 'html'))
 	smtp = smtplib.SMTP(conf["output"]["email"]["hostname"],conf["output"]["email"]["port"])
+	# set debug
+	smtp.set_debuglevel(conf["output"]["email"]["debug"])
 	# setup TLS
 	if conf["output"]["email"]["tls"]: smtp.starttls()
 	# authenticate
@@ -122,6 +124,6 @@ def notify(text):
 # main
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
-		print "Usage: "+__file__+" <module_id>"
+		print "Usage: "+__file__+" <message>"
 	else:
-		module_digest(sys.argv[1])
+		notify(sys.argv[1])

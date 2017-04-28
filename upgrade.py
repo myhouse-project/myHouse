@@ -854,6 +854,9 @@ def upgrade_2_4(version):
                                 "to": [],
 				"min_severity": "alert"
                         }
+		# add smtp debug
+		if "debug" not in new["output"]["email"]:
+			new["output"]["email"]["debug"] = False
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:
