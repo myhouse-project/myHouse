@@ -104,6 +104,12 @@ def sensor_send(module_id,group_id,sensor_id,value):
 def sensor_run(module_id,group_id,sensor_id,action):
 	return sensors.data_run(module_id,group_id,sensor_id,action)
 
+# run a give rule
+@app.route('/<module_id>/<rule_id>/run')
+def rule_run(module_id,rule_id):
+        alerter.run(module_id,rule_id)
+	return json.dumps("OK")
+
 # return the alerts
 @app.route('/alerts/<severity>/<timeframe>')
 def alerts_get_data(severity,timeframe):
