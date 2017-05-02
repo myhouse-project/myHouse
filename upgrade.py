@@ -880,6 +880,24 @@ def upgrade_2_4(version):
                                         "command": "cat %filename%| gdrive upload - %taget%"
                                 }
 			]
+		# for each module
+		retention_policy_set = False
+                for module in new["modules"]:
+                        module_id = module["module_id"]
+                        if "widgets" in module:
+                                for i in range(len(module["widgets"])):
+                                        for j in range(len(module["widgets"][i])):
+                                                widget = module["widgets"][i][j]
+                                                for k in range(len(widget["layout"])):
+                                                        layout = widget["layout"][k]
+                        if "sensors" in module:
+                                for i in range(len(module["sensors"])):
+                                        sensor = module["sensors"][i]
+					# keep all realtime data when realtime_count is defined
+					if "retention" in sensor and "realtime_count" in sensor["retention"] and "realtime_days" not in sensor["retention"]:
+						sensor["retention"]["realtime_days"] = 0
+						retention_policy_set = True
+		if retention_policy_set: log.warning("A retention policy realtime_days = 0 has been added to all the sensors with a realtime_count policy set")
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:
