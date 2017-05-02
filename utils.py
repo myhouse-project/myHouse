@@ -324,9 +324,20 @@ def speed_unit(speed,force=False):
 	else: return speed
 
 # return the file path of a given widget id
-def get_widget_chart(widget_id):
+def get_widget_file(widget_id):
 	return conf['constants']['tmp_dir']+'/chart_'+widget_id+'.'+conf['constants']['chart_extension']
 
+# return a widget
+def get_widget(module_id,widget_id):
+        module = get_module(module_id)
+        if module is None: return
+        if 'widgets' not in module: return
+        for i in range(len(module["widgets"])):
+                for j in range(len(module["widgets"][i])):
+                        # for each widget
+                        widget = module["widgets"][i][j]
+			if not widget["enabled"]: continue
+                        if widget_id == widget["widget_id"]: return widget
 
 # return the distance in km between two coordinates
 def distance(a,b):

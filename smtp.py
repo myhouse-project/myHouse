@@ -94,7 +94,7 @@ def module_digest(module_id):
 	for widget_id in widgets:
 		template = template.replace("<!-- widgets -->",get_email_widget('','<img src="cid:'+widget_id+'"/>')+"\n<!-- widgets -->")
 		# add the image to the queue
-		images.append({'filename': utils.get_widget_chart(widget_id),'id': widget_id,})
+		images.append({'filename': utils.get_widget_file(widget_id),'id': widget_id,})
 	# send the email
 	send(title,template,images)
 

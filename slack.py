@@ -150,7 +150,6 @@ def run():
 						slack_message(channel,oracle.get_wait_message())
 						# generate the image
 						module_id,widget_id = response["content"].split(",")
-						widget = utils.get_widget_chart(module_id,widget_id)
 						try: 
 							files = generate_widget.run(module_id,widget_id)
 						except Exception,e:
@@ -158,8 +157,9 @@ def run():
 							continue
 						# upload the chart to the channel
 						if len(files) > 0:
-							filename = utils.get_widget_chart(files[0])
+							filename = utils.get_widget_file(files[0])
 							log.debug("uploading "+filename)
+							widget = utils.get_widget(module_id,widget_id)
 							slack_upload(channel,filename,utils.lang(widget["display_name"]))
 						else: slack_message(channel,"unable to find the chart "+filename)
 		time.sleep(1)

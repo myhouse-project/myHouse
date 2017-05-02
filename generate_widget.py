@@ -38,7 +38,7 @@ def get_image_unavailable():
 
 # save the image to disk
 def save_to_file(r,filename):
-	with open(utils.get_widget_chart(filename),'wb') as file:
+	with open(utils.get_widget_file(filename),'wb') as file:
 		for chunk in r.iter_content(1000):
 			file.write(chunk)
 	file.close()
