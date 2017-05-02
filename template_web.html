@@ -83,6 +83,17 @@ th.dt-center, td.dt-center { text-align: center; }
     float: none;
 }
 
+.modal-dialog {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.modal-content {
+  height: auto;
+  border-radius: 0;
+}
+
 </style>
 
 <body class="hold-transition sidebar-mini">
@@ -194,7 +205,7 @@ th.dt-center, td.dt-center { text-align: center; }
 						<h4 class="modal-title" id="popup_title"></h4>
 					</div>
 					<div class="modal-body">
-						<div class="row"><div class="col-md-8 center-block" id="popup_body"></div></div>
+						<div class="row"><div class="col-lg-12 center-block" id="popup_body"></div></div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-primary pull-rigth" data-dismiss="modal">Close</button>
@@ -551,6 +562,14 @@ th.dt-center, td.dt-center { text-align: center; }
 			// add the point for today's range
 			add_point(chart,sensor_url+"/today/range",1,i);
 		}
+		// make the chart adapting to the modal
+		$('#popup').on('show.bs.modal', function() {
+			$(tag).css('visibility', 'hidden');
+		});
+		$('#popup').on('shown.bs.modal', function() {
+			$(tag).css('visibility', 'initial');
+			chart.reflow();
+		});
 	}
 	
 	// add a sensor timeline widget
@@ -589,6 +608,14 @@ th.dt-center, td.dt-center { text-align: center; }
 				add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,j);
 			}
 		}
+		// make the chart adapting to the modal
+		$('#popup').on('show.bs.modal', function() {
+			$(tag).css('visibility', 'hidden');
+		});
+		$('#popup').on('shown.bs.modal', function() {
+			$(tag).css('visibility', 'initial');
+			chart.reflow();
+		});
 	}	
 	
 	// add a generic sensor chart widget
@@ -611,6 +638,14 @@ th.dt-center, td.dt-center { text-align: center; }
 				if ("exclude" in layout && (layout["exclude"].indexOf(sensor_url.replaceAll("/",":")) > -1 || layout["exclude"].indexOf(sensor_url.replaceAll("/",":")+","+series["series_id"]) > -1)) continue
 			add_series(chart,sensor_url+"/"+layout["timeframe"]+"/"+series["series_id"],sensor,i);
 		}
+		// make the chart adapting to the modal
+		$('#popup').on('show.bs.modal', function() {
+			$(tag).css('visibility', 'hidden');
+		});
+		$('#popup').on('shown.bs.modal', function() {
+			$(tag).css('visibility', 'initial');
+			chart.reflow();
+		});
 	}
 	
 	// add an image widget
