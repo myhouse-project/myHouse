@@ -797,6 +797,71 @@
 						"to"
 					]
 				},
+				"gsm_call": {
+					"type": "object",
+					"description": "Make a ring on a set of phones as a notification (using a GSM modem connected via serial)",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"description": "Enable realtime alerts via phone calls"
+						},
+						"port": {
+							"type": "string",
+							"description": "The serial port the GSM modem is connected to"
+						},
+						"baud": {
+							"type": "integer",
+							"description": "The baud rate of the serial port"
+						},
+						"to": {
+							"type": "array",
+							"description": "The numbers you wish to call",
+							"items": {
+								"type": "string",
+								"title": "Phone Number"
+							}
+						},
+						"duration": {
+							"type": "integer",
+							"description": "For how long to ring each configured recipient in seconds"
+						},
+						"min_severity": {
+							"type": "string",
+							"description": "Minimum severity which triggers the realtime notification",
+							"enum": [
+								"info",
+								"warning",
+								"alert"
+							],
+							"value": "info"
+						},
+						"rate_limit": {
+							"type": "integer",
+							"description": "Maximum number of notifications per hour that can be sent through this notification channel. 0 for unlimited"
+						},
+						"mute": {
+							"type": "string",
+							"description": "The time interval in which no notifications should be sent through this channel in the format <hour_begin>-<hour_end> (e.g. 22-07 - 24H format 0 padded). Set it empty for no suppression"
+						},
+						"mute_min_severity": {
+							"type": "string",
+							"description": "When muted, minimum severity which triggers the realtime notification (e.g. muted for info but not for alerts)",
+							"enum": [
+								"",
+								"warning",
+								"alert"
+							]
+						}
+					},
+					"additionalProperties": false,
+					"required": [
+						"enabled",
+						"port",
+						"baud",
+						"to",
+						"duration"
+					]
+				},
 				"audio": {
 					"type": "object",
 					"description": "Use the attached speakers for the notification. Ensure your soundcard is properly configured first.",
@@ -916,7 +981,8 @@
 				"sms",
 				"audio",
 				"buzzer",
-				"gsm_sms"
+				"gsm_sms",
+				"gsm_call"
 			]
 		},
 		"logging": {

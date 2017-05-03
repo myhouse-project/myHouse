@@ -34,10 +34,15 @@ def notify(text):
 				# read the output
 				output = modem.readlines()
 				for line in output:
-					log.info("Modem output: "+str(line).rstrip())
-					if '"SOUNDER",0' in line:
+					line = str(line).rstrip()
+					if line == "": continue
+					log.debug("Modem output: "+line)
+					if '"SOUNDER",0' in line or '"CALL",0' in line:
 						log.info("Called "+str(to))
 						done = True
+					if "ERROR" in line:
+						done = True
+						break
 				if done: break
 				i = i - 1
 				if i == 0:
@@ -51,9 +56,10 @@ def notify(text):
 
 # make a call
 def make_call(modem,to,duration):
+	log.debug("Calling "+str(to))
 	time.sleep(2)
         # place the call
-	modem.write(b'ATD+'+to+'\r')
+	modem.write(b'ATD'+to+'\r')
 	# make the phone ring for the configured tie
         time.sleep(duration)
 	# hung up 

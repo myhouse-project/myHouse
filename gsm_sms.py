@@ -37,10 +37,15 @@ def notify(text):
 				# read the output
 				output = modem.readlines()
 				for line in output:
-					log.debug("Modem output: "+str(line).rstrip())
+                                        line = str(line).rstrip()
+                                        if line == "": continue
+                                        log.debug("Modem output: "+line)
 					if "+CMGS:" in line:
 						log.info("Sent SMS to "+str(to)+" with text: "+text)
 						done = True
+                                        if "ERROR" in line:
+                                                done = True
+                                                break
 				if done: break
 				i = i - 1
 				if i == 0:
@@ -54,6 +59,7 @@ def notify(text):
 
 # send a sms message
 def send_sms(modem,to,text):
+	log.debug("Sending SMS "+str(to))
 	time.sleep(2)
         # switch to text mode
         modem.write(b'AT+CMGF=1\r')
