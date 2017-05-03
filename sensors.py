@@ -214,7 +214,7 @@ def summarize(sensor,timeframe,start,end):
 		values.append(data[i][1])
 	# calculate the derived values
 	timestamp = start
-	min = avg = max = rate = sum = "-"
+	min = avg = max = rate = sum = count = count_unique = "-"
 	if "avg" in sensor["summarize"] and sensor["summarize"]["avg"]:
 		# calculate avg
 		avg = utils.avg(values)
@@ -248,7 +248,7 @@ def summarize(sensor,timeframe,start,end):
                 # count the unique values
                 count_unique = utils.count_unique(values)
                 db.deletebyscore(key_to_write+":count_unique",start,end)
-                db.set(key_to_write+":count_unique",count,timestamp)
+                db.set(key_to_write+":count_unique",count_unique,timestamp)
 	log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(timestamp)+") updating summary of the "+timeframe+" (min,avg,max,rate,sum,count,count_unique): ("+str(min)+","+str(avg)+","+str(max)+","+str(rate)+","+str(sum)+","+str(count)+","+str(count_unique)+")")
 
 # purge old data from the database

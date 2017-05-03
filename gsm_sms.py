@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import sys
 import serial
+import time
 from curses import ascii
 
 import utils
@@ -27,19 +28,43 @@ def notify(text):
 	# for each recipient
 	for to in settings["to"]:
 		try: 
-		        # switch to text mode
-		        modem.write(b'AT+CMGF=1\r')
-			# set the recipient number
-			modem.write(b'AT+CMGS="' + to.encode() + b'"\r')
-			# send the message
-			modem.write(text.encode())
-			# end the message with ctrl+z
-			modem.write(ascii.ctrl('z'))
-			log.info("Sent SMS to "+str(to)+" with text: "+text)
+			timeout = 30
+			done = False
+			while True:
+				# send the sms
+				if timeout == 30: send_sms(modem,to,text)
+				# read the output
+				output = modem.readlines()
+				for line in output:
+					log.debug("Modem output: "+str(line).rstrip())
+					if "+CMGS:" in line:
+						log.info("Sent SMS to "+str(to)+" with text: "+text)
+						done = True
+				if done: break
+				timeout = timeout - 1
+				if timeout == 0:
+					# timeout reached
+					log.error("Unable to send SMS to "+str(to)+": timeout reached")
+					break
 		except Exception,e:
 			log.error("Failed to send SMS to "+str(to)+": "+utils.get_exception(e))
 	# disconect
 	modem.close()
+
+# send a sms message
+def send_sms(modem,to,text):
+	time.sleep(2)
+        # switch to text mode
+        modem.write(b'AT+CMGF=1\r')
+        time.sleep(2)
+        # set the recipient number
+        modem.write(b'AT+CMGS="' + to.encode() + b'"\r')
+        time.sleep(2)
+        # send the message
+        modem.write(text.encode())
+        time.sleep(1)
+        # end the message with ctrl+z
+        modem.write(ascii.ctrl('z'))
 
 # main
 if __name__ == '__main__':
