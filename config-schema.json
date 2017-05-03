@@ -2050,6 +2050,10 @@
 														"default_value": {
 															"description": "Set an optional default value for new entries in the calendar. Can be a static value  or a sensor in the format module_id:group_id:sensor_id",
 															"type": "string"
+														},
+														"event_template": {
+															"description": "An optional HTML template to render items in the calendar. The placeholder %value% will be replaced by the actual value",
+															"type": "string"
 														}
 													},
 													"additionalProperties": false,

@@ -893,6 +893,7 @@ def upgrade_2_4(version):
 		# for each module
 		retention_migrated = False
 		bias_migrated = False
+		event_template_migrated = False
                 for module in new["modules"]:
                         module_id = module["module_id"]
                         if "widgets" in module:
@@ -901,6 +902,10 @@ def upgrade_2_4(version):
                                                 widget = module["widgets"][i][j]
                                                 for k in range(len(widget["layout"])):
                                                         layout = widget["layout"][k]
+							# add default temperature event_template
+							if layout["type"] == "calendar" and "event_template" not in layout:
+								layout["event_template"] = u'Temperature:<b> %value%\u00B0C</b>'
+								event_template_migrated = True
                         if "sensors" in module:
                                 for i in range(len(module["sensors"])):
                                         sensor = module["sensors"][i]
@@ -913,8 +918,9 @@ def upgrade_2_4(version):
 						sensor["command_transform"] = "echo print %value% + "+str(sensor["bias"])+" | python"
 						del sensor["bias"]
 						bias_migrated = True
-		if retention_migrated: log.warning("A retention policy realtime_days = 0 has been added to all the sensors with a realtime_count policy set")
-		if bias_migrated: log.warning("Sensors' bias configured has been migrated into command_transform'")
+		if retention_migrated: log.warning("INFO: A retention policy realtime_days = 0 has been added to all the sensors with a realtime_count policy set")
+		if bias_migrated: log.warning("INFO: Sensors' bias configured has been migrated into command_transform'")
+		if event_template_migrated: log.warning("INFO: added a default 'event_template' to any calendar's layout")
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:
