@@ -2194,7 +2194,7 @@
 									"items": {
 										"type": "string",
 										"title": "Definition",
-										"description": "Can be either a value or a query in the format module_id:group_id:sensor_id,start,end[,timestamp|elapsed|distance]. If start and end are numbers, they represent relative positions in the database -1,-1 is the last value of the sensor, otherwise represent timeframes (e.g. 10s, 20m, 1d, etc.). When appended the keywork timestamp, the returned value will be the timestamp if the entry, with elapsed the minutes passed by since the time the measure was taken, with distance the distance from the coordinates defined in the configuration of the event"
+										"description": "Can be either a value or a query in the format module_id:group_id:sensor_id,start,end[,timestamp|elapsed|distance]. If start and end are numbers, they represent relative positions in the database -1,-1 is the last value of the sensor, otherwise represent timeframes (e.g. 10s, 20m, 1d, etc.). When appended the keywork 'timestamp', the returned value will be the timestamp of the entry, with 'elapsed' the minutes passed by since the time the measure was taken, with 'distance' the distance from the coordinates, with 'count' the number of items selected"
 									}
 								},
 								"aliases": {
@@ -3334,9 +3334,9 @@
 										"threshold"
 									]
 								},
-								"bias": {
-									"type": "number",
-									"description": "Optional bias to apply at the sensor at every measure (e.g. a temperature sensor always returning 1 degree more)"
+								"command_transform": {
+									"type": "string",
+									"description": "Optional command to run to post-process the value of a polled measure (e.g. to adjust a temperature sensor always returning 1 degree more). The placeholder %value% will be replaced with the actual value"
 								},
 								"group_summary_exclude": {
 									"type": "boolean",

@@ -32,7 +32,7 @@ def parse(sensor,data):
 	if formatter == "int" or formatter == "float_1" or formatter == "float_2": data = utils.hex2int(data)
 	elif formatter == "string": data = utils.hex2string(data)
 	else: log.error("Invalid formatter: "+str(formatter))
-	# apply any trasformation if needed
+	# apply any transformation if needed
 	if "transform" in sensor["plugin"]:
 		if sensor["plugin"]["transform"] == "/10": data = float(data)/10
 		if sensor["plugin"]["transform"] == "/100": data = float(data)/100

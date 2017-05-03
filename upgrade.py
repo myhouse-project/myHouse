@@ -891,7 +891,8 @@ def upgrade_2_4(version):
                                 }
 			]
 		# for each module
-		retention_policy_set = False
+		retention_migrated = False
+		bias_migrated = False
                 for module in new["modules"]:
                         module_id = module["module_id"]
                         if "widgets" in module:
@@ -906,8 +907,14 @@ def upgrade_2_4(version):
 					# keep all realtime data when realtime_count is defined
 					if "retention" in sensor and "realtime_count" in sensor["retention"] and "realtime_days" not in sensor["retention"]:
 						sensor["retention"]["realtime_days"] = 0
-						retention_policy_set = True
-		if retention_policy_set: log.warning("A retention policy realtime_days = 0 has been added to all the sensors with a realtime_count policy set")
+						retention_migrated = True
+					# migrate bias into command_transform
+					if "bias" in sensor:
+						sensor["command_transform"] = "echo print %value% + "+str(sensor["bias"])+" | python"
+						del sensor["bias"]
+						bias_migrated = True
+		if retention_migrated: log.warning("A retention policy realtime_days = 0 has been added to all the sensors with a realtime_count policy set")
+		if bias_migrated: log.warning("Sensors' bias configured has been migrated into command_transform'")
                 # save the updated configuration
                 config.save(json.dumps(new, default=lambda o: o.__dict__))
         if upgrade_db:

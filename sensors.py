@@ -114,6 +114,12 @@ def parse(sensor):
 			measures.append(measure)
 		# format each value
 		for i in range(len(measures)): 
+	                # post-process the measure if configured
+        	        if "command_transform" in sensor:
+				orig_value = measures[i]["value"]
+				command = sensor["command_transform"].replace("%value%",str(orig_value))
+				measures[i]["value"] = utils.run_command(command)
+				log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] transforming "+str(orig_value)+" into "+str(measures[i]["value"]))
 			# normalize the measures
 			if sensor["format"] == "temperature": measures[i]["value"] = utils.temperature_unit(measures[i]["value"])
 			if sensor["format"] == "length": measures[i]["value"] = utils.length_unit(measures[i]["value"])
@@ -175,8 +181,6 @@ def store(sensor,measures,ifnotexists=False):
 				if measure["timestamp"] <= last_timestamp:
 					log.debug("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] ("+utils.timestamp2date(measure["timestamp"])+") old event, ignoring "+measure["key"]+": "+str(measure["value"]))
 					continue
-                # apply the bias to the sensor if configured
-                if "bias" in sensor: measure["value"] = measure["value"]+sensor["bias"]
 		# check if there is already something stored with the same timestamp
 		old = db.rangebyscore(key,measure["timestamp"],measure["timestamp"])
 		if len(old) > 0:
