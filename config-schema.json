@@ -3164,7 +3164,8 @@
 										"speed",
 										"image",
 										"calendar",
-										"position"
+										"position",
+										"duration"
 									],
 									"description": "The format of the data of this sensor"
 								},
@@ -3290,6 +3291,18 @@
 										"rate": {
 											"type": "boolean",
 											"description": "Calculate the rate of change of the measures for every hour/day"
+										},
+										"sum": {
+											"type": "boolean",
+											"description": "Sum up the measures for every hour/day"
+										},
+										"count": {
+											"type": "boolean",
+											"description": "Count up the measures for every hour/day"
+										},
+										"count_unique": {
+											"type": "boolean",
+											"description": "Count up the (unique) measures for every hour/day"
 										}
 									},
 									"additionalProperties": false

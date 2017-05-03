@@ -97,6 +97,10 @@ constants = {
 			'formatter': "",
 			'suffix': "",
 		},
+                'duration': {
+                        'formatter': 'int',
+                        'suffix': 'h',
+                }
 	},
 	'charts': {
 		'master': {

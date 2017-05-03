@@ -185,6 +185,24 @@ def avg(data):
 		else: return __builtin__.max(set(data), key=data.count)
 	else: return None
 
+# calculate the sum of a given array of data
+def sum(data):
+        data = remove_all(data,[None,""])
+        if len(data) > 0:
+                if is_number(data[0]): return normalize(numpy.sum(data))
+                else: return 0
+        else: return 0
+
+# count the items of a given array of data
+def count(data):
+        data = remove_all(data,[None,""])
+	return len(data)
+
+# count the (unique) items of a given array of data
+def count_unique(data):
+        data = remove_all(data,[None,""])
+        return len(set(data))
+
 # return the exception as a string
 def get_exception(e):
 	etype, value, tb = sys.exc_info()
