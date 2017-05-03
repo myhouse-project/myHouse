@@ -2048,7 +2048,7 @@
 															"type": "string"
 														},
 														"default_value": {
-															"description": "The default value for new entries in the calendar",
+															"description": "Set an optional default value for new entries in the calendar. Can be a static value  or a sensor in the format module_id:group_id:sensor_id",
 															"type": "string"
 														}
 													},

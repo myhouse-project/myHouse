@@ -149,13 +149,6 @@ def sub_expression(a,operator,b):
 	elif operator == "/": return float(a)/float(b)
 	return None
 
-# determine if a definition is involving a sensor
-def is_sensor(definition):
-	if utils.is_number(definition): return False
-	if ',' in definition: return True
-	if ':' in definition: return True
-	return False
-
 # evaluate if the given alert has to trigger
 def run(module_id,rule_id,notify=True):
 	alert_text = ""
@@ -171,7 +164,7 @@ def run(module_id,rule_id,notify=True):
 			if "for" in rule_template: variables = rule_template["for"]
 			for variable in variables:
 				# ensure the variable is a valid sensor
-				if variable != '' and is_sensor(variable):
+				if variable != '' and utils.is_sensor(variable):
 					variable_sensor = utils.get_sensor_string(variable)
 					if variable_sensor is None:
 						log.error("invalid variable sensor "+variable)
@@ -183,7 +176,7 @@ def run(module_id,rule_id,notify=True):
 				suffix = {}
 				valid_data = True
 				for definition in rule["definitions"]:
-					if is_sensor(rule["definitions"][definition]):
+					if utils.is_sensor(rule["definitions"][definition]):
 						rule["definitions"][definition] = rule["definitions"][definition].replace("%i%",variable)
 						# check if the sensor exists
 						split = rule["definitions"][definition].split(',')
@@ -245,14 +238,14 @@ def run(module_id,rule_id,notify=True):
 						for to_find,to_replace in rule["aliases"].iteritems():
 							if str(value) == str(to_find): value = to_replace
 					# add the suffix
-					if is_sensor(rule["definitions"][definition]) and "elapsed" in rule["definitions"][definition]: 
+					if utils.is_sensor(rule["definitions"][definition]) and "elapsed" in rule["definitions"][definition]: 
 						value = str(value)+" minutes"
-					if is_sensor(rule["definitions"][definition]) and "timestamp" in rule["definitions"][definition]:
+					if utils.is_sensor(rule["definitions"][definition]) and "timestamp" in rule["definitions"][definition]:
 						value = utils.timestamp2date(value)
-					if is_sensor(rule["definitions"][definition]) and "distance" in rule["definitions"][definition]:
+					if utils.is_sensor(rule["definitions"][definition]) and "distance" in rule["definitions"][definition]:
 						if conf["general"]["units"]["imperial"]: value = str(value)+" miles"
 						else: value = str(value)+" km"
-					elif is_sensor(rule["definitions"][definition]): value = str(value)+suffix[definition]
+					elif utils.is_sensor(rule["definitions"][definition]): value = str(value)+suffix[definition]
 					alert_text = alert_text.replace("%"+definition+"%",str(value))
 				# execute an action
 				if "actions" in rule:

@@ -1271,10 +1271,29 @@ th.dt-center, td.dt-center { text-align: center; }
 		// configure default value
 		scheduler.attachEvent("onBeforeLightbox", function (id){
 			var event = scheduler.getEvent(id);
-			// set the default value if not already set
 			if (event.text == "New event") {
+				// newly created event, default to empty string
 				event.text = ""
-				if ("default_value" in layout) event.text = layout["default_value"];
+				if ("default_value" in layout) {
+					// default value set
+					if (is_sensor(layout["default_value"])) {
+						// default value is a sensor, retrieve the current measure
+						sensor = get_sensor_string(layout["default_value"])
+						if (sensor == null) return;
+						var sensor_url = sensor["module_id"]+"/"+sensor["group_id"]+"/"+sensor["sensor_id"];
+						$.getJSON(sensor_url+"/current",function(id) {
+							return function (data) {
+								if (data.length == 0) return
+								// set the default value
+								scheduler.formSection('description').setValue(data[0]);
+							};
+						}(id));
+					}
+					else {
+						// set the static value
+						event.text = layout["default_value"]
+					}
+				}
 			}
 			return true;
 		});
@@ -1651,7 +1670,13 @@ th.dt-center, td.dt-center { text-align: center; }
 		return (7.5625 * (pos -= (2.625 / 2.75)) * pos + 0.984375);
 	};
 	
-	</script>
+	// return true if a string is a sensor
+	function is_sensor(string) {
+		if (string.match(/:/g).length == 2) return true;
+		return false;
+	}
+	
+</script>
 
 </body>
 </html>

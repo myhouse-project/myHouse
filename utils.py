@@ -433,3 +433,10 @@ def is_raspberry():
         if "BCM" in cpu: return True
         return False
 
+# determine if a string is a sensor
+def is_sensor(string):
+        if is_number(string): return False
+        if ',' in string: return True
+        if ':' in string: return True
+        return False
+
