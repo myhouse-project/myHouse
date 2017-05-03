@@ -1271,8 +1271,11 @@ th.dt-center, td.dt-center { text-align: center; }
 		// configure default value
 		scheduler.attachEvent("onBeforeLightbox", function (id){
 			var event = scheduler.getEvent(id);
-			event.text = ""
-			if ("default_value" in layout) event.text = layout["default_value"];
+			// set the default value if not already set
+			if (event.text == "New event") {
+				event.text = ""
+				if ("default_value" in layout) event.text = layout["default_value"];
+			}
 			return true;
 		});
 		// configure the event template

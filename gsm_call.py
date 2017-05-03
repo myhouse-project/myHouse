@@ -36,7 +36,7 @@ def notify(text):
 				for line in output:
 					line = str(line).rstrip()
 					if line == "": continue
-					log.info("Modem output: "+line)
+					log.debug("Modem output: "+line)
 					if '"SOUNDER",0' in line or '"CALL",0' in line:
 						log.info("Called "+str(to))
 						done = True
