@@ -83,7 +83,7 @@ def get_data(sensor,request):
 		data = query(key,start=start,end=end,withscores=True)
 		time_diff = (utils.now() - data[0][0])/60
 		return [time_diff]
-	if transform is not None and transform == "timestamp":
+	elif transform is not None and transform == "timestamp":
 		# retrieve the timestamp 
 		data = query(key,start=start,end=end,withscores=True)
 		return [data[0][0]]
@@ -93,6 +93,10 @@ def get_data(sensor,request):
 		data = json.loads(data[0])
 		distance = utils.distance([data["latitude"],data["longitude"]],[conf["general"]["latitude"],conf["general"]["longitude"]])
 		return [int(distance)]
+        elif transform is not None and transform == "count":
+                # count the number of items selected
+                data = query(key,start=start,end=end,withscores=False)
+                return [len(data)]
 	else: 
 		# just retrieve the data
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
