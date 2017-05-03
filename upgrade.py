@@ -854,6 +854,16 @@ def upgrade_2_4(version):
                                 "to": [],
 				"min_severity": "alert"
                         }
+                # add GSM call notification
+                if "gsm_call" not in new["output"]:
+                        new["output"]["gsm_call"] = {
+                                "enabled": False,
+                                "port": "/dev/ttyUSB0",
+                                "baud": 115200,
+                                "to": [],
+				"duration": 15,
+                                "min_severity": "alert"
+                        }
 		# add smtp debug
 		if "debug" not in new["output"]["email"]:
 			new["output"]["email"]["debug"] = False

@@ -14,6 +14,7 @@ import sms
 import audio
 import buzzer
 import gsm_sms
+import gsm_call
 
 # variables
 current_hour = None
@@ -24,7 +25,8 @@ channels = {
 	"sms": sms,
 	"audio": audio,
 	"buzzer": buzzer,
-	"gsm_sms": gsm_sms
+	"gsm_sms": gsm_sms,
+	"gsm_call": gsm_call
 }
 
 # notify all the notification channels

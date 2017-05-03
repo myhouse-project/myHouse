@@ -12,6 +12,7 @@ conf = config.get_config()
 
 # variables
 settings = conf["output"]["gsm_sms"]
+timeout = 30
 
 # send a sms with the given text
 def notify(text):
@@ -28,11 +29,11 @@ def notify(text):
 	# for each recipient
 	for to in settings["to"]:
 		try: 
-			timeout = 30
+			i = timeout
 			done = False
 			while True:
 				# send the sms
-				if timeout == 30: send_sms(modem,to,text)
+				if i == 30: send_sms(modem,to,text)
 				# read the output
 				output = modem.readlines()
 				for line in output:
@@ -41,8 +42,8 @@ def notify(text):
 						log.info("Sent SMS to "+str(to)+" with text: "+text)
 						done = True
 				if done: break
-				timeout = timeout - 1
-				if timeout == 0:
+				i = i - 1
+				if i == 0:
 					# timeout reached
 					log.error("Unable to send SMS to "+str(to)+": timeout reached")
 					break
