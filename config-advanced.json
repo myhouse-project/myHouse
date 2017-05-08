@@ -4,11 +4,7 @@
     "hostname": "localhost",
     "port": 6379,
     "database": 2,
-    "database_file": "/var/lib/redis/dump.rdb",
-    "backup": {
-      "daily": true,
-      "weekly": true
-    }
+    "database_file": "/var/lib/redis/dump.rdb"
   },
   "gui": {
     "enabled": true,
@@ -56,7 +52,12 @@
       "type": "hybrid",
       "size_y": 640
     },
-    "skin": "blue"
+    "skin": "blue",
+    "clock": {
+      "show_seconds": true,
+      "enabled": true,
+      "24_hours": true
+    }
   },
   "alerter": {
     "enabled": true,
@@ -135,27 +136,27 @@
     "mysensors": {
       "gateways": [
         {
-			"gateway_type": "serial",
-			"gateway_id": "serial_1",
-			"enabled": false,
-			"port": "/dev/ttyAMA0",
-			"baud": 57600
+          "gateway_type": "serial",
+          "gateway_id": "serial_1",
+          "enabled": false,
+          "port": "/dev/ttyAMA0",
+          "baud": 57600
         },
         {
-			"gateway_type": "ethernet",
-			"gateway_id": "ethernet_1",
-			"enabled": false,
-			"hostname": "localhost",
-			"port": 5003
+          "gateway_type": "ethernet",
+          "gateway_id": "ethernet_1",
+          "enabled": false,
+          "hostname": "localhost",
+          "port": 5003
         },
         {
-			"gateway_type": "mqtt",
-			"gateway_id": "mqtt_1",
-			"enabled": false,
-			"hostname": "localhost",
-			"port": 1883,
-			"subscribe_topic_prefix": "mysensors-out",
-			"publish_topic_prefix": "mysensors-in"
+          "gateway_type": "mqtt",
+          "gateway_id": "mqtt_1",
+          "enabled": false,
+          "hostname": "localhost",
+          "port": 1883,
+          "subscribe_topic_prefix": "mysensors-out",
+          "publish_topic_prefix": "mysensors-in"
         }
       ]
     },
@@ -273,6 +274,13 @@
                 },
                 "sensor": "boiler:scheduler:switch",
                 "disabled": true
+              },
+              {
+                "type": "input",
+                "display_name": {
+                  "en": "Default Scheduler Temperature"
+                },
+                "sensor": "boiler:main:scheduler_temperature"
               }
             ]
           }
@@ -1157,8 +1165,8 @@
             "avg": true,
             "min_max": true
           },
-          "bias": 1.5,
-          "module_id": "outdoor"
+          "module_id": "outdoor",
+          "command_transform": "echo print %value% + 1.5 | python"
         },
         {
           "group_id": "temperature",
@@ -2097,8 +2105,8 @@
             "avg": true,
             "min_max": true
           },
-          "bias": -1.5,
-          "module_id": "indoor"
+          "module_id": "indoor",
+          "command_transform": "echo print %value% + -1.5 | python"
         },
         {
           "group_id": "temperature",
@@ -2695,7 +2703,8 @@
           "format": "image",
           "module_id": "webcams",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -2713,7 +2722,8 @@
           "format": "image",
           "module_id": "webcams",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -2731,7 +2741,8 @@
           "format": "image",
           "module_id": "webcams",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -2749,7 +2760,8 @@
           "format": "image",
           "module_id": "webcams",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -2770,7 +2782,8 @@
           "format": "image",
           "module_id": "webcams",
           "retention": {
-            "realtime_count": 2
+            "realtime_count": 2,
+            "realtime_days": 0
           },
           "object_detection": [
             {
@@ -2798,7 +2811,8 @@
           "enabled": true,
           "format": "int",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ]
@@ -3566,7 +3580,9 @@
             "layout": [
               {
                 "type": "calendar",
-                "sensor": "boiler:scheduler:calendar"
+                "sensor": "boiler:scheduler:calendar",
+				"default_value": "boiler:main:scheduler_temperature",
+                "event_template": "Temperature:<b> %value%\u00b0C</b>"
               }
             ]
           }
@@ -3653,7 +3669,7 @@
             "calendar != is_null",
             "main_switch == status_off",
             "scheduler_switch == status_off",
-            "temperature < calendar"
+            "temperature < (calendar - delta)"
           ],
           "definitions": {
             "temperature": "indoor:temperature:living_room,-1,-1",
@@ -3661,7 +3677,8 @@
             "is_null": "",
             "main_switch": "boiler:main:switch,-1,-1",
             "scheduler_switch": "boiler:scheduler:switch,-1,-1",
-            "status_off": 0
+            "status_off": 0,
+            "delta": 0.2
           },
           "actions": [
             "set,boiler:scheduler:switch,1",
@@ -3707,7 +3724,7 @@
             "calendar != is_null",
             "main_switch == status_off",
             "scheduler_switch == status_on",
-            "temperature > calendar"
+            "temperature > (calendar + delta)"
           ],
           "definitions": {
             "temperature": "indoor:temperature:living_room,-1,-1",
@@ -3716,7 +3733,8 @@
             "main_switch": "boiler:main:switch,-1,-1",
             "scheduler_switch": "boiler:scheduler:switch,-1,-1",
             "status_on": 1,
-            "status_off": 0
+            "status_off": 0,
+            "delta": 0
           },
           "actions": [
             "set,boiler:scheduler:switch,0",
@@ -3988,7 +4006,8 @@
           "format": "int",
           "module_id": "boiler",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4001,7 +4020,22 @@
           "format": "temperature",
           "module_id": "boiler",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
+          }
+        },
+        {
+          "module_id": "boiler",
+          "group_id": "main",
+          "sensor_id": "scheduler_temperature",
+          "enabled": true,
+          "display_name": {
+            "en": "Scheduler default temperature"
+          },
+          "format": "temperature",
+          "retention": {
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4014,7 +4048,8 @@
           "format": "calendar",
           "module_id": "boiler",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4047,7 +4082,8 @@
           "series": [],
           "module_id": "boiler",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4066,7 +4102,8 @@
           "series": [],
           "module_id": "boiler",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4085,7 +4122,8 @@
           "series": [],
           "module_id": "boiler",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ]
@@ -4305,7 +4343,8 @@
           ],
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4332,7 +4371,8 @@
           ],
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4342,7 +4382,8 @@
           "format": "int",
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4352,7 +4393,8 @@
           "format": "int",
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4372,7 +4414,8 @@
           "format": "int",
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4392,7 +4435,8 @@
           "format": "int",
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4405,7 +4449,8 @@
           "format": "int",
           "module_id": "alarm",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ]
@@ -4486,7 +4531,8 @@
           "format": "string",
           "module_id": "network",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4505,7 +4551,8 @@
           "format": "string",
           "module_id": "network",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4524,7 +4571,8 @@
           "format": "string",
           "module_id": "network",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ]
@@ -4572,7 +4620,8 @@
           "format": "string",
           "module_id": "logwatch",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ]
@@ -4746,7 +4795,8 @@
           "module_id": "power",
           "group_id": "command",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         },
         {
@@ -4760,7 +4810,8 @@
           "module_id": "power",
           "group_id": "command",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ],
@@ -4859,7 +4910,8 @@
           "sensor_id": "world",
           "enabled": true,
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           },
           "format": "int"
         }
@@ -4905,7 +4957,8 @@
           },
           "format": "string",
           "retention": {
-            "realtime_count": 1
+            "realtime_count": 1,
+            "realtime_days": 0
           }
         }
       ]
@@ -4928,7 +4981,27 @@
       "alerter_history_days": 7
     },
     "language": "en",
-    "longitude": -74.0
+    "longitude": -74.0,
+    "backup": [
+      {
+        "command": "cp -f %filename% tmp/%target%",
+        "backup_id": "db_local_backup",
+        "enabled": true,
+        "filename": "/var/lib/redis/dump.rdb"
+      },
+      {
+        "command": "cat %filename%| gdrive upload - %target%",
+        "backup_id": "db_cloud_backup",
+        "enabled": false,
+        "filename": "/var/lib/redis/dump.rdb"
+      },
+      {
+        "command": "cat %filename%| gdrive upload - %taget%",
+        "backup_id": "config_cloud_backup",
+        "enabled": false,
+        "filename": "config.json"
+      }
+    ]
   },
   "output": {
     "audio": {
@@ -4955,13 +5028,39 @@
         "your@email.com"
       ],
       "alerts_digest": false,
-      "subject": "Notification"
+      "subject": "Notification",
+      "port": 25,
+      "tls": false,
+      "username": "",
+      "password": "",
+      "debug": false
     },
     "slack": {
       "enabled": false,
       "bot_name": "housebot",
       "bot_token": "YOUR_SLACK_API_KEY",
       "channel": "general"
+    },
+    "buzzer": {
+      "duration": 0.5,
+      "enabled": false,
+      "min_severity": "alert",
+      "pin": 20
+    },
+    "gsm_sms": {
+      "baud": 115200,
+      "to": [],
+      "enabled": false,
+      "port": "/dev/ttyUSB0",
+      "min_severity": "alert"
+    },
+    "gsm_call": {
+      "baud": 115200,
+      "enabled": false,
+      "to": [],
+      "duration": 15,
+      "port": "/dev/ttyUSB0",
+      "min_severity": "alert"
     }
   },
   "input": {
