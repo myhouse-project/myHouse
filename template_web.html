@@ -1234,6 +1234,8 @@ th.dt-center, td.dt-center { text-align: center; }
 			scroll_hour: 6,
 		});
 		initResponsive(scheduler);
+		// configure the time step
+		if ("time_step" in layout) scheduler.config.time_step = layout["time_step"];
 		// configure the mini-calendars
 		scheduler.attachEvent("onLightbox", function(){
 			var lightbox_form = scheduler.getLightbox();
@@ -1298,8 +1300,11 @@ th.dt-center, td.dt-center { text-align: center; }
 			return true;
 		});
 		// configure the event template
-		scheduler.templates.event_text=function(start,end,event){
-			return "Temperature:<b> "+event.text+"°C</b>";
+		if ("event_template" in layout) {
+			scheduler.templates.event_text=function(start,end,event){
+				text = layout["event_template"].replace("%value%",event.text);
+				return "Temperature:<b> "+event.text+"°C</b>";
+			}
 		}
 		// load the events
 		if (!("sensor" in layout)) return

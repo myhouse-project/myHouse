@@ -2054,6 +2054,10 @@
 														"event_template": {
 															"description": "An optional HTML template to render items in the calendar. The placeholder %value% will be replaced by the actual value",
 															"type": "string"
+														},
+														"time_step": {
+															"description": "Sets the minimum step (in minutes) for event's time values",
+															"type": "integer"
 														}
 													},
 													"additionalProperties": false,
