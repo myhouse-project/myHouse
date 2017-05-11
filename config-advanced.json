@@ -3558,6 +3558,13 @@
                 "sensor": "boiler:main:max_temperature"
               },
               {
+                "type": "input",
+                "display_name": {
+                  "en": "Mimumum Temperature"
+                },
+                "sensor": "boiler:main:min_temperature"
+              },
+              {
                 "type": "separator"
               },
               {
@@ -3655,6 +3662,56 @@
           "actions": [
             "set,boiler:main:switch,0",
             "send,boiler:main:switch,OUTA0"
+          ]
+        },
+		{
+          "rule_id": "boiler_on_min_temperature",
+          "display_name": {
+            "en": "I'm turning on the boiler since the current temperature %temperature% is lower than the minimum %min_temperature%"
+          },
+          "enabled": true,
+          "severity": "info",
+          "run_every": "minute",
+          "conditions": [
+            "main_switch == status_off",
+            "scheduler_switch == status_off",
+            "temperature < (min_temperature - delta)"
+          ],
+          "definitions": {
+            "temperature": "indoor:temperature:living_room,-1,-1",
+            "main_switch": "boiler:main:switch,-1,-1",
+            "scheduler_switch": "boiler:scheduler:switch,-1,-1",
+            "status_off": 0,
+			"min_temperature": "boiler:main:min_temperature,-1,-1",
+			"delta": 0.2
+          },
+          "actions": [
+            "set,boiler:main:switch,1",
+            "send,boiler:main:req_on,1"
+          ]
+        },
+        {
+          "rule_id": "boiler_off_min_temperature",
+          "display_name": {
+            "en": "I'm turning off the boiler because the current temperature corrente %temperature% has reached the minimum of %min_temperature%"
+          },
+          "enabled": true,
+          "severity": "warning",
+          "run_every": "minute",
+          "conditions": [
+            "main_switch == status_on",
+            "temperature > (min_temperature + delta)"
+          ],
+          "definitions": {
+            "main_switch": "boiler:main:switch,-1,-1",
+            "status_on": 1,
+            "temperature": "indoor:temperature:living_room,-1,-1",
+            "min_temperature": "boiler:main:min_temperature,-1,-1",
+			"delta": 0
+          },
+          "actions": [
+            "set,boiler:main:switch,0",
+            "send,boiler:main:req_off,1"
           ]
         },
         {
@@ -4019,6 +4076,20 @@
           },
           "format": "temperature",
           "module_id": "boiler",
+          "retention": {
+            "realtime_count": 1,
+            "realtime_days": 0
+          }
+        },
+        {
+          "module_id": "boiler",
+          "group_id": "main",
+          "sensor_id": "min_temperature",
+          "enabled": true,
+          "display_name": {
+            "en": "Mimumum Temperature"
+          },
+          "format": "temperature",
           "retention": {
             "realtime_count": 1,
             "realtime_days": 0
