@@ -168,5 +168,5 @@ if __name__ == '__main__':
 		install_service()
 		log.info("Done! ")
 		log.info("------------------")
-		log.info("Access the web interface on http://raspberry.ip. If unavailable, review for errors the files install.log and myHouse.log into the 'logs' directory")
+		log.info("Access the web interface on http://this.ip. If unavailable, review for errors the files install.log and myHouse.log into the 'logs' directory")
 

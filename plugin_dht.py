@@ -2,9 +2,14 @@
 import utils
 import logger
 import config
-import Adafruit_DHT
+
 log = logger.get_logger(__name__)
 conf = config.get_config()
+
+# import the module if running on a supported platform
+platform = utils.get_platform()
+supported_platform = True if platform != "unknown" else False
+if supported_platform: import Adafruit_DHT
 
 # poll the sensor
 def poll(sensor):
