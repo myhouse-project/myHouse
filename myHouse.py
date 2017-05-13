@@ -21,6 +21,7 @@ import backup
 # run the main application
 def run():
 	log.info("Welcome to myHouse v"+conf["constants"]["version"])
+	log.info("Platform: "+utils.get_platform())
 	# initialize the database
 	initialized = db.init()	
 	if not initialized: sys.exit(1)

@@ -17,15 +17,16 @@ dependencies_python = ["APScheduler","slackclient","simplejson","python-Levensht
 inventory = []
 inventory_python = []
 log = logging.getLogger("install")
+platform = "unknown"
 
-# determine if running on a raspberry
-# return true if running on raspberry pi
-def is_raspberry():
+# return the current platform
+def get_platform():
         with open("/proc/cpuinfo",'r') as file:
                 cpu = file.read()
         file.close()
-        if "BCM" in cpu: return True
-        return False
+        if ": BCM" in cpu: return "raspberry_pi"
+        elif ": sun" in cpu: return "orange_pi"
+        else: return "unknown"
 
 # initialize the logger
 def init_logger():
@@ -81,7 +82,7 @@ def run_command(command,return_code=False):
 # install with apt an array of packages if not already installed
 def install_packages(packages):
 	for package in packages:
-		if package == "python-rpi.gpio" and not is_raspberry(): continue
+		if package == "python-rpi.gpio" and platform != "raspberry_pi": continue
 		if package.lower() in inventory:
 			log.debug("\t- Skipping "+package+": already installed")
 		else:
@@ -91,7 +92,7 @@ def install_packages(packages):
 # install with pip an array of python modules if not already installed
 def install_python(packages):
         for package in packages:
-		if package == "OPi.GPIO" and is_raspberry(): continue
+		if package == "OPi.GPIO" and platform != "orange_pi": continue
                 if package.lower() in inventory_python:
 			log.debug("\t - Skipping "+package+": already installed")
                 else:
@@ -152,6 +153,8 @@ if __name__ == '__main__':
 	init_logger()
 	log.info("Welcome to myHouse")
 	log.info("------------------")
+	platform = get_platform()
+	log.info("Platform: "+platform)
 	if len(sys.argv) == 2 and sys.argv[1] == "-u": 
 		uninstall_service()
 	else: 

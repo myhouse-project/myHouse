@@ -23,7 +23,7 @@ def notify(text):
 				log.info("Sent SMS to "+str(to)+" with text: "+text)
 				retries = 0
 		        else: 
-				log.error("Failed #"+str(retries)+"to send SMS to "+str(to)+" with text: "+text)
+				log.error("Failed #"+str(retries)+" to send SMS to "+str(to)+" with text: "+text)
 				retries = retries - 1
 
 # send the message

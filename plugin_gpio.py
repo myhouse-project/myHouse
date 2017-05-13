@@ -14,21 +14,23 @@ import sensors
 # variables
 plugin_conf = conf['plugins']['gpio']
 pins = {}
-is_raspberry = utils.is_raspberry()
-
-# import GPIO module
-if is_raspberry: import RPi.GPIO as GPIO
-else: import OPi.GPIO as GPIO
+platform = utils.get_platform()
+supported_platform = True if platform != "unknown" else False
 
 # initialize the GPIO
 if plugin_conf["enabled"]:
-	GPIO.setwarnings(False)
-	mode = GPIO.BCM if plugin_conf["mode"] == "bcm" else GPIO.BOARD
-	GPIO.setmode(mode)
+        # import GPIO module
+        if platform == "raspberry_pi": import RPi.GPIO as GPIO
+        elif platform == "orange_pi": import OPi.GPIO as GPIO
+        # initialize GPIO
+        if supported_platform:
+		GPIO.setwarnings(False)
+		mode = GPIO.BCM if plugin_conf["mode"] == "bcm" else GPIO.BOARD
+		GPIO.setmode(mode)
 
 # register a new sensor against this plugin
 def register(sensor):
-	if not plugin_conf["enabled"]: return
+	if not plugin_conf["enabled"] or not supported_platform: return
 	if sensor['plugin']['plugin_name'] != 'gpio': return
 	if sensor['plugin']['setup'] != "input": return
 	if "edge_detect" not in sensor['plugin']: return
@@ -43,10 +45,10 @@ def register(sensor):
 	if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "up": pull_up_down = GPIO.PUD_UP
 	if "pull_up_down" in sensor["plugin"] and sensor["plugin"]["pull_up_down"] == "down": pull_up_down = GPIO.PUD_DOWN
 	# setup the channel
-	if not is_raspberry and pull_up_down is not None:
+	if platform == "orange_pi" and pull_up_down is not None:
 		log.warning("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] Pull up/Pull down not supported on this platform, skipping")
 		return
-	if is_raspberry: GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
+	if platform == "raspberry_pi": GPIO.setup(pin, GPIO.IN, pull_up_down=pull_up_down)
 	else: GPIO.setup(pin, GPIO.IN)
 	# add callbacks
 	edge_detect = sensor["plugin"]["edge_detect"]
@@ -94,7 +96,7 @@ def cache_schema(sensor):
 
 # send a message to the sensor
 def send(sensor,data):
-	if not plugin_conf["enabled"]: return
+	if not plugin_conf["enabled"] or not supported_platform: return
 	data = int(data)
 	if data != 0 and data != 1: 
 		log.error("["+sensor["module_id"]+"]["+sensor["group_id"]+"]["+sensor["sensor_id"]+"] cannot send data: "+str(data))
