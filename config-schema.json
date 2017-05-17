@@ -3145,7 +3145,12 @@
 														"I_PONG",
 														"I_REGISTRATION_REQUEST",
 														"I_REGISTRATION_RESPONSE",
-														"I_DEBUG"
+														"I_DEBUG",
+														"I_SIGNAL_REPORT_REQUEST",
+														"I_SIGNAL_REPORT_REVERSE",
+														"I_SIGNAL_REPORT_RESPONSE",
+														"I_PRE_SLEEP_NOTIFICATION",
+														"I_POST_SLEEP_NOTIFICATION"
 													]
 												},
 												"queue_size": {
