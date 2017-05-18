@@ -9,7 +9,7 @@ conf = config.get_config()
 
 # variables
 settings = conf["output"]["sms"]
-max_retries = 5
+max_retries = 3
 timeout = 30
 
 # send a sms with the given text

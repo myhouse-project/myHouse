@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import apscheduler
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 import logging
 
 import utils
@@ -9,8 +10,18 @@ import config
 log = logger.get_logger(__name__)
 conf = config.get_config()
 
-# variables
-scheduler = BackgroundScheduler()
+# default values for each job (30s tolerance to avoid missed job and put together multiple queued jobs)
+job_defaults = {
+	"coalesce": True,
+	"misfire_grace_time": 30
+}
+# increas the thread pool executor to 20
+executors = {
+	"default": ThreadPoolExecutor(20),
+	"processpool": ProcessPoolExecutor(10)
+}
+# create the scheduler which will run each job in background
+scheduler = BackgroundScheduler(job_defaults=job_defaults, executors=executors)
 
 # return the event name from an id
 def get_event_name(code):
@@ -32,12 +43,13 @@ def get_event_name(code):
 	elif code == apscheduler.events.EVENT_JOB_ERROR: return "EVENT_JOB_ERROR"
 	elif code == apscheduler.events.EVENT_JOB_MISSED: return "EVENT_JOB_MISSED"
 	elif code == apscheduler.events.EVENT_ALL: return "EVENT_ALL"
+	else: return "UNKNOWN"
 
-# handle scheduler errors
-def scheduler_error(event):
+# print out scheduler errors
+def scheduler_error(code,event):
 	job = scheduler.get_job(event.job_id)
 	job_text = str(job.func_ref)+str(job.args) if job is not None else ""
-	msg = "unable to run scheduled task "+job_text+": "
+	msg = get_event_name(code)+" for scheduled task "+job_text+": "
 	if event.exception:
 		msg = msg + "Exception "
 		msg = msg +''.join(event.traceback)
@@ -46,6 +58,12 @@ def scheduler_error(event):
 	else: 
 		msg = msg + "No exception available"
 	log.error(msg)
+
+# handle scheduler errors
+def on_job_missed(event):
+	scheduler_error(apscheduler.events.EVENT_JOB_MISSED,event)
+def on_job_error(event):
+	scheduler_error(apscheduler.events.EVENT_JOB_ERROR,event)
 
 # configure logging
 logger_name = "scheduler"
@@ -60,7 +78,8 @@ scheduler_logger.addHandler(logger.get_console_logger(logger_name))
 scheduler_logger.addHandler(logger.get_file_logger(logger_name))
 
 # handle errors and exceptions
-scheduler.add_listener(scheduler_error, apscheduler.events.EVENT_JOB_MISSED | apscheduler.events.EVENT_JOB_ERROR)
+scheduler.add_listener(on_job_missed, apscheduler.events.EVENT_JOB_MISSED)
+scheduler.add_listener(on_job_error, apscheduler.events.EVENT_JOB_ERROR)
 
 # return the scheduler object
 def get_scheduler():

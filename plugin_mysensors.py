@@ -289,16 +289,19 @@ class Gateway():
 			elif type_string == "I_GATEWAY_READY":
 				# report gateway report
 				log.info("["+self.gateway_id+"]["+str(node_id)+"] reporting gateway ready")
-			elif type_string == "I_HEARTBEAT_RESPONSE":
+			elif type_string == "I_POST_SLEEP_NOTIFICATION":
+                                # report awake
+                                log.info("["+self.gateway_id+"]["+str(node_id)+"] reporting awake")
+			elif type_string == "I_HEARTBEAT_RESPONSE" or type_string == "I_PRE_SLEEP_NOTIFICATION":
 				# handle smart sleep
-				log.info("["+self.gateway_id+"]["+str(node_id)+"] reporting heartbeat")
+				log.info("["+self.gateway_id+"]["+str(node_id)+"] going to sleep")
 				if node_id in self.queue and not self.queue[node_id].empty():
 					# process the queue 
 					while not self.queue[node_id].empty():
 						node_id,child_id,command_string,type_string,payload = self.queue[node_id].get()
 						# send the message
 						self.tx(node_id,child_id,command_string,type_string,payload)
-			else: log.info("["+self.gateway_id+"]["+str(node_id)+"] ignoring "+type_string)
+			else: log.info("["+self.gateway_id+"]["+str(node_id)+"] received "+type_string)
 		elif command_string == "STREAM":
 			# handle stream messages
 			return

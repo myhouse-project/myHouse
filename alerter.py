@@ -81,15 +81,18 @@ def get_data(sensor,request):
 	if transform is not None and transform == "elapsed":
 		# retrieve the timestamp and calculate the time difference
 		data = query(key,start=start,end=end,withscores=True)
+		if len(data) == 0: return []
 		time_diff = (utils.now() - data[0][0])/60
 		return [time_diff]
 	elif transform is not None and transform == "timestamp":
 		# retrieve the timestamp 
 		data = query(key,start=start,end=end,withscores=True)
+		if len(data) == 0: return []
 		return [data[0][0]]
 	elif transform is not None and transform == "distance":
 		# calculate the distance between the point and our location
 		data = query(key,start=start,end=end,withscores=False,formatter=conf["constants"]["formats"][sensor["format"]]["formatter"])
+		if len(data) == 0: return []
 		data = json.loads(data[0])
 		distance = utils.distance([data["latitude"],data["longitude"]],[conf["general"]["latitude"],conf["general"]["longitude"]])
 		return [int(distance)]
