@@ -29,6 +29,7 @@ def schedule_all():
 	# for each backup job
 	for entry in conf["general"]["backup"]:
 		# schedule the execution of the daily and weekly job
+		if not entry["enabled"]: return
 		log.info("Scheduling backup job "+entry["backup_id"])
                 schedule.add_job(run,'cron',hour="0",minute="30",second=utils.randint(1,59),args=[entry["backup_id"],"daily"])
 		schedule.add_job(run,'cron',day_of_week='sun',hour="0",minute="30",second=utils.randint(1,59),args=[entry["backup_id"],"weekly"])
