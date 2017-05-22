@@ -282,6 +282,8 @@ th.dt-center, td.dt-center { text-align: center; }
 		"skin-purple-light",
 		"skin-green-light"
 	];
+	// scheduler's events
+	var scheduler_events = [];
 
 	/**
 		MAIN ENTRY POINT
@@ -1233,11 +1235,20 @@ th.dt-center, td.dt-center { text-align: center; }
 			hour_size_px: 35,
 			scroll_hour: 6,
 		});
+		// clear previously attached events
+		scheduler.clearAll();
+		if (scheduler_events.length > 0) {
+			for (var i = 0; i < scheduler_events.length; i++) {
+				scheduler.detachEvent(scheduler_events[i]);
+			}
+			scheduler_events = [];
+		}
+		// init responsive
 		initResponsive(scheduler);
 		// configure the time step
 		if ("time_step" in layout) scheduler.config.time_step = layout["time_step"];
 		// configure the mini-calendars
-		scheduler.attachEvent("onLightbox", function(){
+		scheduler_events.push(scheduler.attachEvent("onLightbox", function(){
 			var lightbox_form = scheduler.getLightbox();
 			var inputs = lightbox_form.getElementsByTagName('input');
 			var date_of_end = null;
@@ -1263,7 +1274,7 @@ th.dt-center, td.dt-center { text-align: center; }
 				}
 			};
 			date_of_end.onclick = show_minical;
-		});
+		}));
 		// configure event details sections
 		scheduler.config.lightbox.sections = [
 			{ name:"description", height:30, map_to:"text", type:"textarea" , focus:true, },
@@ -1271,7 +1282,8 @@ th.dt-center, td.dt-center { text-align: center; }
 			{ name:"time", height:72, type:"calendar_time", map_to:"auto" }
 		];
 		// configure default value
-		scheduler.attachEvent("onBeforeLightbox", function (id){
+		scheduler_events.push(scheduler.attachEvent("onBeforeLightbox", function (id){
+			scheduler.resetLightbox();
 			var event = scheduler.getEvent(id);
 			if (event.text == "New event") {
 				// newly created event, default to empty string
@@ -1298,12 +1310,12 @@ th.dt-center, td.dt-center { text-align: center; }
 				}
 			}
 			return true;
-		});
+		}));
 		// configure the event template
 		if ("event_template" in layout) {
 			scheduler.templates.event_text=function(start,end,event){
 				text = layout["event_template"].replace("%value%",event.text);
-				return "Temperature:<b> "+event.text+"°C</b>";
+				return text;
 			}
 		}
 		// load the events
@@ -1330,10 +1342,10 @@ th.dt-center, td.dt-center { text-align: center; }
 			});
 		};
 		// on any change, save the calendar
-		scheduler.attachEvent("onEventAdded",onChange);
-		scheduler.attachEvent("onEventChanged",onChange);
-		scheduler.attachEvent("onEventCopied",onChange);
-		scheduler.attachEvent("onEventDeleted",onChange);
+		scheduler_events.push(scheduler.attachEvent("onEventAdded",onChange));
+		scheduler_events.push(scheduler.attachEvent("onEventChanged",onChange));
+		scheduler_events.push(scheduler.attachEvent("onEventCopied",onChange));
+		scheduler_events.push(scheduler.attachEvent("onEventDeleted",onChange));
 	}
 	
 	/**
@@ -1677,7 +1689,9 @@ th.dt-center, td.dt-center { text-align: center; }
 	
 	// return true if a string is a sensor
 	function is_sensor(string) {
-		if (string.match(/:/g).length == 2) return true;
+		var matches = string.match(/:/g);
+		if (matches == null) return false;
+		if (matches.length == 2) return true;
 		return false;
 	}
 	
