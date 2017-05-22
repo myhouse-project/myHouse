@@ -818,7 +818,7 @@ def upgrade_2_4(version):
         upgrade_config = True
         upgrade_db = True
         conf = config.get_config(validate=False)
-        target_version = conf["constants"]["version"]
+        target_version = "2.4"
         log.info("[Migration to v"+target_version+"]\n")
         backup(version)
         if upgrade_config and utils.file_exists(conf["constants"]["config_file"]):

@@ -64,6 +64,9 @@ I have configured then the following modules and **widgets**:
 - Boiler
 	- Boiler status, manual switch to power it on/off and target temperature to reach while on
 	- Calendar to schedule when the boiler has to automatically turns on and off
+- Irrigation
+	- Irrigation status, manual switch to turn it on/off in each zone
+	- Calendar to schedule when the irrigation has to automatically turns on and off
 - Alarm
     - Alarm status and manual switch to arm the system which is automatically set to the status of the physical alarm main unit
     - PIRs, smoke detectors, gas detectors, magnetic sensors. Each sensor can be armed indivirually and reports the last time it has triggered
@@ -103,6 +106,8 @@ I have finally configured the following **rules**:
     - CPU utilization/System load/temperature too high
 - Boiler module:
     - Turning the boiler on/off when scheduled, requested, or when the indoor temperature is too low/high
+- Irrigation module:
+    - Turning the irrigation on/off when scheduled
 - Alarm module:
     - Arm/disarm the system when the main legacy unit is armed/disarmed, notify when an armed sensor has triggered while the alarm is armed
 
@@ -111,23 +116,26 @@ I have eventually configured a number of **rules without conditions** (that are 
 Installing
 ========
 - Unzip the package and move its contents to a directory of your choice on your raspberry Pi (e.g. /opt/myHouse)
-- Run the installation script as root (e.g. sudo /opt/myHouse/install.py) which will:
+- Run the installation script as root (e.g. sudo python /opt/myHouse/install.py) which will:
     - download and install all the required dependencies
     - create a service script, copy into /etc/init.d/myHouse and configured it to start at boot time
     - start the service
 - Access the web interface (e.g. <http://your-raspberry-pi.ip>)
+
+Installation logs will be made available under `logs/install.log`
 
 Uninstalling
 -----------------
 - Run as root the installation script with the "-u" parameter (e.g. sudo /opt/myHouse/install.py -u) which will:
     - stop the service
     - remove the service script from /etc/init.d/myHouse
+
 The dependencies, the database and all the other files belonging to myHouse will NOT be deleted.
 		
 Upgrading
 ---------------
 - Stop the service
-- Copy the files of the new version in the directory where myHouse is installed, overwriting the existing files.
+- Copy the files of the new version in the directory where myHouse is installed, overwriting the existing files or run `git pull` if you had cloned the repository
 - Run as root the install.py script which will install the missing dependencies
 - Run as root the upgrade.py script which will upgrade your config.json file
 - A backup copy of the configuration file and the database will be saved under the tmp directory
@@ -264,11 +272,17 @@ email   | No | Yes
 sms  | No | Yes
 slack  | Yes | Yes
 audio  | Yes | Yes
+buzzer  | No | Yes
+GSM sms | No | Yes
+GSM call | No | Yes
 
 - **email**: an email message is sent whenever an alert triggers. Requires a SMTP server configured
 - **sms**: a SMS message is sent whenever an alert triggers. Requires a Betamax-compatible voip service configured
 - **slack**: a slack notification is sent whenever an alert triggers. A slack bot connects to a configured team and channel and allows realtime interaction
 - **audio**: an audio notification is sent to the attached speaker whenever an alert triggers. If a microphone is attached to the system, the user can interacts with it with realtime questions and answers.
+- **buzzer**: play a tone to an attached active buzzer.
+- **GSM sms**: a SMS message is sent through an attached GSM module whenever an alert triggers
+- **GSM call**: a phon call (ring) is placed through an attached GSM module whenever an alert triggers
 
 For each output notification the following can be optionally set:
 
@@ -335,6 +349,7 @@ myHouse makes use of the following third-party software components:
 	- pocketsphinx as offline speach recognition engine (<https://github.com/cmusphinx/pocketsphinx>)
 	- adafruit DHT library to read the DHT series of humidity and temperature sensors (<https://github.com/adafruit/Adafruit_Python_DHT>)
 	- adafruit ADS1x15 library to communicate with ADS1x15 ADC (<https://github.com/adafruit/Adafruit_ADS1X15>)
+	- OPi.GPIO to leverage Orange Pi Zero's GPIO (<https://pypi.python.org/pypi/OPi.GPIO/0.2.1>)
 - HTML and Javacript for the frontend, including the following libraries:
 	- jQuery for event handling (<https://jquery.com/>)
 	- Bootstrap for enhanced user experience (<http://getbootstrap.com/>)
@@ -397,4 +412,13 @@ Changelog
     - Added support for Bluetooth Low Energy (BLE) sensors
     - Included a simpler, fully working example configuration file
     - Improved installation and upgrade scripts
+    - Bug fixes and minor enhancements
+- v2.4 (for full changelog: <https://sourceforge.net/p/my-house/tickets/queue/v2.4/>):
+    - Added support for SMS/phone call notifications through an attached GSM module
+    - Added support for activating a buzzer when an alert triggers
+    - Added support for Orange Pi GPIO
+    - Added support for running on a generic debian-based linux distribution
+    - Enhanced the scheduler's flexibility
+    - Enhaced the rule-based engine's capabilities 
+    - Added additional backup options
     - Bug fixes and minor enhancements
